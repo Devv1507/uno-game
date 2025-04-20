@@ -10,14 +10,11 @@ import univalle.tedesoft.uno.model.Players.Player;
  */
 public class GameState implements IGameState {
 
-    public void onGameStart(GameState game) {
-    }
+    public void onGameStart(GameState game) {}
 
-    public void onTurnChanged(Player currentPlayer) {
-    }
+    public void onTurnChanged(Player currentPlayer) {}
 
-    public void onCardPlayed(Player pLayer, Card card) {
-    }
+    public void onCardPlayed(Player pLayer, Card card) {}
 
     public void onPlayerDrewCard(Player player, Card drawnCard){}
 
