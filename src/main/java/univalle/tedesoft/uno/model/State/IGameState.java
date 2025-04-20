@@ -1,4 +1,8 @@
-package univalle.tedesoft.uno.model;
+package univalle.tedesoft.uno.model.State;
+
+import univalle.tedesoft.uno.model.Cards.Card;
+import univalle.tedesoft.uno.model.Enum.Color;
+import univalle.tedesoft.uno.model.Players.Player;
 
 /**
  * Contrato para reaccionar a los eventos principales del juego UNO.
