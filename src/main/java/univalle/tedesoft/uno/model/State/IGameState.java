@@ -7,6 +7,9 @@ import univalle.tedesoft.uno.model.Players.Player;
 /**
  * Contrato para reaccionar a los eventos principales del juego UNO.
  * El GameController implementará esta interfaz para actualizar la UI basada en estos eventos.
+ * @author David Esteban Valencia
+ * @author Santiago David Guerrero
+ * @author Juan Pablo Escamilla
  */
 public interface IGameState {
     /**
