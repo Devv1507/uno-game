@@ -17,6 +17,7 @@ import java.util.Stack;
 public class DiscardPile {
     /**
      * Pila de cartas descartadas. La parte superior contiene la ultima carta jugada.
+     * Se inicializa sin un constructor, se usa el que brinda java por defecto.
      */
     private final Stack<Card> descartadas = new Stack<>();
     /**
