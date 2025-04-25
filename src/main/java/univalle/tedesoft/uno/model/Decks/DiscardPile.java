@@ -19,14 +19,14 @@ public class DiscardPile {
      * Pila de cartas descartadas. La parte superior contiene la ultima carta jugada.
      * Se inicializa sin un constructor, se usa el que brinda java por defecto.
      */
-    private final Stack<Card> descartadas = new Stack<>();
+    private final Stack<Card> discarded = new Stack<>();
     /**
      * Agrega una carta a la pila de descarte.
      *
-     * @param carta Carta que se va a descartar.
+     * @param card Carta que se va a descartar.
      */
-    public void descartar(Card carta) {
-        descartadas.push(carta);
+    public void discard(Card card) {
+        discarded.push(card);
     }
     /**
      * Retorna la carta que esta en la parte superior de la pila de descarte,
@@ -34,8 +34,8 @@ public class DiscardPile {
      *
      * @return Carta superior de la pila de descarte.
      */
-    public Card cartaSuperior() {
-        return descartadas.peek();
+    public Card SuperiorCard() {
+        return discarded.peek();
     }
     /**
      * Recicla las cartas de la pila de descarte cuando el mazo se queda sin cartas.
@@ -44,17 +44,17 @@ public class DiscardPile {
      *
      * @return Lista de cartas recicladas listas para volver al mazo.
      */
-    public List<Card> reciclarMazo() {
-        if (descartadas.size() <= 1) {
+    public List<Card> recycleDeck() {
+        if (discarded.size() <= 1) {
             return new ArrayList<>();
         }
         // Guarda la carta superior, y la elimina de la pila para evitar duplicados
-        Card ultima = descartadas.pop();
+        Card endCard = discarded.pop();
 
-        List<Card> recicladas = new ArrayList<>(descartadas);
-        descartadas.clear();  //limpia la pila
-        descartadas.push(ultima); // vuelve a colocar la carta superior
+        List<Card> recyclesCards = new ArrayList<>(discarded);
+        discarded.clear();  //limpia la pila
+        discarded.push(endCard); // vuelve a colocar la carta superior
 
-        return recicladas;
+        return recyclesCards;
     }
 }

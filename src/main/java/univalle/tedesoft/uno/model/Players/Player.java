@@ -36,7 +36,7 @@ public abstract class Player {
      *
      * @param card Carta que se eliminara de la mano
      */
-    public void removeCard(Card card){
+    public void playCard(Card card){
         cards.remove(card);
     }
     /**
