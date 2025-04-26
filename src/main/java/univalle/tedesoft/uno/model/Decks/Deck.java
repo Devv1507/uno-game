@@ -55,10 +55,13 @@ public class Deck {
         }
         //64 cartas en total 56 de colores y 8 especiales
         //Prueba para saber si el mazo se genera de forma correcta.
+        /*
         for(int i = 0; i< cards.size(); i++){
             Card carta = cards.get(i);
             System.out.println( i+1 + " " + carta.getValue() + " " + carta.getColor());
         }
+        System.out.println("----------------------------");
+         */
     }
     /**
      * Retorna la lista de cartas actuales del mazo.
@@ -81,5 +84,13 @@ public class Deck {
      */
     public Card takeCard() {
         return cards.poll(); // saca la primera
+    }
+
+    /**
+     * Puede servir o puede borrarse luego,
+     * @return numero de cartas en el deck
+     */
+    public int getNumeroCartas() {
+        return cards.size();
     }
 }

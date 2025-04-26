@@ -12,7 +12,7 @@ import univalle.tedesoft.uno.model.Cards.Card;
  * @author Santiago David Guerrero
  * @author Juan Pablo Escamilla
  */
-public abstract class Player {
+public class Player {
 
     /** Lista de cartas que tiene el jugador en su mano */
     public List<Card> cards = new ArrayList<>();
@@ -46,5 +46,13 @@ public abstract class Player {
      */
     public int getNumeroCartas() {
         return cards.size();
+    }
+
+    /**
+     * Devuelve el arreglo de cartas almacenadas en el player.
+     * @return arreglo de cartas.
+     */
+    public List<Card> getCards() {
+        return cards;
     }
 }
