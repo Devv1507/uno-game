@@ -26,6 +26,12 @@ public interface IGameState {
     void onTurnChanged(Player currentPlayer);
 
     /**
+     * Funcion que reparte la primera mano de cartas a los jugadores.
+     * @param humanPlayer jugador humano.
+     * @param machinePlayer jugador maquina controlado por el sistema.
+     */
+    void dealInitialCards(Player humanPlayer, Player machinePlayer );
+    /**
      * Se llama cuando un jugador ha jugado exitosamente una carta.
      * @param player El jugador que realizo la jugada.
      * @param card La carta especifica que fue jugada y ahora está en la cima.
@@ -33,6 +39,7 @@ public interface IGameState {
     void onCardPlayed(Player player, Card card);
 
     /**
+     * (Quiero borrar esto, posiblemente pertenezca a la vista)
      * Se llama cuando un jugador toma una carta del mazo (ya sea por accion voluntaria
      * o por efecto de una carta especial, o penalización).
      * @param player    El jugador que tomo la carta.
@@ -41,6 +48,7 @@ public interface IGameState {
     void onPlayerDrewCard(Player player, Card drawnCard);
 
     /**
+     * (Tambien es parte de la vista)
      * Se llama cuando la mano de un jugador ha cambiado (se añadieron o quitaron cartas).
      * Esto puede ser resultado de jugar, tomar cartas, o ser penalizado.
      * @param player El jugador cuya mano necesita ser actualizada en la vista.
@@ -56,12 +64,15 @@ public interface IGameState {
     void onForceDraw(Player player, int numberOfCards);
 
     /**
+     * (Siento que este tambien es un metodo del controlador, dado que solo el controlador puede quitar turnos
+     * (Se puede plantar las sumas de cartas, mas el skip y el reverse solo con la logica implementada)
      * Se llama cuando un jugador es saltado (Skip, Reverse, o +2/+4).
      * @param skippedPlayer El jugador cuyo turno ha sido saltado.
      */
     void onPlayerSkipped(Player skippedPlayer);
 
     /**
+     * (Para esto necesito la logica del juego, que se plantea en el controlador)
      * Se llama tras jugar un comodín (Change Color),
      * indicando que el jugador que la jugó debe elegir un color.
      * @param player El jugador que debe realizar la elección.
