@@ -119,12 +119,26 @@ public class GameState implements IGameState {
      * @param player        El jugador que va a tomar cartas.
      * @param numberOfCards La cantidad de cartas que será forzado a tomar.
      */
+    @Override
     public void onForceDraw(Player player, int numberOfCards) {
-        for(int i = 0; i < numberOfCards; i++){
-            Card card = initialDeck.takeCard();
+        int cardsActuallyDrawn = 0; // Contador por si no hay suficientes cartas
+
+        for (int i = 0; i < numberOfCards; i++) {
+            // Verificar si el mazo esta vacio ANTES de intentar tomar
+            if (this.deck.getNumeroCartas() == 0) {
+                this.onEmptyDeck();
+            }
+            Card card = this.deck.takeCard();
             player.addCard(card);
+            cardsActuallyDrawn++;
+            // Notificar por cada carta robada individualmente (si es necesario)
+            // onPlayerDrewCard(player, card);  }
+            if (cardsActuallyDrawn > 0) {
+                this.onHandChanged(player);
+            }
         }
     }
+
     /**
      * Se llama cuando un jugador es saltado (Skip, Reverse, o +2/+4).
      * @param skippedPlayer El jugador cuyo turno ha sido saltado.
