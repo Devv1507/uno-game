@@ -200,7 +200,9 @@ public class GameState implements IGameState {
      *
      * @param winner El jugador que ganó la partida.
      */
-    public void onGameOver(Player winner) {
+    @Override
+    public boolean onGameOver(Player winner) {
+        return true;
     }
 
     /**

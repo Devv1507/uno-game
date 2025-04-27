@@ -102,7 +102,7 @@ public interface IGameState {
      * Se llama cuando el juego termina porque un jugador se ha quedado sin cartas.
      * @param winner El jugador que ganó la partida.
      */
-    void onGameOver(Player winner);
+    boolean onGameOver(Player winner);
 
     /**
      * Se llama cuando el mazo se ha agotado, por lo que se tiene que rellenar
