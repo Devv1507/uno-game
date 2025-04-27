@@ -35,6 +35,63 @@ public class GameController {
     @FXML
     public Button aidButton;
 
+    private IGameState gameState;
+    private IGameView gameView;
+
+    private HumanPlayer humanPlayer;
+    private MachinePlayer machinePlayer;
+
+    /**
+     * Representa al jugador cuyo turno esta activo en el juego.
+     * Se actualiza dinamicamente durante el juego a medida que los jugadores se turnan.
+     */
+    private Player currentPlayer;
+    // --- Utilities ---
+    private ScheduledExecutorService executorService;
+
+
+    @Override
+    public void initialize() {
+        this.humanPlayer = new HumanPlayer("Pepito");
+        this.machinePlayer = new MachinePlayer();
+
+        this.messageLabel.setText("Bienvenido a UNO");
+        this.unoButton.setVisible(false);
+        this.unoTimerIndicator.setVisible(false);
+        this.passButton.setDisable(true);
+//        this.deckImageView.setImage(this.getCardBackImage());
+
+        this.startNewGame();
+    }
+
+    /**
+     *
+     */
+    private void startNewGame() {
+        if (this.executorService != null && !this.executorService.isShutdown()) {
+            this.executorService.shutdownNow();
+        }
+        this.executorService = Executors.newSingleThreadScheduledExecutor();
+
+        this.gameState = new GameState(this.humanPlayer, this.machinePlayer);
+        this.gameState.onGameStart();
+
+        this.currentPlayer = this.gameState.getCurrentPlayer();
+
+        // TODO: actualizar GameView para reflejar el estado inicial en la UI
+        // Indicar a la vista que muestre la configuración inicial
+        this.gameView.resetUIForNewGame();
+        this.gameView.displayInitialState(
+                this.humanPlayer.getCards(),
+                this.gameState.getTopDiscardCard(),
+                this.machinePlayer.getNumeroCartas(),
+                this.currentPlayer.getName()
+        );
+        this.gameView.enablePassButton(this.currentPlayer == this.humanPlayer);
+        this.gameView.showUnoButton(false);
+        this.gameView.enablePlayerInteraction(this.currentPlayer == this.humanPlayer);
+        this.gameView.displayMessage("¡Tu turno, " + this.humanPlayer.getName() + "!");
+    }
 
     public void handleMazoClick(MouseEvent mouseEvent) {
     }
