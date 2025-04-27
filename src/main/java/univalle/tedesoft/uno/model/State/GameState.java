@@ -165,6 +165,19 @@ public class GameState implements IGameState {
     }
 
     /**
+     * Determina quien es el siguiente jugador en el orden actual.
+     *
+     * @return la instancia que representa el siguiente jugador.
+     */
+    private Player determineNextPlayer() {
+        if (this.currentPlayer == this.humanPlayer) {
+            return this.machinePlayer;
+        } else {
+            return this.humanPlayer;
+        }
+    }
+
+    /**
      * Se llama específicamente cuando un jugador es forzado a tomar cartas
      * debido a un efecto (+2, +4) o una penalización (no decir UNO).
      *
@@ -199,6 +212,17 @@ public class GameState implements IGameState {
     }
 
     /**
+     * Verifica si el estado UNO de un jugador ha cambiado y llama a onUnoStateChanged.
+     *
+     * @param player El jugador a verificar.
+     */
+    private void checkUnoState(Player player) {
+        // TODO: Necesitaríamos saber el estado *anterior* para una notificación más precisa
+        // de "entró en estado UNO" vs "salió de estado UNO".
+        boolean hasOneCard = player.getNumeroCartas() == 1;
+    }
+
+    /**
      * Recicla las cartas de la pila de descarte de vuelta al mazo principal
      * cuando este se queda vacío.
      */
@@ -212,8 +236,6 @@ public class GameState implements IGameState {
             }
             // Barajar el mazo despues de añadir las cartas recicladas
             this.deck.shuffle();
-            // se relleno y barajo el mazo, se llama al metodo de notificacion
-            this.onEmptyDeck();
         } else {
             System.out.println("No hay suficientes cartas en la pila de descarte para reciclar.");
         }
@@ -240,6 +262,50 @@ public class GameState implements IGameState {
         }
 
         // Reglas normales: Coincidir en color o en valor
-        return card.getColor() == this.currentValidColor || card.getValue() == this.currentValidValue;
+        if (card.getColor() == this.currentValidColor || card.getValue() == this.currentValidValue) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // --- Getters  ---
+    @Override
+    public Player getCurrentPlayer() {
+        return this.currentPlayer;
+    }
+
+    @Override
+    public Color getCurrentValidColor() {
+        return this.currentValidColor;
+    }
+
+    public Value getCurrentValidValue() {
+        return this.currentValidValue;
+    }
+
+    public Deck getDeck() {
+        return this.deck;
+    }
+
+    @Override
+    public Card getTopDiscardCard() {
+        return this.discardStack.SuperiorCard();
+    }
+
+    private String getCardDescription(Card card) {
+        String colorPart;
+        if (card.getColor() == Color.WILD) {
+            colorPart = "";
+        } else {
+            colorPart = card.getColor().name() + " ";
+        }
+        String valuePart = card.getValue().name().replace("_", " ");
+        String cardDescription = colorPart + valuePart;
+        return cardDescription;
+    }
+
+    public boolean isGameOver() {
+        return this.gameOver;
     }
 }
