@@ -169,4 +169,92 @@ public class GameController {
 
     public void handlePassButtonAction(ActionEvent actionEvent) {
     }
+
+    /**
+     * Actualiza todos los componentes relevantes de la UI después de que se juega una carta.
+     */
+    private void updateViewAfterCardPlayed(Card playedCard) {
+        // Actualizar la mano del jugador
+        this.gameView.updatePlayerHand(this.humanPlayer.getCards());
+
+        // Actualizar la pila de descarte
+        this.gameView.updateDiscardPile(
+                this.gameState.getTopDiscardCard(),
+                this.gameState.getCurrentValidColor()
+        );
+
+        // Mostrar mensaje informativo
+        this.gameView.displayCardPlayedMessage(playedCard);
+    }
+
+    /**
+     * Maneja el fin del juego.
+     */
+    private void handleGameOver() {
+        Player winner = this.gameState.winner;
+        this.gameView.displayGameOver(winner.getName());
+        this.gameView.disableGameInteractions();
+        // Habilitar botón de reinicio u otras opciones post-juego
+        this.gameView.enableRestartButton(true);
+    }
+
+    /**
+     * Avanza al turno del siguiente jugador.
+     */
+    private void handleTurnAdvancement() {
+        // Obtener el jugador actual desde el modelo
+        this.currentPlayer = this.gameState.getCurrentPlayer();
+
+        // Actualizar la UI para reflejar el cambio de turno
+        this.gameView.updateTurnIndicator(this.currentPlayer.getName());
+        this.gameView.enablePassButton(this.currentPlayer == this.humanPlayer);
+        this.gameView.enablePlayerInteraction(this.currentPlayer == this.humanPlayer);
+
+        // Si es el turno de la máquina, iniciar la lógica del turno de la máquina
+        if (this.currentPlayer == this.machinePlayer) {
+            this.scheduleMachineTurn();
+        }
+    }
+
+    /**
+     * Programa que el turno de la máquina ocurra después de un pequeño retraso.
+     */
+    private void scheduleMachineTurn() {
+        // Usar el servicio de ejecución para demorar ligeramente el turno de la máquina
+        this.executorService.schedule(() -> {
+            Platform.runLater(() -> this.executeMachineTurn());
+        }, 1500, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Ejecuta la lógica del turno del jugador máquina.
+     */
+    private void executeMachineTurn() {
+        // Esto debería implementarse para manejar el turno de la máquina
+        // Por ejemplo, la máquina podría necesitar elegir una carta para jugar
+        // o robar una carta del mazo
+        // ...
+    }
+
+    /**
+     * Verifica el estado de UNO para un jugador y le indica a la Vista que actualice el botón.
+     * @param player El jugador a verificar (usualmente el que acaba de terminar o comenzar su turno).
+     */
+    private void checkAndUpdateUnoButton(Player player) {
+        boolean hasOneCard = player.getNumeroCartas() == 1;
+        if (player == this.humanPlayer) {
+            // --- Sugerencia para la Vista ---
+            // La vista debe mostrar u ocultar el botón de UNO para el jugador humano.
+            this.gameView.showUnoButton(hasOneCard);
+        } else {
+            // Para la máquina, podríamos simular la llamada de "UNO"
+            if (hasOneCard) {
+                System.out.println("Controller: La máquina está en estado UNO.");
+                // Simular que la máquina declara UNO
+                // TODO: Agregar lógica para que la máquina declare UNO y posibles penalizaciones
+                // this.gameView.displayMessage("Computadora dice ¡UNO!");
+                // gameState.processUnoDeclaration(this.machinePlayer, true);
+            }
+        }
+    }
 }
