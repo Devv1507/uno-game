@@ -17,6 +17,8 @@ public class Player {
     /** Lista de cartas que tiene el jugador en su mano */
     public List<Card> cards = new ArrayList<>();
 
+    public String name;
+
     /**
      * Constructor por defecto del jugador.
      */
@@ -55,4 +57,6 @@ public class Player {
     public List<Card> getCards() {
         return cards;
     }
+
+    public String getName() { return this.name; }
 }
