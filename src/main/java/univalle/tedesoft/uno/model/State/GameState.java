@@ -97,6 +97,7 @@ public class GameState implements IGameState {
      * @param player El jugador que realizo la jugada.
      * @param card   La carta especifica que fue jugada y ahora está en la cima.
      */
+    @Override
     public boolean playCard(Player player, Card card) {
         player.playCard(card);
         this.discardStack.discard(card);
