@@ -79,4 +79,10 @@ public interface IGameState {
      * @return el objeto que representa al jugador activo en el turno actual.
      */
     Player getCurrentPlayer();
+
+    /**
+     * Invocado cuando un jugador debe elegir un color para continuar el juego.
+     * @param player El jugador que debe seleccionar un color.
+     */
+    void onMustChooseColor(Player player);
 }

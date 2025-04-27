@@ -165,6 +165,25 @@ public class GameState implements IGameState {
     }
 
     /**
+     * Handles the situation when a player must choose a color after playing a wildcard.
+     * If the player is human, this method relies on external control to obtain the player's choice.
+     * If the player is the machine, it selects a color automatically and invokes the respective handler.
+     *
+     * @param playerWhoPlayed The player who has just played a wildcard and needs to choose a color.
+     */
+    @Override
+    public void onMustChooseColor(Player playerWhoPlayed) {
+        if (playerWhoPlayed == this.humanPlayer) {
+            // El controlador debería haber sido notificado para pedirle al usuario humano
+            // (por ahora vamos a dejarlo vacío y que el flujo ya esté controlado desde el Controller después)
+        } else if (playerWhoPlayed == this.machinePlayer) {
+            // La máquina elige un color automáticamente
+            Color chosenColor = this.machinePlayer.chooseColor();
+            this.onColorChosen(chosenColor);
+        }
+    }
+
+    /**
      * Determina quien es el siguiente jugador en el orden actual.
      *
      * @return la instancia que representa el siguiente jugador.
@@ -208,7 +227,11 @@ public class GameState implements IGameState {
      *
      * @param color El color que ahora está activo en el juego.
      */
+    @Override
     public void onColorChosen(Color color) {
+        this.currentValidColor = color;
+        // ya no importa el valor anterior
+        this.currentValidValue = null;
     }
 
     /**
