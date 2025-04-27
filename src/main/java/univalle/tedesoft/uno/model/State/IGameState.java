@@ -55,4 +55,28 @@ public interface IGameState {
      * Determina si la carta dada se puede jugar de acuerdo con las reglas del UNO.
      */
     boolean isValidPlay(Card card);
+
+    /**
+     * Comprueba si el juego ha terminado.
+     * @return true si el juego ha terminado, si no false.
+     */
+    boolean isGameOver();
+
+    /**
+     * Devuelve la carta superior de la pila de descarte en el estado actual del juego.
+     * @return el objeto que representa la carta superior de la pila de descarte.
+     */
+    Card getTopDiscardCard();
+
+    /**
+     * Recupera el color valido en la ronda actual.
+     * @return el color valido actual del juego, que determina el color de las cartas jugables.
+     */
+    Color getCurrentValidColor();
+
+    /**
+     * Recupera el jugador actual cuyo turno esta activo.
+     * @return el objeto que representa al jugador activo en el turno actual.
+     */
+    Player getCurrentPlayer();
 }
