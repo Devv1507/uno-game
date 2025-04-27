@@ -172,7 +172,7 @@ public class GameState implements IGameState {
      * @param numberOfCards La cantidad de cartas que será forzado a tomar.
      */
     @Override
-    public void onForceDraw(Player player, int numberOfCards) {
+    public int forceDraw(Player player, int numberOfCards) {
         int cardsActuallyDrawn = 0; // Contador por si no hay suficientes cartas
 
         for (int i = 0; i < numberOfCards; i++) {
@@ -185,10 +185,8 @@ public class GameState implements IGameState {
             cardsActuallyDrawn++;
             // Notificar por cada carta robada individualmente (si es necesario)
             // onPlayerDrewCard(player, card);  }
-            if (cardsActuallyDrawn > 0) {
-                this.onHandChanged(player);
-            }
         }
+        return cardsActuallyDrawn;
     }
 
     /**
