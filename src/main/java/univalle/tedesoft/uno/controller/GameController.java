@@ -155,18 +155,23 @@ public class GameController {
         }
     }
 
+    @FXML
     public void handleMazoClick(MouseEvent mouseEvent) {
     }
 
+    @FXML
     public void handleUnoButtonAction(ActionEvent actionEvent) {
     }
 
+    @FXML
     public void handleAidButtonAction(ActionEvent actionEvent) {
     }
 
+    @FXML
     public void handleRestartButtonAction(ActionEvent actionEvent) {
     }
 
+    @FXML
     public void handlePassButtonAction(ActionEvent actionEvent) {
     }
 
