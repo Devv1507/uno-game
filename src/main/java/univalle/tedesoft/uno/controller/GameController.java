@@ -93,6 +93,68 @@ public class GameController {
         this.gameView.displayMessage("¡Tu turno, " + this.humanPlayer.getName() + "!");
     }
 
+    /**
+     * Handler para el evento de clic en una carta de la mano del jugador humano.
+     * Intenta jugar la carta seleccionada llamando a la lógica en GameState.
+     *
+     * @param mouseEvent El evento del mouse que contiene información sobre el clic.
+     */
+    @FXML
+    public void handlePlayCardClick(MouseEvent mouseEvent) {
+        // Verificar si el juego ha terminado
+        if (this.gameState.isGameOver()) {
+            return;
+        }
+        // Verificar si es el turno del jugador humano
+        if (this.currentPlayer != this.humanPlayer) {
+            return;
+        }
+        // Obtener la carta seleccionada del ImageView clickeado
+        // TODO: Esto probablemente debería ir en la capa de vista
+        Card selectedCard = this.gameView.getSelectedCardFromEvent(mouseEvent);
+        if (selectedCard == null) {
+            System.err.println("Error: No se pudo obtener la carta del ImageView");
+            return;
+        }
+
+        // Validar si la jugada es legal
+        if (this.gameState.isValidPlay(selectedCard)) {
+            boolean gameEnded = this.gameState.playCard(this.humanPlayer, selectedCard);
+            this.gameState.playCard(this.humanPlayer, selectedCard);
+
+            // TODO: Se debe hacer un procesamiento Post-Jugada junto con GameView
+            // La vista debe actualizar la mano del jugador (quitando la carta),
+            // actualizar la pila de descarte (mostrando la nueva carta),
+            // y actualizar el contador de cartas de la máquina (si cambió).
+            this.updateViewAfterCardPlayed(selectedCard);
+
+            // Verificar si el juego terminó DESPUÉS de actualizar la interfaz
+            if (gameEnded) {
+                this.handleGameOver();
+                return; // Detener el procesamiento del turno
+            }
+
+            // Verificar si el estado de UNO cambió para el jugador
+            this.checkAndUpdateUnoButton(this.humanPlayer);
+
+            // Si se jugó una carta Comodín, GameState indica que se debe elegir un color.
+            if (selectedCard.getColor() == Color.WILD) {
+                // --- Sugerencia para la Vista ---
+                // La vista debe mostrar un diálogo (modal o integrado) con los 4 colores.
+                // Cuando el usuario elija, la vista debe llamar a controller.handleColorChosen(chosenColor).
+                this.gameView.promptForColorChoice();
+                // El avance de turno sucederá *después* de elegir el color en handleColorChosen
+            } else {
+                // Si no es una carta Comodín, proceder al siguiente turno inmediatamente
+                this.handleTurnAdvancement();
+            }
+        } else {
+            // La vista debe mostrar un mensaje indicando por qué la jugada fue inválida
+            Card topCard = this.gameState.getTopDiscardCard();
+            this.gameView.displayInvalidPlayMessage(selectedCard, topCard);
+        }
+    }
+
     public void handleMazoClick(MouseEvent mouseEvent) {
     }
 
