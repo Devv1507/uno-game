@@ -1,6 +1,6 @@
 package univalle.tedesoft.uno.model.State;
 
-import univalle.tedesoft.uno.model.Cards.Card;
+import univalle.tedesoft.uno.model.Cards.*;
 import univalle.tedesoft.uno.model.Decks.Deck;
 import univalle.tedesoft.uno.model.Decks.DiscardPile;
 import univalle.tedesoft.uno.model.Enum.Color;
@@ -97,9 +97,70 @@ public class GameState implements IGameState {
      * @param player El jugador que realizo la jugada.
      * @param card   La carta especifica que fue jugada y ahora está en la cima.
      */
-    public void onCardPlayed(Player player, Card card) {
+    public boolean playCard(Player player, Card card) {
         player.playCard(card);
-        discardStack.discard(card);
+        this.discardStack.discard(card);
+        this.applyCardEffect(card, player);
+        // comprobar si el jugador gano
+        if (player.getNumeroCartas() == 0) {
+            this.gameOver = true;
+            this.winner = player;
+            return true;
+        }
+
+        this.advanceTurn();
+        return false;
+    }
+
+    /**
+     * Determina y avanza al siguiente jugador, manejando los saltos.
+     *
+     * @see #playCard(Player, Card)
+     */
+    private void advanceTurn() {
+        Player nextPlayer = this.getOpponent(this.currentPlayer);
+
+        if (this.skipNextTurn) {
+            // sigue siendo el turno del jugador actual
+            this.skipNextTurn = false;
+        } else {
+            this.currentPlayer = nextPlayer;
+        }
+    }
+
+    /**
+     * Getter del oponente en un juego de 2 jugadores
+     */
+    private Player getOpponent(Player player) {
+        if (player == this.humanPlayer) {
+            return this.machinePlayer;
+        } else {
+            return this.humanPlayer;
+        }
+    }
+
+    /**
+     * Aplica los efectos especiales de las cartas de acción y comodines
+     *
+     * @param card            La carta jugada.
+     * @param playerWhoPlayed El jugador que jugó la carta.
+     * @see #playCard
+     */
+    private void applyCardEffect(Card card, Player playerWhoPlayed) {
+        Player opponent = (playerWhoPlayed == this.humanPlayer) ? this.machinePlayer : this.humanPlayer;
+        if (card instanceof DrawTwoCard) {
+            this.forceDraw(opponent, 2);
+            this.skipNextTurn = true; // El oponente pierde el turno
+        } else if (card instanceof WildDrawFourCard) {
+            this.forceDraw(opponent, 4);
+            this.skipNextTurn = true; // El oponente pierde el turno
+            this.onMustChooseColor(playerWhoPlayed);
+        } else if (card instanceof SkipCard) {
+            this.skipNextTurn = true; // El oponente pierde el turno
+        } else if (card instanceof WildCard) {
+            // La elección de color se maneja fuera, notificamos la necesidad
+            this.onMustChooseColor(playerWhoPlayed);
+        }
     }
 
     /**
