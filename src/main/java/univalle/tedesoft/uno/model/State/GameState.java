@@ -76,17 +76,18 @@ public class GameState implements IGameState {
 
     /**
      * Se llama al inicio, para repartir la primera mano de cartas a ambos jugadores.
-     * @param humanPlayer jugador humano
-     * @param machinePlayer jugador maquina
      */
-    public void dealInitialCards( Player humanPlayer, Player machinePlayer){
-        for(int i = 0; i < 5; i++){
-            Card card1 = initialDeck.takeCard();
-            Card card2 = initialDeck.takeCard();
-            humanPlayer.addCard(card1);
-            machinePlayer.addCard(card2);
+    @Override
+    public void dealInitialCards() {
+        int initialHandSize = 5;
+        for (int i = 0; i < initialHandSize; i++) {
+            Card card1 = this.deck.takeCard();
+            Card card2 = this.deck.takeCard();
+            this.humanPlayer.addCard(card1);
+            this.machinePlayer.addCard(card2);
         }
     }
+
     /**
      * Se llama cuando un jugador ha jugado exitosamente una carta.
      * @param player El jugador que realizo la jugada.
