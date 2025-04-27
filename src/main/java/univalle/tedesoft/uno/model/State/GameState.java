@@ -223,4 +223,28 @@ public class GameState implements IGameState {
             System.out.println("No hay suficientes cartas en la pila de descarte para reciclar.");
         }
     }
+
+
+    /**
+     * Verifica si una carta puede ser jugada legalmente sobre la carta * superior actual de la pila de descarte. * * @param card La carta que se intenta jugar.
+     *
+     * @return true si la jugada es válida, false en caso contrario.
+     */
+    @Override
+    public boolean isValidPlay(Card card) {
+        if (card == null) {
+            return false;
+        }
+        // Comodines siempre son jugables (Wild, WildDrawFour)
+        if (card.getColor() == Color.WILD) {
+            return true;
+        }
+        // Si la carta anterior fue un comodín, solo importa el color elegido
+        if (this.currentValidValue == null) {
+            return card.getColor() == this.currentValidColor;
+        }
+
+        // Reglas normales: Coincidir en color o en valor
+        return card.getColor() == this.currentValidColor || card.getValue() == this.currentValidValue;
+    }
 }
