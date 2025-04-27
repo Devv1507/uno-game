@@ -165,25 +165,6 @@ public class GameState implements IGameState {
     }
 
     /**
-     * Se llama cuando un jugador toma una carta del mazo (ya sea por accion voluntaria
-     * o por efecto de una carta especial, o penalización).
-     *
-     * @param player    El jugador que tomo la carta.
-     * @param drawnCard La carta especifica que fue tomado.
-     */
-    public void onPlayerDrewCard(Player player, Card drawnCard) {
-    }
-
-    /**
-     * Se llama cuando la mano de un jugador ha cambiado (se añadieron o quitaron cartas).
-     * Esto puede ser resultado de jugar, tomar cartas, o ser penalizado.
-     *
-     * @param player El jugador cuya mano necesita ser actualizada en la vista.
-     */
-    public void onHandChanged(Player player) {
-    }
-
-    /**
      * Se llama específicamente cuando un jugador es forzado a tomar cartas
      * debido a un efecto (+2, +4) o una penalización (no decir UNO).
      *
@@ -211,58 +192,12 @@ public class GameState implements IGameState {
     }
 
     /**
-     * Se llama cuando un jugador es saltado (Skip, Reverse, o +2/+4).
-     *
-     * @param skippedPlayer El jugador cuyo turno ha sido saltado.
-     */
-    public void onPlayerSkipped(Player skippedPlayer) {
-    }
-
-    /**
-     * Se llama tras jugar un comodín (Change Color),
-     * indicando que el jugador que la jugó debe elegir un color.
-     *
-     * @param player El jugador que debe realizar la elección.
-     */
-    public void onMustChooseColor(Player player) {
-    }
-
-    /**
      * Se llama después de que un jugador ha elegido un color para un comodín,
      * o al inicio si la primera carta establece un color.
      *
      * @param color El color que ahora está activo en el juego.
      */
     public void onColorChosen(Color color) {
-    }
-
-    /**
-     * Se llama cuando el estado de "tener una sola carta" de un jugador cambia.
-     *
-     * @param player     El jugador afectado.
-     * @param hasOneCard true si el jugador AHORA tiene exactamente una carta,
-     *                   false si tenía una y ahora tiene más (ej. por robar penalización).
-     */
-    public void onUnoStateChanged(Player player, boolean hasOneCard) {
-    }
-
-    /**
-     * Se llama cuando un jugador (humano o máquina) intenta declarar "UNO".
-     *
-     * @param player  El jugador que declaró UNO.
-     * @param success true si la declaración fue válida, false si fue inválida (tenía más de 1 carta).
-     */
-    public void onUnoDeclared(Player player, boolean success) {
-    }
-
-    /**
-     * Se llama cuando el juego termina porque un jugador se ha quedado sin cartas.
-     *
-     * @param winner El jugador que ganó la partida.
-     */
-    @Override
-    public boolean onGameOver(Player winner) {
-        return true;
     }
 
     /**
