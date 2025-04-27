@@ -12,8 +12,7 @@ import univalle.tedesoft.uno.model.Players.Player;
 import java.util.ArrayList;
 
 /**
- * TODO: esta debe ser la clase principal que representa el estado del juego
- * Debe orquestar los turnos, el mazo, los jugadores y la pila de descarte.
+ * Orquesta los turnos, el mazo, los jugadores y la pila de descarte.
  *
  * @author David Esteban Valencia
  * @author Santiago David Guerrero
@@ -32,25 +31,25 @@ public class GameState implements IGameState {
     private final Deck deck;
     private final DiscardPile discardStack;
 
+    private boolean skipNextTurn = false;
+    private boolean gameOver = false;
+    private Player winner = null;
+
     /**
-     * Constructor de GameState, refleja la creacio * * @param humanPlayer La instancia del jugador humano.
-     *
-     * @param machinePlayer La instancia del jugador máquina.
+     * Constructor de GameState
+     * @param humanPlayer La instancia del jugador humano.
+     * @param machinePlayer La instancia del jugador maquina.
      */
     public GameState(HumanPlayer humanPlayer, MachinePlayer machinePlayer) {
         this.humanPlayer = humanPlayer;
         this.machinePlayer = machinePlayer;
-
         this.deck = new Deck();
         this.discardStack = new DiscardPile();
-
-        this.currentPlayer = null;
-        this.currentValidColor = null;
-        this.currentValidValue = null;
     }
 
     /**
-     * Se llama una unica vez cuando el juego ha sido configurado(Funcion que pertenece al controlador de vistas) * (mazo creado, cartas repartidas, primera carta volteada) y está listo para empezar.
+     * Se llama una unica vez cuando el juego ha sido configurado
+     * (mazo creado, cartas repartidas, primera carta volteada) y está listo para empezar.
      */
     @Override
     public void onGameStart() {
@@ -61,14 +60,13 @@ public class GameState implements IGameState {
         Card firstCard = this.deck.takeCard();
         this.discardStack.discard(firstCard);
 
-        // Establecer al jugador humano como el jugador inicial
+        // Establecer valores iniciales
         this.currentPlayer = this.humanPlayer;
-        // Establecer el color y valor válidos iniciales
         this.currentValidColor = firstCard.getColor();
         this.currentValidValue = firstCard.getValue();
-
-        System.out.println("Juego iniciado. Primera carta: " + currentValidValue + " " + currentValidColor);
-        System.out.println("Turno de: " + currentPlayer.getName());
+        this.gameOver = false;
+        this.winner = null;
+        this.skipNextTurn = false;
     }
 
     /**
