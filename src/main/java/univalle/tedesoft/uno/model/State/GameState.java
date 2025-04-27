@@ -48,8 +48,9 @@ public class GameState implements IGameState {
     }
 
     /**
-     * Se llama una unica vez cuando el juego ha sido configurado
-     * (mazo creado, cartas repartidas, primera carta volteada) y está listo para empezar.
+     * Metodo de inicializacion del juego, se invoca una única vez cuando el juego ha sido configurado
+     * y está listo para empezar. Inicializa el estado del juego: baraja el mazo, reparte las cartas,
+     * coloca la primera carta en la pila de descarte y establece los valores iniciales.
      */
     @Override
     public void onGameStart() {
@@ -71,14 +72,15 @@ public class GameState implements IGameState {
 
     /**
      * Se llama cada vez que el turno pasa de un jugador a otro.(Funcion que pertenece al controlador de los eventos)
-     *
      * @param currentPlayer El jugador que ahora tiene el turno.
      */
     public void onTurnChanged(Player currentPlayer) {
     }
 
     /**
-     * Se llama al inicio, para repartir la primera mano de cartas a ambos jugadores.
+     * Reparte la mano inicial de cartas a ambos jugadores.
+     *  Se invoca al inicio de la partida y distribuye una cantidad fija de cartas
+     *  (5 cartas) a cada jugador.
      */
     @Override
     public void dealInitialCards() {
@@ -93,7 +95,6 @@ public class GameState implements IGameState {
 
     /**
      * Se llama cuando un jugador ha jugado exitosamente una carta.
-     *
      * @param player El jugador que realizo la jugada.
      * @param card   La carta especifica que fue jugada y ahora está en la cima.
      */
@@ -115,7 +116,6 @@ public class GameState implements IGameState {
 
     /**
      * Determina y avanza al siguiente jugador, manejando los saltos.
-     *
      * @see #playCard(Player, Card)
      */
     private void advanceTurn() {
@@ -142,8 +142,7 @@ public class GameState implements IGameState {
 
     /**
      * Aplica los efectos especiales de las cartas de acción y comodines
-     *
-     * @param card            La carta jugada.
+     * @param card La carta jugada.
      * @param playerWhoPlayed El jugador que jugó la carta.
      * @see #playCard
      */
@@ -184,7 +183,6 @@ public class GameState implements IGameState {
 
     /**
      * Determina quien es el siguiente jugador en el orden actual.
-     *
      * @return la instancia que representa el siguiente jugador.
      */
     private Player determineNextPlayer() {
@@ -196,9 +194,8 @@ public class GameState implements IGameState {
     }
 
     /**
-     * Se llama específicamente cuando un jugador es forzado a tomar cartas
-     * debido a un efecto (+2, +4) o una penalización (no decir UNO).
-     *
+     * Fuerza a un jugador a tomar cartas ya sea debido a un efecto (+2, +4)
+     * o una penalización (no decir UNO).
      * @param player        El jugador que va a tomar cartas.
      * @param numberOfCards La cantidad de cartas que será forzado a tomar.
      */
@@ -223,7 +220,6 @@ public class GameState implements IGameState {
     /**
      * Se llama después de que un jugador ha elegido un color para un comodín,
      * o al inicio si la primera carta establece un color.
-     *
      * @param color El color que ahora está activo en el juego.
      */
     @Override
@@ -235,7 +231,6 @@ public class GameState implements IGameState {
 
     /**
      * Verifica si el estado UNO de un jugador ha cambiado y llama a onUnoStateChanged.
-     *
      * @param player El jugador a verificar.
      */
     private void checkUnoState(Player player) {
@@ -265,8 +260,8 @@ public class GameState implements IGameState {
 
 
     /**
-     * Verifica si una carta puede ser jugada legalmente sobre la carta * superior actual de la pila de descarte. * * @param card La carta que se intenta jugar.
-     *
+     * Verifica si una carta puede ser jugada legalmente sobre la carta * superior actual de la pila de descarte.
+     * @param card La carta que se intenta jugar.
      * @return true si la jugada es válida, false en caso contrario.
      */
     @Override
@@ -292,29 +287,56 @@ public class GameState implements IGameState {
     }
 
     // --- Getters  ---
+    /**
+     * Retorna el jugador cuyo turno está activo actualmente en el juego.
+     * @return El jugador actual.
+     */
     @Override
     public Player getCurrentPlayer() {
         return this.currentPlayer;
     }
 
+    /**
+     * Retorna el color que actualmente está en efecto para determinar jugadas válidas.
+     * @return El color valido actual.
+     */
     @Override
     public Color getCurrentValidColor() {
         return this.currentValidColor;
     }
 
+    /**
+     * Retorna el valor numérico o especial que actualmente está en efecto,
+     * solo si la ultima carta no fue un comodín.
+     * @return El valor válido actual, o null si se jugó un comodín.
+     */
     public Value getCurrentValidValue() {
         return this.currentValidValue;
     }
 
+    /**
+     * Retorna la instancia del mazo principal de cartas.
+     * @return El mazo de cartas.
+     */
     public Deck getDeck() {
         return this.deck;
     }
 
+    /**
+     * Retorna la carta que actualmente se encuentra en la cima de la pila de descarte.
+     * @return La carta superior de la pila de descarte.
+     */
     @Override
     public Card getTopDiscardCard() {
         return this.discardStack.SuperiorCard();
     }
 
+    /**
+     * Genera una representación en texto legible de una carta específica,
+     * combinando su color (si no es un comodín) y su valor.
+     * @param card La carta de la cual generar la descripción.
+     * @return Una cadena que describe la carta.
+     */
     private String getCardDescription(Card card) {
         String colorPart;
         if (card.getColor() == Color.WILD) {
@@ -327,6 +349,10 @@ public class GameState implements IGameState {
         return cardDescription;
     }
 
+    /**
+     * Verifica si el juego ha terminado.
+     * @return true si el juego ha finalizado, false en caso contrario.
+     */
     public boolean isGameOver() {
         return this.gameOver;
     }
