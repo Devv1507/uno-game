@@ -15,9 +15,8 @@ public interface IGameState {
     /**
      * Se llama una unica vez cuando el juego ha sido configurado
      * (mazo creado, cartas repartidas, primera carta volteada) y está listo para empezar.
-     * @param game La instancia del juego actual.
      */
-    void onGameStart(GameState game);
+    void onGameStart();
 
     /**
      * Se llama cada vez que el turno pasa de un jugador a otro.
@@ -27,10 +26,8 @@ public interface IGameState {
 
     /**
      * Funcion que reparte la primera mano de cartas a los jugadores.
-     * @param humanPlayer jugador humano.
-     * @param machinePlayer jugador maquina controlado por el sistema.
      */
-    void dealInitialCards(Player humanPlayer, Player machinePlayer );
+    void dealInitialCards();
     /**
      * Se llama cuando un jugador ha jugado exitosamente una carta.
      * @param player El jugador que realizo la jugada.
@@ -111,5 +108,5 @@ public interface IGameState {
      * Se llama cuando el mazo se ha agotado, por lo que se tiene que rellenar
      * y barajar usando las cartas de la pila de descarte.
      */
-    void onDeckShuffled();
+    void onEmptyDeck();
 }

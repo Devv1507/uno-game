@@ -9,6 +9,8 @@ import univalle.tedesoft.uno.model.Players.HumanPlayer;
 import univalle.tedesoft.uno.model.Players.MachinePlayer;
 import univalle.tedesoft.uno.model.Players.Player;
 
+import java.util.ArrayList;
+
 /**
  * TODO: esta debe ser la clase principal que representa el estado del juego
  * Debe orquestar los turnos, el mazo, los jugadores y la pila de descarte.
@@ -159,9 +161,25 @@ public class GameState implements IGameState {
      * @param winner El jugador que ganó la partida.
      */
     public void onGameOver(Player winner) {}
+
     /**
-     * Se llama cuando el mazo se ha agotado, por lo que se tiene que rellenar
-     * y barajar usando las cartas de la pila de descarte.
+     * Recicla las cartas de la pila de descarte de vuelta al mazo principal
+     * cuando este se queda vacío.
      */
-    public void onDeckShuffled() {}
+    @Override
+    public void onEmptyDeck() {
+        ArrayList<Card> recycledCards = (ArrayList<Card>) this.discardStack.recycleDeck();
+        if (!recycledCards.isEmpty()) {
+            for (Card card : recycledCards) {
+                // Añade cada carta al final de la pila
+                this.deck.getCards().add(card);
+            }
+            // Barajar el mazo despues de añadir las cartas recicladas
+            this.deck.shuffle();
+            // se relleno y barajo el mazo, se llama al metodo de notificacion
+            this.onEmptyDeck();
+        } else {
+            System.out.println("No hay suficientes cartas en la pila de descarte para reciclar.");
+        }
+    }
 }
