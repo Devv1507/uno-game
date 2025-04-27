@@ -51,5 +51,8 @@ public interface IGameState {
      */
     void onEmptyDeck();
 
+    /**
+     * Determina si la carta dada se puede jugar de acuerdo con las reglas del UNO.
+     */
     boolean isValidPlay(Card card);
 }
