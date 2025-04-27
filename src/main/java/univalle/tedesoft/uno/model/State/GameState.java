@@ -4,6 +4,9 @@ import univalle.tedesoft.uno.model.Cards.Card;
 import univalle.tedesoft.uno.model.Decks.Deck;
 import univalle.tedesoft.uno.model.Decks.DiscardPile;
 import univalle.tedesoft.uno.model.Enum.Color;
+import univalle.tedesoft.uno.model.Enum.Value;
+import univalle.tedesoft.uno.model.Players.HumanPlayer;
+import univalle.tedesoft.uno.model.Players.MachinePlayer;
 import univalle.tedesoft.uno.model.Players.Player;
 
 /**
@@ -14,34 +17,57 @@ import univalle.tedesoft.uno.model.Players.Player;
  * @author Juan Pablo Escamilla
  */
 public class GameState implements IGameState {
+    private final HumanPlayer humanPlayer;
+    private final MachinePlayer machinePlayer;
+
+    private Player currentPlayer;
+    private Color currentValidColor;
+    private Value currentValidValue;
     /**
      * Referencias al mazo de cartas y la pila de cartas descartadas
      */
-    Deck initialDeck = new Deck();
-    DiscardPile discardStack = new DiscardPile();
+    private final Deck deck;
+    private final DiscardPile discardStack;
 
     /**
-     * Constructor de GameState, refleja la creacio
-     * @param mazo referencia al mazo de cartas.
-     * @param pila referencia a la pila de cartas.
+     * Constructor de GameState, refleja la creacio * * @param humanPlayer La instancia del jugador humano.
+     *
+     * @param machinePlayer La instancia del jugador máquina.
      */
-    public GameState(Deck mazo, DiscardPile pila) {
-        this.initialDeck = mazo;
-        this.discardStack = pila;
+    public GameState(HumanPlayer humanPlayer, MachinePlayer machinePlayer) {
+        this.humanPlayer = humanPlayer;
+        this.machinePlayer = machinePlayer;
+
+        this.deck = new Deck();
+        this.discardStack = new DiscardPile();
+
+        this.currentPlayer = null;
+        this.currentValidColor = null;
+        this.currentValidValue = null;
     }
+
     /**
-     * Se llama una unica vez cuando el juego ha sido configurado(Funcion que pertenece al controlador de vistas)
-     * (mazo creado, cartas repartidas, primera carta volteada) y está listo para empezar.
-     * @param game La instancia del juego actual.
+     * Se llama una unica vez cuando el juego ha sido configurado(Funcion que pertenece al controlador de vistas) * (mazo creado, cartas repartidas, primera carta volteada) y está listo para empezar.
      */
-    public void onGameStart(GameState game) {
-        /*
-        Deck initialDeck = new Deck();
-        DiscardPile discardStack = new DiscardPile();
-        discardStack.discard(initialDeck.takeCard());
-        discardStack.SuperiorCard();
-         */
+    @Override
+    public void onGameStart() {
+        this.deck.shuffle();
+        this.dealInitialCards();
+
+        // Sacar una carta y colocarla en la pila de descarte
+        Card firstCard = this.deck.takeCard();
+        this.discardStack.discard(firstCard);
+
+        // Establecer al jugador humano como el jugador inicial
+        this.currentPlayer = this.humanPlayer;
+        // Establecer el color y valor válidos iniciales
+        this.currentValidColor = firstCard.getColor();
+        this.currentValidValue = firstCard.getValue();
+
+        System.out.println("Juego iniciado. Primera carta: " + currentValidValue + " " + currentValidColor);
+        System.out.println("Turno de: " + currentPlayer.getName());
     }
+
     /**
      * Se llama cada vez que el turno pasa de un jugador a otro.(Funcion que pertenece al controlador de los eventos)
      * @param currentPlayer El jugador que ahora tiene el turno.
