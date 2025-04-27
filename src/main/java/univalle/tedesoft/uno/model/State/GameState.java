@@ -165,11 +165,10 @@ public class GameState implements IGameState {
     }
 
     /**
-     * Handles the situation when a player must choose a color after playing a wildcard.
-     * If the player is human, this method relies on external control to obtain the player's choice.
-     * If the player is the machine, it selects a color automatically and invokes the respective handler.
-     *
-     * @param playerWhoPlayed The player who has just played a wildcard and needs to choose a color.
+     * Maneja la situación cuando un jugador debe elegir un color después de jugar una carta comodín.
+     * Si el jugador es humano, se depende de un control externo para obtener la elección del jugador.
+     * Si el jugador es la máquina, selecciona un color automáticamente.
+     * @param playerWhoPlayed El jugador que acaba de jugar una carta comodín y necesita elegir un color.
      */
     @Override
     public void onMustChooseColor(Player playerWhoPlayed) {
