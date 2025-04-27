@@ -109,4 +109,6 @@ public interface IGameState {
      * y barajar usando las cartas de la pila de descarte.
      */
     void onEmptyDeck();
+
+    boolean isValidPlay(Card card);
 }
