@@ -1,6 +1,8 @@
 package univalle.tedesoft.uno.model.Players;
 
+import univalle.tedesoft.uno.model.Cards.Card;
 import univalle.tedesoft.uno.model.Enum.Color;
+import univalle.tedesoft.uno.model.State.IGameState;
 
 import java.util.Random;
 
@@ -20,5 +22,15 @@ public class MachinePlayer extends Player {
         Color[] possibleColors = {Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE};
         int index = this.random.nextInt(possibleColors.length);
         return possibleColors[index];
+    }
+
+    public Card chooseCardToPlay(IGameState gameState) {
+        // encontrar la primera carta jugable
+        for (Card card : this.cards) {
+            if (gameState.isValidPlay(card)) {
+                return card;
+            }
+        }
+        return null;
     }
 }
