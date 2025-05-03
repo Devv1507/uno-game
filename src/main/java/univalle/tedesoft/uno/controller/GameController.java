@@ -303,13 +303,68 @@ public class GameController {
     }
 
     /**
-     * Ejecuta la lógica del turno del jugador máquina.
+     * Ejecuta la lógica del turno de la máquina.
      */
     private void executeMachineTurn() {
-        // Esto debería implementarse para manejar el turno de la máquina
-        // Por ejemplo, la máquina podría necesitar elegir una carta para jugar
-        // o robar una carta del mazo
-        // ...
+        if (this.gameState.isGameOver()) return;
+
+        // 1. Máquina elige qué jugar (lógica en MachinePlayer/GameState)
+        Card cardToPlay = this.machinePlayer.chooseCardToPlay(this.gameState);
+
+        if (cardToPlay != null) {
+            // 2a. Jugar la carta elegida
+            this.gameView.displayMessage("Máquina juega: " + this.gameState.getCardDescription(cardToPlay));
+            boolean gameEnded = this.gameState.playCard(this.machinePlayer, cardToPlay);
+
+            // Actualizar vista DESPUÉS de que el modelo cambió
+            this.updateViewAfterMachinePlay(cardToPlay);
+
+            if (gameEnded) {
+                this.handleGameOver();
+                return;
+            }
+
+            this.checkAndUpdateUnoButtonVisuals(this.machinePlayer); // Comprobar UNO para la máquina
+
+            // Si la máquina jugó comodín, el modelo actualizó currentValidColor y
+            // la vista se actualizó en updateViewAfterMachinePlay. Avanzamos turno.
+            this.handleTurnAdvancement();
+        } else {
+            // 2b. No hay carta jugable, robar una
+            this.gameView.displayMessage("Máquina no tiene jugadas, robando...");
+            Card drawnCard = this.gameState.drawTurnCard(this.machinePlayer);
+
+            // Actualizar contador de cartas de la máquina en la vista
+            this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas());
+
+            if (drawnCard == null) {
+                this.gameView.displayMessage("Máquina no pudo robar (mazo vacío). Pasando.");
+                this.handleTurnAdvancement(); // Avanzar turno si no se pudo robar
+                return;
+            }
+
+            this.gameView.displayMessage("Máquina robó una carta.");
+
+            // 3. Intentar jugar la carta robada
+            if (this.gameState.isValidPlay(drawnCard)) {
+                this.gameView.displayMessage("Máquina juega la carta robada: " + this.gameState.getCardDescription(drawnCard));
+                boolean gameEnded = this.gameState.playCard(this.machinePlayer, drawnCard);
+
+                this.updateViewAfterMachinePlay(drawnCard); // Actualizar vista
+
+                if (gameEnded) {
+                    this.handleGameOver();
+                    return;
+                }
+                this.checkAndUpdateUnoButtonVisuals(this.machinePlayer); // Comprobar UNO de nuevo
+                this.handleTurnAdvancement(); // Avanzar turno después de jugar la robada
+
+            } else {
+                this.gameView.displayMessage("Máquina no puede jugar la carta robada. Pasando turno.");
+                // No se jugó nada más, solo se robó. Avanzamos turno.
+                this.handleTurnAdvancement();
+            }
+        }
     }
 
     /**
