@@ -412,6 +412,97 @@ public class GameView extends Stage {
         });
     }
 
+    /**
+     * Crea un ImageView configurado para una carta específica, cargando su imagen.
+     * @param card La carta a representar.
+     * @return Un ImageView configurado.
+     */
+    private ImageView createCardImageView(Card card) {
+        Image img = getCardImageForCard(card);
+        ImageView imageView = new ImageView(img);
+        imageView.setFitHeight(CARD_HEIGHT);
+        imageView.setPreserveRatio(true);
+        imageView.setSmooth(true); // Mejor calidad visual
+
+        // Añadir Tooltip con la descripción de la carta
+        String description = this.getCardDescription(card); // Usar helper local
+        Tooltip.install(imageView, new Tooltip(description));
+
+        return imageView;
+    }
+
+    /**
+     * Obtiene el objeto Image para una carta dada.
+     * @param card La carta.
+     * @return El objeto Image, o null si hay error.
+     */
+    private Image getCardImageForCard(Card card) {
+        String imageName = this.getCardImageFilename(card);
+        return getCardImageByName(imageName);
+    }
+
+    /**
+     * Obtiene un objeto Image por su nombre de archivo base (sin ruta ni extensión).
+     * @param baseName Nombre base (ej: "RED_5", "deck_of_cards").
+     * @return El objeto Image, o null si no se encuentra o hay error.
+     */
+    private Image getCardImageByName(String baseName) {
+        String resourcePath = CARD_IMAGE_PATH_PREFIX + baseName + CARD_IMAGE_EXTENSION;
+        try {
+            InputStream stream = Main.class.getResourceAsStream(resourcePath);
+            if (stream == null) {
+                // si no se encuentra el recurso, se define una imagen placeholder o null
+                if (!baseName.equals(EMPTY_IMAGE_NAME)) {
+                    return getCardImageByName(EMPTY_IMAGE_NAME);
+                }
+                return null;
+            }
+            Image image = new Image(stream);
+            return image;
+        } catch (Exception e) {
+            System.err.println("Error al cargar la imagen: " + resourcePath);
+            // Devolver una imagen placeholder o null
+            if (!baseName.equals(EMPTY_IMAGE_NAME)) {
+                return getCardImageByName(EMPTY_IMAGE_NAME);
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Construye el nombre de archivo esperado para la imagen de una carta.
+     * @param card La carta que se necesita renderizar.
+     * @return El nombre del archivo (sin extensión), e.g: "5_red", "skip_blue", "change_color".
+     */
+    private String getCardImageFilename(Card card) {
+        if (card == null) {
+            return EMPTY_IMAGE_NAME;
+        }
+
+        Value value = card.getValue();
+        Color color = card.getColor();
+        String colorString;
+        if (color != Color.WILD) {
+            // Si el color NO es WILD, obtener su nombre en minúsculas
+            colorString = color.name().toLowerCase();
+        } else {
+            colorString = "";
+        }
+
+        return switch (value) {
+            case ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE ->
+                    value.ordinal() + "_" + colorString; // Asume 0_red, 1_blue...
+            case SKIP -> "skip_" + colorString;
+            case DRAW_TWO -> "2_wild_draw_" + colorString; // Asume '2_wild_draw_color.png'
+            case WILD -> "change_color";
+            case WILD_DRAW_FOUR -> "4_wild_draw";
+            default -> {
+                System.err.println("Advertencia: Valor de carta desconocido para imagen: " + value);
+                yield EMPTY_IMAGE_NAME;
+            }
+        };
+    }
+
     /** {@inheritDoc} */
     @Override
     public Card getSelectedCardFromEvent(MouseEvent event) {
