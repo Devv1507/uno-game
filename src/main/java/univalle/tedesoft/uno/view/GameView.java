@@ -537,6 +537,24 @@ public class GameView extends Stage {
         };
     }
 
+    /**
+     * Extrae el objeto Card almacenado en el UserData de un ImageView
+     * que disparó un evento de mouse
+     * @param event El MouseEvent.
+     * @return La Card asociada, o null si no se encuentra.
+     */
+    public Card extractCardFromEvent(MouseEvent event) {
+        Object source = event.getSource();
+        if (source instanceof ImageView clickedView) {
+            Object userData = clickedView.getUserData();
+            if (userData instanceof Card card) {
+                return card;
+            }
+        }
+        System.err.println("Advertencia: El evento de clic no provino de un ImageView con una Card.");
+        return null;
+    }
+
     /** {@inheritDoc} */
     @Override
     public Card getSelectedCardFromEvent(MouseEvent event) {
