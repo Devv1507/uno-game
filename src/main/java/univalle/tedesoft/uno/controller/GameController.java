@@ -250,7 +250,6 @@ public class GameController {
         this.startNewGame();
     }
 
-
     /**
      * Maneja la acción del botón "Pasar".
      * @param actionEvent El evento de acción.
@@ -293,7 +292,31 @@ public class GameController {
     }
 
     /**
-     * Programa que el turno de la máquina ocurra después de un pequeño retraso.
+     * Pide a la vista que muestre el diálogo de elección de color y procesa la selección.
+     */
+    private void promptHumanForColorChoice() {
+        Optional<String> result = this.gameView.promptForColorChoice(); // La vista mostrará el diálogo de elección
+        result.ifPresentOrElse(
+                colorName -> {
+                    Color chosenColor = Color.valueOf(colorName);
+                    // Notificar al modelo
+                    this.gameState.onColorChosen(chosenColor);
+                    // Actualizar la vista para reflejar el color elegido en el borde de la pila de descarte
+                    this.gameView.updateDiscardPile(this.gameState.getTopDiscardCard(), chosenColor);
+                    this.gameView.displayMessage("Color cambiado a " + chosenColor.name());
+                    // Avanzar el turno
+                    this.handleTurnAdvancement();
+                },
+                () -> {
+                    // Si el usuario cerró el diálogo sin elegir, lo obligamos a elegir
+                    this.gameView.displayMessage("Debes elegir un color para continuar >:c");
+                    this.promptHumanForColorChoice();
+                }
+        );
+    }
+
+    /**
+     * Programa la ejecución del turno de la máquina con un retraso.
      */
     private void scheduleMachineTurn() {
         // Usar el servicio de ejecución para demorar ligeramente el turno de la máquina
