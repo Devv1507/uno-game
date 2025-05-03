@@ -391,23 +391,88 @@ public class GameController {
     }
 
     /**
-     * Verifica el estado de UNO para un jugador y le indica a la Vista que actualice el botón.
-     * @param player El jugador a verificar (usualmente el que acaba de terminar o comenzar su turno).
+     * Maneja el final de la partida.
+     * Deshabilita botones de interacción, renderiza el dialógo del ganador y habilita el botón de reinicio.
      */
-    private void checkAndUpdateUnoButton(Player player) {
+    private void handleGameOver() {
+        Player winner = this.gameState.getWinner();
+        this.gameView.displayGameOver(winner.getName());
+        this.gameView.disableGameInteractions();
+        this.gameView.enableRestartButton(true);
+
+        // Detener ejecuciones pendientes
+        if (this.executorService != null) {
+            this.executorService.shutdownNow();
+        }
+    }
+
+    /**
+     * Actualiza los componentes de la vista después de que el jugador humano juega una carta.
+     * @param playedCard La carta que jugó el humano.
+     */
+    private void updateViewAfterHumanPlay(Card playedCard) {
+        this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this);
+        this.gameView.updateDiscardPile(
+                this.gameState.getTopDiscardCard(),
+                this.gameState.getCurrentValidColor() // El color efectivo puede cambiar
+        );
+        // Si la máquina fue forzada a robar, su contador debe actualizarse
+        this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas());
+        String playedCardDescription = this.gameState.getCardDescription(playedCard);
+        this.gameView.displayCardPlayedMessage(playedCard, playedCardDescription);
+    }
+
+    /**
+     * Actualiza los componentes de la vista después de que la máquina juega una carta o roba.
+     * @param playedCard La carta que jugó la máquina, o null si solo robó y/o pasó.
+     */
+    private void updateViewAfterMachinePlay(Card playedCard) {
+        // Actualizar contador visual de la máquina
+        this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas());
+        // Actualizar la pila de descarte con la carta jugada (si la hubo) y el color efectivo
+        this.gameView.updateDiscardPile(
+                this.gameState.getTopDiscardCard(),
+                this.gameState.getCurrentValidColor()
+        );
+        // Si el humano fue forzado a robar, actualizar su mano
+        this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this);
+    }
+
+    /**
+     * Habilita o deshabilita los controles del jugador humano dependiendo de su turno.
+     * Habilita el botón de 'Pasar' solo si es turno humano y no está obligado a tomar cartas.
+     */
+    private void updateInteractionBasedOnTurn() {
+        boolean isHumanTurn = (this.currentPlayer == this.humanPlayer);
+        this.gameView.enablePlayerInteraction(isHumanTurn);
+        this.gameView.enablePassButton(isHumanTurn);
+        // TODO: toca revisar como reutilizar este método para el caso de la máquina, que botones queremos deshabilitar o así
+    }
+
+    /**
+     * Verifica si un jugador tiene una sola carta y actualiza la visibilidad
+     * del botón UNO y muestra mensajes relevantes en la vista.
+     * @param player El jugador a verificar.
+     */
+    private void checkAndUpdateUnoButtonVisuals(Player player) {
         boolean hasOneCard = player.getNumeroCartas() == 1;
+
         if (player == this.humanPlayer) {
-            // --- Sugerencia para la Vista ---
-            // La vista debe mostrar u ocultar el botón de UNO para el jugador humano.
-            this.gameView.showUnoButton(hasOneCard);
-        } else {
-            // Para la máquina, podríamos simular la llamada de "UNO"
+            this.gameView.showUnoButton(hasOneCard); // Mostrar/ocultar botón para humano
             if (hasOneCard) {
-                System.out.println("Controller: La máquina está en estado UNO.");
-                // Simular que la máquina declara UNO
-                // TODO: Agregar lógica para que la máquina declare UNO y posibles penalizaciones
-                // this.gameView.displayMessage("Computadora dice ¡UNO!");
-                // gameState.processUnoDeclaration(this.machinePlayer, true);
+                this.gameView.displayMessage("¡Tienes una carta! ¡Presiona UNO!");
+                // TODO: Iniciar temporizador para penalización si no presiona UNO
+                // this.gameView.showUnoPenaltyTimer(true);
+                // startUnoTimer();
+            } else {
+                // Asegurarse de que el timer esté oculto si ya no tiene una carta
+                // this.gameView.showUnoPenaltyTimer(false);
+            }
+        } else {
+            // Lógica de la máquina cuando tiene la opción de decir 'UNO'
+            if (hasOneCard) {
+                this.gameView.displayMessage("¡Máquina dice UNO!"); // Mensaje para la máquina
+                // gameState.declareUno(this.machinePlayer); // Lógica interna de la máquina (si aplica)
             }
         }
     }
