@@ -109,43 +109,107 @@ public class GameView extends Stage {
         });
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void displayInitialState(List<Card> playerHand, Card topDiscardCard, int machineCardCount, String initialPlayerName) {
+    // --- Métodos de Actualización de la Vista Principal ---
+
+    /**
+     * Muestra el estado inicial completo del juego en la UI.
+     */
+    public void displayInitialState(List<Card> playerHand, Card topDiscardCard, Color effectiveColor, int machineCardCount, String initialPlayerName) {
         Platform.runLater(() -> {
-            this.controller.renderPlayerHand(playerHand);
-            this.controller.updateDiscardPile(topDiscardCard);
-            this.controller.machineCardsCountLabel.setText("Cartas Máquina: " + machineCardCount);
-            this.controller.turnLabel.setText("Turno de: " + initialPlayerName);
+            this.updatePlayerHand(playerHand, this.controller); // Renderiza mano inicial
+            this.updateDiscardPile(topDiscardCard, effectiveColor); // Renderiza descarte inicial
+            this.updateMachineHand(machineCardCount); // Renderiza mano máquina inicial
+            this.updateTurnIndicator(initialPlayerName); // Muestra turno inicial
         });
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void updatePlayerHand(List<Card> hand) {
-        Platform.runLater(() -> this.controller.renderPlayerHand(hand));
+    /**
+     * Renderiza (o re-renderiza) la mano del jugador humano en el HBox correspondiente.
+     * @param hand La lista actualizada de cartas del jugador.
+     * @param ctrl La instancia del controlador para asignar el manejador de clics.
+     */
+    public void updatePlayerHand(List<Card> hand, GameController ctrl) {
+        Platform.runLater(() -> {
+            this.controller.playerHandHBox.getChildren().clear(); // Limpiar vista anterior
+            for (Card card : hand) {
+                ImageView cardView = createCardImageView(card);
+                // Asignar el handler del *controlador* al evento de clic
+                cardView.setOnMouseClicked(ctrl::handlePlayCardClick);
+                // Guardar la carta en el ImageView para recuperarla en el handler
+                cardView.setUserData(card);
+                this.controller.playerHandHBox.getChildren().add(cardView);
+            }
+        });
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Actualiza la representación visual de la mano de la máquina (contador y cartas boca abajo).
+     * @param cardCount El número actual de cartas de la máquina.
+     */
     public void updateMachineHand(int cardCount) {
-        Platform.runLater(() -> this.controller.machineCardsCountLabel.setText("Cartas Máquina: " + cardCount));
+        Platform.runLater(() -> {
+            // Actualizar etiqueta del contador
+            this.controller.machineCardsCountLabel.setText("Cartas Máquina: " + cardCount);
+
+            // Renderizar cartas boca abajo (o placeholder)
+            this.controller.machineHandHBox.getChildren().clear();
+            Image backImage = getCardImageByName(EMPTY_IMAGE_NAME); // Usar placeholder
+
+            if (backImage != null) {
+                for (int i = 0; i < cardCount; i++) {
+                    ImageView cardView = new ImageView(backImage);
+                    cardView.setFitHeight(CARD_HEIGHT * 0.8); // Ligeramente más pequeñas quizás
+                    cardView.setPreserveRatio(true);
+                    cardView.setSmooth(true);
+                    // Añadir un pequeño margen si se solapan mucho
+                    HBox.setMargin(cardView, new Insets(0, -CARD_HEIGHT * 0.4, 0, 0)); // Solapamiento
+                    this.controller.machineHandHBox.getChildren().add(cardView);
+                }
+            }
+        });
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void updateDiscardPile(Card card, Color effectiveColor) {
-        Platform.runLater(() -> this.controller.updateDiscardPile(card));
+    /**
+     * Actualiza la imagen mostrada en la pila de descarte y aplica un
+     * indicador de color si es necesario (para comodines).
+     * @param topCard        La carta que está ahora en la cima de la pila.
+     * @param effectiveColor El color que está actualmente en vigor (importante tras un comodín).
+     */
+    public void updateDiscardPile(Card topCard, Color effectiveColor) {
+        Platform.runLater(() -> {
+            Image cardImage;
+            if (topCard != null) {
+                cardImage = getCardImageForCard(topCard);
+            } else {
+                cardImage = getCardImageByName(EMPTY_IMAGE_NAME); // Imagen vacía si no hay carta
+            }
+
+            if (cardImage != null) {
+                this.controller.discardPileImageView.setImage(cardImage);
+            } else {
+                // Fallback si la imagen no se carga
+                this.controller.discardPileImageView.setImage(getCardImageByName(EMPTY_IMAGE_NAME));
+            }
+
+            // Aplicar o quitar el efecto de color basado en `effectiveColor`
+            if (topCard != null && effectiveColor != null &&  (topCard.getColor() == Color.WILD || topCard.getColor() != effectiveColor)) {
+                // Aplicar brillo si es comodín o si el color efectivo difiere (caso raro)
+                this.applyDiscardPileColorIndicator(effectiveColor);
+            } else {
+                // Quitar brillo si es una carta normal o no hay color efectivo
+                this.controller.discardPileImageView.setEffect(null);
+            }
+
+            // Asegurar tamaño estándar
+            this.controller.discardPileImageView.setFitHeight(CARD_HEIGHT);
+            this.controller.discardPileImageView.setPreserveRatio(true);
+        });
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void updateDeckView() {
-        // Implementación futura si se desea mostrar el mazo
-    }
-
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Actualiza la etiqueta que indica de quién es el turno.
+     * @param playerName El nombre del jugador actual.
+     */
     public void updateTurnIndicator(String playerName) {
         Platform.runLater(() -> this.controller.turnLabel.setText("Turno de: " + playerName));
     }
