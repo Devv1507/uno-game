@@ -200,12 +200,45 @@ public class GameController {
         }
     }
 
+    /**
+     * Maneja la acción del botón "UNO!".
+     * @param actionEvent El evento de acción.
+     */
     @FXML
     public void handleUnoButtonAction(ActionEvent actionEvent) {
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer) {
+            return;
+        }
+        // TODO: Aquí iría la lógica para registrar que el jugador dijo "UNO"
+        // Por ahora, solo ocultamos el botón y mostramos mensaje
+        this.gameView.displayMessage("¡Declaraste UNO!");
+        this.gameView.showUnoButton(false);
+        //gameState.declareUno(this.humanPlayer); // TODO: Notificar al modelo
     }
 
+    /**
+     * Maneja la acción del botón de Ayuda ("?").
+     * @param actionEvent El evento de acción.
+     */
     @FXML
     public void handleAidButtonAction(ActionEvent actionEvent) {
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer) {
+            return;
+        }
+
+        List<Card> playableCards = this.humanPlayer.getCards().stream()
+                .filter(this.gameState::isValidPlay)
+                .toList();
+
+        if (playableCards.isEmpty()) {
+            // Si el jugador no tiene cartas jugables, debe tomar del mazo
+            this.gameView.displayMessage("No tienes jugadas válidas. Debes robar del mazo.");
+            this.gameView.highlightDeck(true);
+        } else {
+            // Si tiene cartas jugables, le damos una ayuda de cuales puede jugar
+            this.gameView.highlightPlayableCards(playableCards);
+            this.gameView.displayMessage("Cartas resaltadas son las que puedes jugar.");
+        }
     }
 
     /**
@@ -217,25 +250,20 @@ public class GameController {
         this.startNewGame();
     }
 
-    @FXML
-    public void handlePassButtonAction(ActionEvent actionEvent) {
-    }
 
     /**
-     * Actualiza todos los componentes relevantes de la UI después de que se juega una carta.
+     * Maneja la acción del botón "Pasar".
+     * @param actionEvent El evento de acción.
      */
-    private void updateViewAfterCardPlayed(Card playedCard) {
-        // Actualizar la mano del jugador
-        this.gameView.updatePlayerHand(this.humanPlayer.getCards());
-
-        // Actualizar la pila de descarte
-        this.gameView.updateDiscardPile(
-                this.gameState.getTopDiscardCard(),
-                this.gameState.getCurrentValidColor()
-        );
-
-        // Mostrar mensaje informativo
-        this.gameView.displayCardPlayedMessage(playedCard);
+    @FXML
+    public void handlePassButtonAction(ActionEvent actionEvent) {
+        // Ignorar si no es turno del humano o el juego terminó
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer) {
+            return;
+        }
+        this.gameView.clearPlayerHandHighlights();
+        this.gameView.displayMessage("Turno pasado.");
+        this.handleTurnAdvancement();
     }
 
     // --- Lógica del Juego ---
