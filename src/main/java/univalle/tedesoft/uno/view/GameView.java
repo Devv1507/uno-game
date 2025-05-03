@@ -299,17 +299,117 @@ public class GameView extends Stage {
     public void displayGameOver(String winnerName) {
         this.displayMessage("¡Juego terminado! Ganador: " + winnerName + ". Reinicia para jugar de nuevo.");
     }
-    
-    /** {@inheritDoc} */
-    @Override
-    public void promptForColorChoice() {
-        Platform.runLater(this.controller::showColorChoiceDialog);
+
+    // --- Métodos para Feedback Visual ---
+
+    /**
+     * Muestra el diálogo para que el jugador elija un color después de jugar un comodín.
+     * @return Un Optional<String> con el nombre del color elegido (e.g. "RED"), o Optional.empty() si el diálogo fue cancelado.
+     */
+    public Optional<String> promptForColorChoice() {
+        List<Color> choices = List.of(Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE);
+        List<String> choiceNames = choices.stream()
+                .map(Enum::name) // Obtiene "RED", "YELLOW", etc.
+                .collect(Collectors.toList());
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(choiceNames.get(0), choiceNames);
+        dialog.setTitle("Elegir Color");
+        dialog.setHeaderText("Has jugado un comodín.");
+        dialog.setContentText("Elige el próximo color:");
+
+        // Mostrar el diálogo y esperar la respuesta del usuario
+        return dialog.showAndWait();
     }
 
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Resalta visualmente las cartas jugables en la mano del jugador y atenúa las no jugables.
+     * @param playableCards La lista de cartas que son válidas para jugar.
+     */
+    public void highlightPlayableCards(List<Card> playableCards) {
+        Platform.runLater(() -> {
+            this.clearPlayerHandHighlights(); // Limpia efectos anteriores
+
+            DropShadow playableGlow = new DropShadow();
+            playableGlow.setColor(javafx.scene.paint.Color.LIGHTGREEN);
+            playableGlow.setWidth(20);
+            playableGlow.setHeight(20);
+            playableGlow.setSpread(0.6);
+
+            for (Node node : this.controller.playerHandHBox.getChildren()) {
+                if (node instanceof ImageView) {
+                    ImageView imageView = (ImageView) node;
+                    Object cardData = imageView.getUserData();
+                    if (cardData instanceof Card) {
+                        Card card = (Card) cardData;
+                        if (playableCards.contains(card)) {
+                            imageView.setEffect(playableGlow); // Aplica brillo a jugables
+                            imageView.setOpacity(1.0);       // Opacidad normal
+                        } else {
+                            imageView.setEffect(null);       // Sin brillo
+                            imageView.setOpacity(0.6);       // Atenuar no jugables
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * Elimina cualquier efecto de resaltado de las cartas en la mano del jugador.
+     */
+    public void clearPlayerHandHighlights() {
+        Platform.runLater(() -> {
+            for (Node node : this.controller.playerHandHBox.getChildren()) {
+                node.setEffect(null); // Quita cualquier efecto (DropShadow, etc.)
+                node.setOpacity(1.0); // Restaura opacidad completa
+            }
+        });
+    }
+
+    /**
+     * Resalta o quita el resaltado del mazo para indicar si se debe robar.
+     * @param highlight true para resaltar, false para quitar el resaltado.
+     */
+    public void highlightDeck(boolean highlight) {
+        Platform.runLater(() -> {
+            if (highlight) {
+                DropShadow deckGlow = new DropShadow();
+                deckGlow.setColor(javafx.scene.paint.Color.YELLOW);
+                deckGlow.setWidth(25);
+                deckGlow.setHeight(25);
+                deckGlow.setSpread(0.7);
+                this.controller.deckImageView.setEffect(deckGlow);
+            } else {
+                this.controller.deckImageView.setEffect(null);
+            }
+        });
+    }
+
+    /**
+     * Reinicia todos los componentes visuales de la UI a su estado inicial para una nueva partida.
+     */
     public void resetUIForNewGame() {
-        Platform.runLater(this.controller::resetUI);
+        Platform.runLater(() -> {
+            this.controller.playerHandHBox.getChildren().clear();
+            this.controller.machineHandHBox.getChildren().clear();
+            this.controller.messageLabel.setText("Iniciando nueva partida...");
+            this.controller.turnLabel.setText("Turno de:");
+            this.controller.machineCardsCountLabel.setText("Cartas Máquina: ?");
+
+            // Restablecer imágenes por defecto
+            this.initializeUI();
+
+            // Ocultar y deshabilitar botones relevantes
+            this.controller.unoButton.setVisible(false);
+            this.controller.unoTimerIndicator.setVisible(false);
+            this.controller.passButton.setDisable(true);
+            this.controller.aidButton.setDisable(true);
+            this.controller.restartButton.setDisable(false);
+
+            // Limpiar resaltados
+            this.clearPlayerHandHighlights();
+            this.highlightDeck(false);
+        });
     }
 
     /** {@inheritDoc} */
