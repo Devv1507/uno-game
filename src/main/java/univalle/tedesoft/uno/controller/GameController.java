@@ -159,8 +159,45 @@ public class GameController {
         }
     }
 
+    /**
+     * Maneja el clic en el mazo para robar una carta.
+     * @param mouseEvent El evento del mouse.
+     */
     @FXML
     public void handleMazoClick(MouseEvent mouseEvent) {
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer) {
+            if (this.gameState.isGameOver()) {
+                this.gameView.displayMessage("El juego ha terminado.");
+            } else {
+                this.gameView.displayMessage("Espera tu turno.");
+            }
+            return;
+        }
+        // Limpiar resaltados
+        this.gameView.clearPlayerHandHighlights();
+        // Quitar resaltado del mazo si lo había
+        this.gameView.highlightDeck(false);
+        // Robar carta del modelo
+        Card drawnCard = this.gameState.drawTurnCard(this.humanPlayer);
+        // Actualizar vista de la mano
+        this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this);
+
+        if (drawnCard != null) {
+            this.gameView.displayMessage("Robaste: " + this.gameState.getCardDescription(drawnCard));
+            // Comprobar si la carta robada se puede jugar
+            if (this.gameState.isValidPlay(drawnCard)) {
+                this.gameView.displayMessage("¡Robaste una carta jugable! Puedes jugarla o pasar.");
+                this.gameView.enablePassButton(true);
+            } else {
+                // Pasar turno automáticamente si no es jugable
+                // TODO: evaluar si esto es válido de acuerdo a los requerimientos
+                this.gameView.displayMessage("No puedes jugar la carta robada. Pasando turno...");
+                this.handleTurnAdvancement();
+            }
+        } else {
+            this.gameView.displayMessage("No hay más cartas para robar. Pasando turno...");
+            this.handleTurnAdvancement();
+        }
     }
 
     @FXML
@@ -201,30 +238,27 @@ public class GameController {
         this.gameView.displayCardPlayedMessage(playedCard);
     }
 
-    /**
-     * Maneja el fin del juego.
-     */
-    private void handleGameOver() {
-        Player winner = this.gameState.winner;
-        this.gameView.displayGameOver(winner.getName());
-        this.gameView.disableGameInteractions();
-        // Habilitar botón de reinicio u otras opciones post-juego
-        this.gameView.enableRestartButton(true);
-    }
+    // --- Lógica del Juego ---
 
     /**
-     * Avanza al turno del siguiente jugador.
+     * Avanza al siguiente turno, actualiza la UI y maneja el turno de la máquina si corresponde.
      */
     private void handleTurnAdvancement() {
-        // Obtener el jugador actual desde el modelo
+        // Limpiar ayudas visuales
+        this.gameView.clearPlayerHandHighlights();
+        this.gameView.highlightDeck(false);
+
+        // Traer al jugador actual
         this.currentPlayer = this.gameState.getCurrentPlayer();
-
-        // Actualizar la UI para reflejar el cambio de turno
+        // Actualizar indicador de turno en la vista
         this.gameView.updateTurnIndicator(this.currentPlayer.getName());
-        this.gameView.enablePassButton(this.currentPlayer == this.humanPlayer);
-        this.gameView.enablePlayerInteraction(this.currentPlayer == this.humanPlayer);
+        this.gameView.displayMessage("Turno de " + this.currentPlayer.getName());
+        // Habilitar/deshabilitar controles según de quién sea el turno
+        this.updateInteractionBasedOnTurn();
+        // Comprobar estado UNO para el jugador que inicia su turno
+        this.checkAndUpdateUnoButtonVisuals(this.currentPlayer);
 
-        // Si es el turno de la máquina, iniciar la lógica del turno de la máquina
+        // Si es el turno de la máquina, programar su ejecución
         if (this.currentPlayer == this.machinePlayer) {
             this.scheduleMachineTurn();
         }
