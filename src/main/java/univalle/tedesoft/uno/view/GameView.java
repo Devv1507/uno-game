@@ -214,34 +214,57 @@ public class GameView extends Stage {
         Platform.runLater(() -> this.controller.turnLabel.setText("Turno de: " + playerName));
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void displayMessage(String message) {
-        Platform.runLater(() -> this.controller.messageLabel.setText(message));
+    // --- Métodos de Control de la UI ---
+
+    /**
+     * Habilita o deshabilita la interacción del jugador con sus cartas, el mazo y botones relevantes
+     * @param enable true para habilitar, false para deshabilitar.
+     */
+    public void enablePlayerInteraction(boolean enable) {
+        Platform.runLater(() -> {
+            this.controller.playerHandHBox.setDisable(!enable);
+            this.controller.deckImageView.setDisable(!enable);
+            this.controller.aidButton.setDisable(!enable);
+        });
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void showUnoButton(boolean show) {
-        Platform.runLater(() -> this.controller.unoButton.setVisible(show));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void showUnoPenaltyTimer(boolean show) {
-        Platform.runLater(() -> this.controller.unoTimerIndicator.setVisible(show));
-    }
-
-    /** {@inheritDoc} */
-    @Override
+    /**
+     * Habilita o deshabilita el botón de "Pasar"
+     * @param enable true para habilitar, false para deshabilitar.
+     */
     public void enablePassButton(boolean enable) {
         Platform.runLater(() -> this.controller.passButton.setDisable(!enable));
     }
 
+    /**
+     * Muestra u oculta el botón "UNO!".
+     * @param show true para mostrar, false para ocultar.
+     */
+    public void showUnoButton(boolean show) {
+        Platform.runLater(() -> this.controller.unoButton.setVisible(show));
+    }
+
+    /**
+     * Muestra u oculta el indicador de progreso/timer para la penalización de UNO.
+     * @param show true para mostrar, false para ocultar.
+     */
+    public void showUnoPenaltyTimer(boolean show) {
+        // TODO: implementar el temporizador de penalización
+        Platform.runLater(() -> this.controller.unoTimerIndicator.setVisible(show));
+    }
+
+    /**
+     * Habilita o deshabilita el botón de "Reiniciar".
+     * @param enable true para habilitar, false para deshabilitar.
+     */
+    public void enableRestartButton(boolean enable) {
+        Platform.runLater(() -> this.controller.restartButton.setDisable(!enable));
+    }
+
     /** {@inheritDoc} */
     @Override
-    public void enablePlayerInteraction(boolean enable) {
-        Platform.runLater(() -> this.controller.setPlayerInteractionEnabled(enable));
+    public void displayMessage(String message) {
+        Platform.runLater(() -> this.controller.messageLabel.setText(message));
     }
 
     /** {@inheritDoc} */
@@ -305,11 +328,5 @@ public class GameView extends Stage {
     public void disableGameInteractions() {
         enablePlayerInteraction(false);
         enablePassButton(false);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void enableRestartButton(boolean enable) {
-        Platform.runLater(() -> this.controller.restartButton.setDisable(!enable));
     }
 }
