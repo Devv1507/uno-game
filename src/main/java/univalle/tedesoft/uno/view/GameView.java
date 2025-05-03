@@ -503,6 +503,22 @@ public class GameView extends Stage {
         };
     }
 
+    /**
+     * Aplica un efecto visual (borde brillante) a la pila de descarte para indicar el color elegido para un comodín.
+     * @param color El color elegido.
+     */
+    private void applyDiscardPileColorIndicator(Color color) {
+        DropShadow borderGlow = new DropShadow();
+        borderGlow.setOffsetY(0f);
+        borderGlow.setOffsetX(0f);
+        borderGlow.setColor(getColorFx(color));
+        borderGlow.setWidth(30);
+        borderGlow.setHeight(30);
+        borderGlow.setSpread(0.7);
+
+        this.controller.discardPileImageView.setEffect(borderGlow);
+    }
+
     /** {@inheritDoc} */
     @Override
     public Card getSelectedCardFromEvent(MouseEvent event) {
