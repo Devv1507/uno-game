@@ -261,6 +261,18 @@ public class GameView extends Stage {
         Platform.runLater(() -> this.controller.restartButton.setDisable(!enable));
     }
 
+    /**
+     * Deshabilita todos los controles principales del juego (usado al final de la partida).
+     */
+    public void disableGameInteractions() {
+        Platform.runLater(() -> {
+            this.enablePlayerInteraction(false);
+            this.enablePassButton(false);
+            this.showUnoButton(false);
+            this.controller.aidButton.setDisable(true);
+        });
+    }
+
     // --- Métodos para Dialogos ---
 
     /**
@@ -553,12 +565,5 @@ public class GameView extends Stage {
         }
         System.err.println("Advertencia: El evento de clic no provino de un ImageView con una Card.");
         return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void disableGameInteractions() {
-        enablePlayerInteraction(false);
-        enablePassButton(false);
     }
 }
