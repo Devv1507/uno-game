@@ -2,23 +2,40 @@ package univalle.tedesoft.uno.view;
 
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.Tooltip;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import univalle.tedesoft.uno.Main;
 import univalle.tedesoft.uno.controller.GameController;
 import univalle.tedesoft.uno.model.Cards.Card;
 import univalle.tedesoft.uno.model.Enum.Color;
+import univalle.tedesoft.uno.model.Enum.Value;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
- * Clase GameView que representa la vista principal del juego UNO.
- * Implementa la interfaz IGameView y actúa como contenedor de la UI de JavaFX.
+ * Esta clase representa la vista principal del juego UNO.
+ * Es responsable de toda la manipulación de la UI de JavaFX,
+ * incluyendo la renderización de cartas, actualización de etiquetas,
+ * manejo de efectos visuales y presentación de diálogos.
+ * @author Juan Pablo Escamilla
+ * @author David Esteban Valencia
+ * @author Santiago David Guerrero
  */
-public class GameView extends Stage implements IGameView {
-
+public class GameView extends Stage {
+    // Referencia al controlador
     private final GameController controller;
 
     /**
@@ -47,17 +64,43 @@ public class GameView extends Stage implements IGameView {
     private GameView() throws IOException {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("game-view.fxml"));
         Scene scene = new Scene(loader.load());
-        this.controller = loader.getController();
+        this.controller = loader.getController(); // Obtiene la instancia del controlador creada por FXML
+
+        if (this.controller != null) {
+            this.controller.setGameView(this); // Inyecta esta vista en el controlador
+        } else {
+            throw new IOException("No se pudo obtener el GameController desde el FXML");
+        }
+
         this.setTitle("UNO! Game");
         this.setScene(scene);
     }
 
     /**
-     * Devuelve el controlador asociado a la vista.
-     * @return instancia del controlador GameController
+     * Inicializa la apariencia visual base de la interfaz de usuario.
+     * Configura elementos visuales estáticos previo a iniciar una partida.
+     * Establece las imágenes por defecto para el mazo y la pila de descarte,
+     * asegurando que no tengan efectos visuales activos como brillos de color.
      */
-    public GameController getController() {
-        return this.controller;
+    public void initializeUI() {
+        Platform.runLater(() -> {
+            // Configurar imagen inicial del mazo
+            Image backImage = getCardImageByName(BACK_CARD_IMAGE_NAME);
+            if (backImage != null) {
+                this.controller.deckImageView.setImage(backImage);
+                this.controller.deckImageView.setFitHeight(CARD_HEIGHT);
+                this.controller.deckImageView.setPreserveRatio(true);
+            }
+
+            // Configurar imagen inicial (vacía) de la pila de descarte
+            Image emptyImage = getCardImageByName(EMPTY_IMAGE_NAME);
+            if (emptyImage != null) {
+                this.controller.discardPileImageView.setImage(emptyImage);
+                this.controller.discardPileImageView.setFitHeight(CARD_HEIGHT);
+                this.controller.discardPileImageView.setPreserveRatio(true);
+                this.controller.discardPileImageView.setEffect(null); // Sin efectos iniciales
+            }
+        });
     }
 
     /** {@inheritDoc} */
