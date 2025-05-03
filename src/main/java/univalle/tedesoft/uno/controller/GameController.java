@@ -319,10 +319,11 @@ public class GameController {
      * Programa la ejecución del turno de la máquina con un retraso.
      */
     private void scheduleMachineTurn() {
-        // Usar el servicio de ejecución para demorar ligeramente el turno de la máquina
+        this.gameView.displayMessage("Máquina pensando...");
+        // Usar el servicio de ejecución para demorar el turno de la máquina
         this.executorService.schedule(() -> {
-            Platform.runLater(() -> this.executeMachineTurn());
-        }, 1500, TimeUnit.MILLISECONDS);
+            Platform.runLater(this::executeMachineTurn); // Ejecutar en el hilo de JavaFX
+        }, 1500, TimeUnit.MILLISECONDS); // Retraso de 1.5 segundos
     }
 
     /**
