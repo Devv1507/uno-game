@@ -261,41 +261,49 @@ public class GameView extends Stage {
         Platform.runLater(() -> this.controller.restartButton.setDisable(!enable));
     }
 
-    /** {@inheritDoc} */
-    @Override
+    // --- Métodos para Dialogos ---
+
+    /**
+     * Muestra un mensaje informativo en la etiqueta de mensajes.
+     * @param message El texto a mostrar.
+     */
     public void displayMessage(String message) {
         Platform.runLater(() -> this.controller.messageLabel.setText(message));
     }
 
+    /**
+     * Muestra un mensaje indicando que la jugada intentada es inválida.
+     * @param attempted     La carta que se intentó jugar.
+     * @param topCard       La carta actual en la cima del descarte.
+     * @param attemptedDesc Descripción textual de la carta intentada.
+     * @param topCardDesc   Descripción textual de la carta en cima.
+     */
+    public void displayInvalidPlayMessage(Card attempted, Card topCard, String attemptedDesc, String topCardDesc) {
+        this.displayMessage("Jugada inválida: No se puede jugar '" + attemptedDesc +
+                "' sobre '" + topCardDesc + "'.");
+    }
+
+    /**
+     * Muestra un mensaje indicando qué carta jugó un jugador.
+     * @param card            La carta jugada.
+     * @param cardDescription Descripción textual de la carta.
+     */
+    public void displayCardPlayedMessage(Card card, String cardDescription) {
+        this.displayMessage("Se jugó: " + cardDescription);
+    }
+
+    /**
+     * Muestra un mensaje de fin de juego indicando el ganador.
+     * @param winnerName El nombre del jugador ganador.
+     */
+    public void displayGameOver(String winnerName) {
+        this.displayMessage("¡Juego terminado! Ganador: " + winnerName + ". Reinicia para jugar de nuevo.");
+    }
+    
     /** {@inheritDoc} */
     @Override
     public void promptForColorChoice() {
         Platform.runLater(this.controller::showColorChoiceDialog);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void displayPlayerSkippedMessage(String playerName) {
-        displayMessage(playerName + " fue saltado.");
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void displayDrawMessage(String playerName, int count) {
-        displayMessage(playerName + " robó " + count + " carta(s).");
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void displayUnoDeclaredMessage(String playerName, boolean success) {
-        String msg = success ? playerName + " declaró ¡UNO! correctamente." : playerName + " falló al declarar ¡UNO!";
-        displayMessage(msg);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void displayGameOver(String winnerName) {
-        displayMessage("Juego terminado. Ganador: " + winnerName);
     }
 
     /** {@inheritDoc} */
@@ -308,19 +316,6 @@ public class GameView extends Stage {
     @Override
     public Card getSelectedCardFromEvent(MouseEvent event) {
         return this.controller.extractCardFromEvent(event);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void displayCardPlayedMessage(Card card) {
-        displayMessage("Carta jugada: " + card.getColor() + " " + card.getValue());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void displayInvalidPlayMessage(Card attempted, Card topCard) {
-        displayMessage("No se puede jugar " + attempted.getColor() + " " + attempted.getValue()
-                + ". Carta en cima: " + topCard.getColor() + " " + topCard.getValue());
     }
 
     /** {@inheritDoc} */
