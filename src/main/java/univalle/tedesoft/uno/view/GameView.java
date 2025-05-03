@@ -566,4 +566,23 @@ public class GameView extends Stage {
         System.err.println("Advertencia: El evento de clic no provino de un ImageView con una Card.");
         return null;
     }
+
+    /**
+     * Genera una descripción textual simple de una carta (Color + Valor).
+     * @param card La carta.
+     * @return Descripción textual.
+     */
+    private String getCardDescription(Card card) {
+        if (card == null) {
+            return "Ninguna";
+        }
+        String colorPart;
+        if (card.getColor() != Color.WILD) {
+            colorPart = card.getColor().name() + " ";
+        } else {
+            colorPart = "";
+        }
+        String valuePart = card.getValue().name().replace("_", " ");
+        return colorPart + valuePart;
+    }
 }
