@@ -519,6 +519,24 @@ public class GameView extends Stage {
         this.controller.discardPileImageView.setEffect(borderGlow);
     }
 
+    /**
+     * Convierte nuestro Enum Color del modelo a javafx.scene.paint.Color para la UI.
+     * @param unoColor El color del Enum del modelo.
+     * @return El color correspondiente de JavaFX.
+     */
+    private javafx.scene.paint.Color getColorFx(Color unoColor) {
+        if (unoColor == null) {
+            return javafx.scene.paint.Color.BLACK;
+        }
+        return switch (unoColor) {
+            case RED -> javafx.scene.paint.Color.RED;
+            case YELLOW -> javafx.scene.paint.Color.YELLOW;
+            case GREEN -> javafx.scene.paint.Color.LIMEGREEN;
+            case BLUE -> javafx.scene.paint.Color.DEEPSKYBLUE;
+            case WILD -> javafx.scene.paint.Color.LIGHTGRAY;
+        };
+    }
+
     /** {@inheritDoc} */
     @Override
     public Card getSelectedCardFromEvent(MouseEvent event) {
