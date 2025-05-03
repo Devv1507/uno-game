@@ -1,97 +1,112 @@
 package univalle.tedesoft.uno.controller;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
+import univalle.tedesoft.uno.model.Cards.Card;
+import univalle.tedesoft.uno.model.Enum.Color;
+import univalle.tedesoft.uno.model.Players.HumanPlayer;
+import univalle.tedesoft.uno.model.Players.MachinePlayer;
+import univalle.tedesoft.uno.model.Players.Player;
+import univalle.tedesoft.uno.model.State.GameState;
+import univalle.tedesoft.uno.model.State.IGameState;
+import univalle.tedesoft.uno.view.GameView;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class GameController {
-    @FXML
-    public Label machineCardsCountLabel;
-    @FXML
-    public HBox machineHandHBox;
-    @FXML
-    public ImageView deckImageView;
-    @FXML
-    public ImageView discardPileImageView;
-    @FXML
-    public Label messageLabel;
-    @FXML
-    public Label turnLabel;
-    @FXML
-    public HBox playerHandHBox;
-    @FXML
-    public Button passButton;
-    @FXML
-    public Button unoButton;
-    @FXML
-    public ProgressIndicator unoTimerIndicator;
-    @FXML
-    public Button restartButton;
-    @FXML
-    public Button aidButton;
+    @FXML public Label machineCardsCountLabel;
+    @FXML public HBox machineHandHBox;
+    @FXML public ImageView deckImageView;
+    @FXML public ImageView discardPileImageView;
+    @FXML public Label messageLabel;
+    @FXML public Label turnLabel;
+    @FXML public HBox playerHandHBox;
+    @FXML public Button passButton;
+    @FXML public Button unoButton;
+    @FXML public ProgressIndicator unoTimerIndicator;
+    @FXML public Button restartButton;
+    @FXML public Button aidButton;
 
+    // --- Model ---
     private IGameState gameState;
-    private IGameView gameView;
-
     private HumanPlayer humanPlayer;
     private MachinePlayer machinePlayer;
-
     /**
      * Representa al jugador cuyo turno esta activo en el juego.
      * Se actualiza dinamicamente durante el juego a medida que los jugadores se turnan.
      */
     private Player currentPlayer;
-    // --- Utilities ---
+
+    // --- View ---
+    private GameView gameView;
+
+    // --- Threads ---
     private ScheduledExecutorService executorService;
 
-
-    @Override
+    @FXML
     public void initialize() {
         this.humanPlayer = new HumanPlayer("Pepito");
         this.machinePlayer = new MachinePlayer();
 
-        this.messageLabel.setText("Bienvenido a UNO");
-        this.unoButton.setVisible(false);
-        this.unoTimerIndicator.setVisible(false);
-        this.passButton.setDisable(true);
-//        this.deckImageView.setImage(this.getCardBackImage());
-
-        this.startNewGame();
+        this.executorService = Executors.newSingleThreadScheduledExecutor();
     }
 
     /**
-     *
+     * Establece la referencia a la GameView y arranca el juego si no se ha iniciado.
+     * Llamado por GameView después de cargar el FXML.
+     * @param gameView La instancia de GameView.
+     */
+    public void setGameView(GameView gameView) {
+        this.gameView = gameView;
+        // Ahora que la vista está lista, podemos configurar su estado inicial
+        this.gameView.initializeUI(); // Configura imágenes por defecto, etc.
+
+        // Si el estado del juego aún no existe, iniciar una nueva partida
+        if (this.gameState == null) {
+            this.startNewGame();
+        }
+    }
+
+    /**
+     * Inicia o reinicia una nueva partida.
      */
     private void startNewGame() {
+        // Detener tareas programadas anteriores si existen
         if (this.executorService != null && !this.executorService.isShutdown()) {
             this.executorService.shutdownNow();
         }
         this.executorService = Executors.newSingleThreadScheduledExecutor();
 
+        // Crear nuevo estado de juego y inicializarlo
         this.gameState = new GameState(this.humanPlayer, this.machinePlayer);
         this.gameState.onGameStart();
-
         this.currentPlayer = this.gameState.getCurrentPlayer();
 
-        // TODO: actualizar GameView para reflejar el estado inicial en la UI
-        // Indicar a la vista que muestre la configuración inicial
+        // Pedir a la vista que se reinicie y muestre el estado inicial
         this.gameView.resetUIForNewGame();
         this.gameView.displayInitialState(
                 this.humanPlayer.getCards(),
                 this.gameState.getTopDiscardCard(),
+                this.gameState.getCurrentValidColor(), // Pasar color efectivo inicial
                 this.machinePlayer.getNumeroCartas(),
                 this.currentPlayer.getName()
         );
-        this.gameView.enablePassButton(this.currentPlayer == this.humanPlayer);
-        this.gameView.showUnoButton(false);
-        this.gameView.enablePlayerInteraction(this.currentPlayer == this.humanPlayer);
+        this.updateInteractionBasedOnTurn();
         this.gameView.displayMessage("¡Tu turno, " + this.humanPlayer.getName() + "!");
+        this.gameView.enableRestartButton(true);
     }
+
+    // --- EventHandlers FXML ---
 
     /**
      * Handler para el evento de clic en una carta de la mano del jugador humano.
