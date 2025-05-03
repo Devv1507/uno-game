@@ -37,6 +37,12 @@ import java.util.stream.Collectors;
 public class GameView extends Stage {
     // Referencia al controlador
     private final GameController controller;
+    // Constantes de UI
+    private static final double CARD_HEIGHT = 100.0;
+    private static final String CARD_IMAGE_PATH_PREFIX = "/univalle/tedesoft/uno/images/";
+    private static final String CARD_IMAGE_EXTENSION = ".png";
+    private static final String BACK_CARD_IMAGE_NAME = "deck_of_cards";
+    private static final String EMPTY_IMAGE_NAME = "card_uno"; // Placeholder
 
     /**
      * Clase interna para implementar el patrón Singleton.
