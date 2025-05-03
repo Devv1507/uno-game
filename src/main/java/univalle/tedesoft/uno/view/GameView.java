@@ -532,7 +532,7 @@ public class GameView extends Stage {
     }
 
     /**
-     * Convierte nuestro Enum Color del modelo a javafx.scene.paint.Color para la UI.
+     * Convierte el Enum Color del modelo al utilizado por la librería javafx.scene.paint.Color para la UI.
      * @param unoColor El color del Enum del modelo.
      * @return El color correspondiente de JavaFX.
      */
