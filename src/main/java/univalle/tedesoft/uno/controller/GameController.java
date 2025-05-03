@@ -109,64 +109,53 @@ public class GameController {
     // --- EventHandlers FXML ---
 
     /**
-     * Handler para el evento de clic en una carta de la mano del jugador humano.
-     * Intenta jugar la carta seleccionada llamando a la lógica en GameState.
-     *
-     * @param mouseEvent El evento del mouse que contiene información sobre el clic.
+     * Maneja el clic en una carta de la mano del jugador.
+     * @param mouseEvent El evento del mouse.
      */
     @FXML
     public void handlePlayCardClick(MouseEvent mouseEvent) {
-        // Verificar si el juego ha terminado
-        if (this.gameState.isGameOver()) {
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer) {
+            this.gameView.displayMessage(this.gameState.isGameOver() ? "El juego ha terminado." : "Espera tu turno.");
             return;
         }
-        // Verificar si es el turno del jugador humano
-        if (this.currentPlayer != this.humanPlayer) {
-            return;
-        }
-        // Obtener la carta seleccionada del ImageView clickeado
-        // TODO: Esto probablemente debería ir en la capa de vista
-        Card selectedCard = this.gameView.getSelectedCardFromEvent(mouseEvent);
+        Card selectedCard = this.gameView.extractCardFromEvent(mouseEvent);
         if (selectedCard == null) {
-            System.err.println("Error: No se pudo obtener la carta del ImageView");
+            System.err.println("Error: No se pudo obtener la carta del evento de clic.");
             return;
         }
-
-        // Validar si la jugada es legal
+        // Limpiar resaltados
+        this.gameView.clearPlayerHandHighlights();
+        //
         if (this.gameState.isValidPlay(selectedCard)) {
+            // El modelo se actualiza primero
             boolean gameEnded = this.gameState.playCard(this.humanPlayer, selectedCard);
-            this.gameState.playCard(this.humanPlayer, selectedCard);
-
-            // TODO: Se debe hacer un procesamiento Post-Jugada junto con GameView
-            // La vista debe actualizar la mano del jugador (quitando la carta),
-            // actualizar la pila de descarte (mostrando la nueva carta),
-            // y actualizar el contador de cartas de la máquina (si cambió).
-            this.updateViewAfterCardPlayed(selectedCard);
-
-            // Verificar si el juego terminó DESPUÉS de actualizar la interfaz
+            // Actualizar la vista completa después de la jugada
+            this.updateViewAfterHumanPlay(selectedCard);
+            // Evaluar si el juego ha terminado
             if (gameEnded) {
                 this.handleGameOver();
-                return; // Detener el procesamiento del turno
+                return;
             }
 
-            // Verificar si el estado de UNO cambió para el jugador
-            this.checkAndUpdateUnoButton(this.humanPlayer);
-
-            // Si se jugó una carta Comodín, GameState indica que se debe elegir un color.
+            this.checkAndUpdateUnoButtonVisuals(this.humanPlayer);
+            // Si se jugó un comodín, el estado cambió y necesitamos elegir color
             if (selectedCard.getColor() == Color.WILD) {
-                // --- Sugerencia para la Vista ---
-                // La vista debe mostrar un diálogo (modal o integrado) con los 4 colores.
-                // Cuando el usuario elija, la vista debe llamar a controller.handleColorChosen(chosenColor).
-                this.gameView.promptForColorChoice();
-                // El avance de turno sucederá *después* de elegir el color en handleColorChosen
+                // El turno avanzará después de elegir el color
+                this.promptHumanForColorChoice();
             } else {
-                // Si no es una carta Comodín, proceder al siguiente turno inmediatamente
+                // Si no es comodín, el color válido se actualiza automáticamente
                 this.handleTurnAdvancement();
             }
         } else {
-            // La vista debe mostrar un mensaje indicando por qué la jugada fue inválida
             Card topCard = this.gameState.getTopDiscardCard();
-            this.gameView.displayInvalidPlayMessage(selectedCard, topCard);
+            String playedCardDescription = this.gameState.getCardDescription(selectedCard);
+            String topCardDescription = this.gameState.getCardDescription(topCard);
+            this.gameView.displayInvalidPlayMessage(
+                    selectedCard,
+                    topCard,
+                    playedCardDescription,
+                    topCardDescription
+            );
         }
     }
 
@@ -182,8 +171,13 @@ public class GameController {
     public void handleAidButtonAction(ActionEvent actionEvent) {
     }
 
+    /**
+     * Maneja la acción del botón "Reiniciar".
+     * @param actionEvent El evento de acción.
+     */
     @FXML
     public void handleRestartButtonAction(ActionEvent actionEvent) {
+        this.startNewGame();
     }
 
     @FXML
