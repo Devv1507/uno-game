@@ -557,12 +557,6 @@ public class GameView extends Stage {
 
     /** {@inheritDoc} */
     @Override
-    public Card getSelectedCardFromEvent(MouseEvent event) {
-        return this.controller.extractCardFromEvent(event);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void disableGameInteractions() {
         enablePlayerInteraction(false);
         enablePassButton(false);
