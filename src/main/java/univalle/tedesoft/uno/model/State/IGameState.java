@@ -85,4 +85,15 @@ public interface IGameState {
      * @param player El jugador que debe seleccionar un color.
      */
     void onMustChooseColor(Player player);
+
+    Player getWinner();
+
+    String getCardDescription(Card card);
+
+    /**
+     * Maneja la acción de un jugador que roba una carta del mazo durante su turno.
+     * @param player El jugador que está robando la carta.
+     * @return La Card robada, o null si el mazo y la pila de descarte están completamente vacíos.
+     */
+    Card drawTurnCard(Player player);
 }

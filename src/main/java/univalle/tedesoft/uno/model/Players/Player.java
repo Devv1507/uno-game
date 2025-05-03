@@ -5,7 +5,7 @@ import java.util.List;
 import univalle.tedesoft.uno.model.Cards.Card;
 
 /**
- * Clase abstracta que representa un jugador en el juego UNO.
+ * Clase que representa un jugador en el juego UNO.
  * Contiene la lista de cartas del jugador y metodos basicos para
  * agregar, remover y contar cartas en su mano.
  * @author David Esteban Valencia
@@ -26,7 +26,6 @@ public class Player {
 
     /**
      * Agrega una carta a la mano del jugador.
-     *
      * @param card Carta que se agregara a la mano
      */
     public void addCard(Card card){
@@ -35,7 +34,6 @@ public class Player {
 
     /**
      * Remueve una carta de la mano del jugador.
-     *
      * @param card Carta que se eliminara de la mano
      */
     public void playCard(Card card){
@@ -43,7 +41,6 @@ public class Player {
     }
     /**
      * Devuelve la cantidad actual de cartas en la mano del jugador.
-     *
      * @return Numero de cartas en la mano
      */
     public int getNumeroCartas() {
@@ -58,5 +55,16 @@ public class Player {
         return cards;
     }
 
+    /**
+     * Devuelve el nombre del jugador.
+     * @return el nombre del jugador
+     */
     public String getName() { return this.name; }
+
+    /**
+     * Elimina todas las cartas de la mano del jugador.
+     */
+    public void clearHand() {
+        this.cards.clear();
+    }
 }

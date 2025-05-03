@@ -10,6 +10,7 @@ import univalle.tedesoft.uno.model.Players.MachinePlayer;
 import univalle.tedesoft.uno.model.Players.Player;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Orquesta los turnos, el mazo, los jugadores y la pila de descarte.
@@ -54,20 +55,39 @@ public class GameState implements IGameState {
      */
     @Override
     public void onGameStart() {
+        // Limpiar el estado anterior para evitar acumular cartas
+        this.humanPlayer.clearHand();
+        this.machinePlayer.clearHand();
+        this.gameOver = false;
+        this.winner = null;
+        this.skipNextTurn = false;
+
+        // Preparar nuevo juego, barajar y repartir
         this.deck.shuffle();
         this.dealInitialCards();
 
         // Sacar una carta y colocarla en la pila de descarte
-        Card firstCard = this.deck.takeCard();
+        Card firstCard = this.takeSingleCardFromDeckInternal();
         this.discardStack.discard(firstCard);
 
-        // Establecer valores iniciales
-        this.currentPlayer = this.humanPlayer;
+        // Establecer color y valor por defecto iniciales
         this.currentValidColor = firstCard.getColor();
         this.currentValidValue = firstCard.getValue();
-        this.gameOver = false;
-        this.winner = null;
-        this.skipNextTurn = false;
+
+        // Aplicar reglas especiales para la primera carta
+        Value firstValue = firstCard.getValue();
+
+        if (this.currentValidColor == Color.WILD) {
+            // si la primera carta es un WILD se elige un color aleatorio
+            Random random = new Random();
+            Color[] playableColors = {Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE};
+            int randomIndex = random.nextInt(playableColors.length);
+            this.currentValidColor = playableColors[randomIndex];
+            this.currentValidValue = null;
+        }
+
+        // por ahora, se considera que el humano siempre empieza
+        this.currentPlayer = this.humanPlayer;
     }
 
     /**
@@ -204,13 +224,13 @@ public class GameState implements IGameState {
         int cardsActuallyDrawn = 0; // Contador por si no hay suficientes cartas
 
         for (int i = 0; i < numberOfCards; i++) {
-            // Verificar si el mazo esta vacio ANTES de intentar tomar
-            if (this.deck.getNumeroCartas() == 0) {
-                this.onEmptyDeck();
+            Card card = this.takeSingleCardFromDeckInternal();
+            if (card != null) {
+                player.addCard(card);
+                cardsActuallyDrawn++;
+            } else {
+                break; // No hay más cartas
             }
-            Card card = this.deck.takeCard();
-            player.addCard(card);
-            cardsActuallyDrawn++;
             // Notificar por cada carta robada individualmente (si es necesario)
             // onPlayerDrewCard(player, card);  }
         }
@@ -331,13 +351,19 @@ public class GameState implements IGameState {
         return this.discardStack.SuperiorCard();
     }
 
+    @Override
+    public Player getWinner() {
+        return this.winner;
+    }
+
     /**
      * Genera una representación en texto legible de una carta específica,
      * combinando su color (si no es un comodín) y su valor.
      * @param card La carta de la cual generar la descripción.
      * @return Una cadena que describe la carta.
      */
-    private String getCardDescription(Card card) {
+    @Override
+    public String getCardDescription(Card card) {
         String colorPart;
         if (card.getColor() == Color.WILD) {
             colorPart = "";
@@ -355,5 +381,33 @@ public class GameState implements IGameState {
      */
     public boolean isGameOver() {
         return this.gameOver;
+    }
+
+    @Override
+    public Card drawTurnCard(Player player) {
+        Card drawnCard = takeSingleCardFromDeckInternal();
+        if (drawnCard != null) {
+            player.addCard(drawnCard);
+            // onPlayerDrewCard(player, drawnCard); // Posible notificación futura
+        }
+        // devolver la carta robada (o null si no se pudo robar)
+        return drawnCard;
+    }
+
+    /**
+     * Tomar una única carta del mazo,
+     * manejando el reciclaje si es necesario.
+     * @return La Card tomada, o null si no hay cartas disponibles.
+     */
+    private Card takeSingleCardFromDeckInternal() {
+        // Verificar si el mazo esta vacio ANTES de intentar tomar
+        if (this.deck.getNumeroCartas() == 0) {
+            this.onEmptyDeck();
+        }
+        if (this.deck.getNumeroCartas() == 0) {
+            System.err.println("Advertencia: El mazo y la pila de descarte están vacíos.");
+            return null;
+        }
+        return this.deck.takeCard();
     }
 }
