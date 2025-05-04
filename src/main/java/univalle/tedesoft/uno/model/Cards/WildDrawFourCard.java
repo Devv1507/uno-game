@@ -19,12 +19,4 @@ public class WildDrawFourCard extends ActionCard {
     public WildDrawFourCard() {
         super(Color.WILD, Value.WILD_DRAW_FOUR);
     }
-    /**
-     * Aplica el efecto de la carta Wild Draw Four.
-     * El siguiente jugador deberia robar 4 cartas y se cambia el color del juego.
-     * La logica de estos efectos debe implementarse en el controlador del juego.
-     */
-    public void appliedEffect() {
-        System.out.println("¡El oponente te regala 4 cartas más!");
-    }
 }
