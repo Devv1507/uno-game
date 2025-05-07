@@ -43,7 +43,7 @@ public class Deck {
                 if(v <= Value.DRAW_TWO.ordinal()){
                     cards.add(new NumberCard(Color.values()[c], Value.values()[v]));
                     if(v == Value.DRAW_TWO.ordinal()){
-                        cards.add(new NumberCard(Color.values()[c], Value.values()[v]));
+                        cards.add(new DrawTwoCard(Color.values()[c]));
                     }
                 }
             }

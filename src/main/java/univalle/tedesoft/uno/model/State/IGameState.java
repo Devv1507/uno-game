@@ -36,7 +36,7 @@ public interface IGameState {
      * @param player        El jugador que va a tomar cartas.
      * @param numberOfCards La cantidad de cartas que será forzado a tomar.
      */
-    int forceDraw(Player player, int numberOfCards);
+    void forceDraw(Player player, int numberOfCards);
 
     /**
      * Se llama después de que un jugador ha elegido un color para un comodín,
@@ -49,7 +49,7 @@ public interface IGameState {
      * Se llama cuando el mazo se ha agotado, por lo que se tiene que rellenar
      * y barajar usando las cartas de la pila de descarte.
      */
-    void onEmptyDeck();
+    void recyclingDeck();
 
     /**
      * Determina si la carta dada se puede jugar de acuerdo con las reglas del UNO.
