@@ -122,7 +122,10 @@ public class GameState implements IGameState {
     public boolean playCard(Player player, Card card) {
         player.playCard(card);
         this.discardStack.discard(card);
-        this.applyCardEffect(card, player);
+        if (card instanceof ActionCard) {
+            this.applyCardEffect(card, player);
+        }
+        //this.applyCardEffect(card, player);
         // comprobar si el jugador gano
         if (player.getNumeroCartas() == 0) {
             this.gameOver = true;
