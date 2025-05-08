@@ -120,10 +120,14 @@ public class GameState implements IGameState {
      */
     @Override
     public boolean playCard(Player player, Card card) {
-        player.playCard(card);
+        player.removeCardOfCards(card);
         this.discardStack.discard(card);
         if (card instanceof ActionCard) {
             this.applyCardEffect(card, player);
+        }
+        if (card.getColor() != Color.WILD) {
+            this.currentValidColor = card.getColor();
+            this.currentValidValue = card.getValue();
         }
         //this.applyCardEffect(card, player);
         // comprobar si el jugador gano
@@ -416,7 +420,6 @@ public class GameState implements IGameState {
      * Tomar una única carta del mazo,
      * manejando el reciclaje si es necesario.
      * @return La Card tomada, o null si no hay cartas disponibles.
-     * TODO: innecesaria, ver si algo esta vacio es ineficiente, mejor saber si tiene la capacidad, si quieres tomar 2 cartas y solo pero solo tienes una, es una posible excepcion.
      */
     private Card takeSingleCardFromDeckInternal() {
         // Verificar si el mazo esta vacio ANTES de intentar tomar
