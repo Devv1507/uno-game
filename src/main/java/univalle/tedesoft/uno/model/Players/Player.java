@@ -62,6 +62,12 @@ public class Player {
     public String getName() { return this.name; }
 
     /**
+     * Establece el nombre del jugador.
+     * @param name El nuevo nombre del jugador
+     */
+    public void setName(String name) { this.name = name; }
+
+    /**
      * Elimina todas las cartas de la mano del jugador.
      */
     public void clearHand() {

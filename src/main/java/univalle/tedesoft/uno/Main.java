@@ -1,20 +1,16 @@
 package univalle.tedesoft.uno;
 
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
+import univalle.tedesoft.uno.view.WelcomeView;
 
 import java.io.IOException;
 
 public class Main extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("welcome-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        stage.setTitle("UNO! - Bienvenida");
-        stage.setScene(scene);
-        stage.show();
+        WelcomeView welcomeView = WelcomeView.getInstance();
+        welcomeView.show();
     }
 
     public static void main(String[] args) {

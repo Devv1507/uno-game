@@ -36,11 +36,16 @@ public class GameController {
     @FXML public ProgressIndicator unoTimerIndicator;
     @FXML public Button restartButton;
     @FXML public Button aidButton;
+    @FXML public Label playerNameLabel;
 
     // --- Model ---
     private IGameState gameState;
     private HumanPlayer humanPlayer;
     private MachinePlayer machinePlayer;
+
+    // --- Variables ---
+    private String playerName;
+
     /**
      * Representa al jugador cuyo turno esta activo en el juego.
      * Se actualiza dinamicamente durante el juego a medida que los jugadores se turnan.
@@ -55,10 +60,18 @@ public class GameController {
 
     @FXML
     public void initialize() {
-        this.humanPlayer = new HumanPlayer("Pepito");
+        // Inicializar el HumanPlayer con un nombre vacío
+        this.humanPlayer = new HumanPlayer("");
         this.machinePlayer = new MachinePlayer();
-
         this.executorService = Executors.newSingleThreadScheduledExecutor();
+        
+        // Si ya tenemos un nombre almacenado, actualizarlo
+        if (this.playerName != null && !this.playerName.isEmpty()) {
+            this.humanPlayer.setName(this.playerName);
+            if (this.playerNameLabel != null) {
+                this.playerNameLabel.setText("Jugador: " + this.playerName);
+            }
+        }
     }
 
     /**
@@ -87,6 +100,11 @@ public class GameController {
         }
         this.executorService = Executors.newSingleThreadScheduledExecutor();
 
+        // Asegurarnos de que el HumanPlayer mantenga su nombre
+        if (this.playerName != null && !this.playerName.isEmpty()) {
+            this.humanPlayer.setName(this.playerName);
+        }
+
         // Crear nuevo estado de juego y inicializarlo
         this.gameState = new GameState(this.humanPlayer, this.machinePlayer);
         this.gameState.onGameStart();
@@ -97,13 +115,35 @@ public class GameController {
         this.gameView.displayInitialState(
                 this.humanPlayer.getCards(),
                 this.gameState.getTopDiscardCard(),
-                this.gameState.getCurrentValidColor(), // Pasar color efectivo inicial
+                this.gameState.getCurrentValidColor(),
                 this.machinePlayer.getNumeroCartas(),
                 this.currentPlayer.getName()
         );
         this.updateInteractionBasedOnTurn();
-        this.gameView.displayMessage("¡Tu turno, " + this.humanPlayer.getName() + "!");
+        
+        // Usar el nombre almacenado en playerName si existe
+        String displayName = this.playerName != null && !this.playerName.isEmpty() ? 
+            this.playerName : this.humanPlayer.getName();
+        this.gameView.displayMessage("¡Tu turno, " + displayName + "!");
         this.gameView.enableRestartButton(true);
+    }
+
+    /**
+     * Establece el nombre del jugador humano y actualiza la interfaz.
+     * @param playerName El nombre del jugador
+     */
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
+        // Actualizar el nombre en el HumanPlayer
+        this.humanPlayer.setName(playerName);
+        
+        Platform.runLater(() -> {
+            if (this.playerNameLabel != null) {
+                this.playerNameLabel.setText("Jugador: " + playerName);
+            }
+            // Actualizar también el mensaje inicial
+            this.gameView.displayMessage("¡Tu turno, " + playerName + "!");
+        });
     }
 
     // --- EventHandlers FXML ---
@@ -275,13 +315,17 @@ public class GameController {
         this.gameView.clearPlayerHandHighlights();
         this.gameView.highlightDeck(false);
 
-        // Traer al jugador actual
+        // Actualizar el jugador actual desde el estado del juego
         this.currentPlayer = this.gameState.getCurrentPlayer();
-        // Actualizar indicador de turno en la vista
-        this.gameView.updateTurnIndicator(this.currentPlayer.getName());
-        this.gameView.displayMessage("Turno de " + this.currentPlayer.getName());
-        // Habilitar/deshabilitar controles según de quién sea el turno
+        
+        // Actualizar indicador de turno en la vista con el nombre del jugador actual
+        String currentPlayerName = this.currentPlayer.getName();
+        this.gameView.updateTurnIndicator(currentPlayerName);
+        
+        // Actualizar mensaje y controles
+        this.gameView.displayMessage("Turno de " + currentPlayerName);
         this.updateInteractionBasedOnTurn();
+        
         // Comprobar estado UNO para el jugador que inicia su turno
         this.checkAndUpdateUnoButtonVisuals(this.currentPlayer);
 
