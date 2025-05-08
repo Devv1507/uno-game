@@ -6,6 +6,13 @@ import univalle.tedesoft.uno.model.State.IGameState;
 
 import java.util.Random;
 
+/**
+ * Clase que representa al jugador maquina.
+ *
+ * @author David Esteban Valencia
+ * @author Santiago David Guerrero
+ * @author Juan Pablo Escamilla
+ */
 public class MachinePlayer extends Player {
     private final Random random;
 
@@ -24,6 +31,11 @@ public class MachinePlayer extends Player {
         return possibleColors[index];
     }
 
+    /**
+     * Con un bucle for-each, busca una carta en la mano que sea valida.
+     * @param gameState estado actual del juego (decks, players, mano disponible, etc)
+     * @return card viable a jugar.
+     */
     public Card chooseCardToPlay(IGameState gameState) {
         // encontrar la primera carta jugable
         for (Card card : this.cards) {
