@@ -45,13 +45,6 @@ public class Deck {
             for(int v = 0; v < Value.values().length; v++){
                 if(v <= Value.NINE.ordinal()){
                     cards.add(new NumberCard(Color.values()[c], Value.values()[v]));
-                    /*
-                    if(v == Value.DRAW_TWO.ordinal()){
-                        cards.add(new DrawTwoCard(Color.values()[c]));
-                    } else if (v== Value.SKIP.ordinal()) {
-                        cards.add(new SkipCard(Color.values()[c]));
-                    }
-                     */
                 }
             }
         }
@@ -60,16 +53,6 @@ public class Deck {
             cards.add(new WildCard());
             cards.add(new WildDrawFourCard());
         }
-        //64 cartas en total 56 de colores y 8 especiales
-        //Prueba para saber si el mazo se genera de forma correcta.
-        /*
-        for(int i = 0; i< cards.size(); i++){
-            Card carta = cards.get(i);
-            System.out.println( i+1 + " " + carta.getValue() + " " + carta.getColor());
-        }
-        System.out.println("----------------------------");
-
-         */
     }
     /**
      * Retorna la lista de cartas actuales del mazo.
