@@ -145,7 +145,7 @@ public class GameState implements IGameState {
      * Determina y avanza al siguiente jugador, manejando los saltos.
      * @see #playCard(Player, Card)
      */
-    private void advanceTurn() {
+    public void advanceTurn() {
         Player nextPlayer = this.getOpponent(this.currentPlayer);
 
         if (this.skipNextTurn) {

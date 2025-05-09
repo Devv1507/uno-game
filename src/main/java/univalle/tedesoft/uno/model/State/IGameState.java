@@ -96,4 +96,9 @@ public interface IGameState {
      * @return La Card robada, o null si el mazo y la pila de descarte están completamente vacíos.
      */
     Card drawTurnCard(Player player);
+
+    /**
+     *
+     */
+    void advanceTurn();
 }
