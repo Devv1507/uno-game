@@ -179,12 +179,12 @@ public class GameController {
         this.gameView.highlightDeck(false);
         // Robar carta del modelo
         Card drawnCard = this.gameState.drawTurnCard(this.humanPlayer);
-        this.gameState.advanceTurn();
-        this.handleTurnAdvancement();
+        //this.gameState.advanceTurn();
+        //this.handleTurnAdvancement();
         // Actualizar vista de la mano
         this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this);
 
-        /*
+
         if (drawnCard != null) {
             this.gameView.displayMessage("Robaste: " + this.gameState.getCardDescription(drawnCard));
             // Comprobar si la carta robada se puede jugar
@@ -201,8 +201,6 @@ public class GameController {
             this.gameView.displayMessage("No hay más cartas para robar. Pasando turno...");
             this.handleTurnAdvancement();
         }
-
-         */
     }
 
     /**
@@ -267,6 +265,7 @@ public class GameController {
         }
         this.gameView.clearPlayerHandHighlights();
         this.gameView.displayMessage("Turno pasado.");
+        this.gameState.advanceTurn();
         this.handleTurnAdvancement();
     }
 
