@@ -158,6 +158,8 @@ public class GameState implements IGameState {
 
     /**
      * Getter del oponente en un juego de 2 jugadores
+     * @param player jugador que esta en este momento en turno.
+     * @return player jugador oponente al player que se ingreso.
      */
     private Player getOpponent(Player player) {
         if (player == this.humanPlayer) {
@@ -405,6 +407,11 @@ public class GameState implements IGameState {
         return this.gameOver;
     }
 
+    /**
+     * Metodo con el objetivo de tomar una carta del mazo cuando no hay cartas jugables en el mazo.
+     * @param player El jugador que está robando la carta.
+     * @return drawnCard carta que se roba del mazo principal(Deck)
+     */
     @Override
     public Card drawTurnCard(Player player) {
         Card drawnCard = takeSingleCardFromDeckInternal();
