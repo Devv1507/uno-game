@@ -35,6 +35,10 @@ public class GameState implements IGameState {
     private boolean skipNextTurn = false;
     private boolean gameOver = false;
     private Player winner = null;
+    /**
+     * Constante para definir el número de cartas que se penalizarán por no cantar "UNO" a tiempo.
+     */
+    public static final int PENALTY_CARDS_FOR_UNO = 2;
 
     /**
      * Constructor de GameState
@@ -55,9 +59,12 @@ public class GameState implements IGameState {
      */
     @Override
     public void onGameStart() {
-        // Limpiar el estado anterior para evitar acumular cartas
+        // Limpiar el estado anterior
         this.humanPlayer.clearHand();
+        this.humanPlayer.resetUnoStatus();
         this.machinePlayer.clearHand();
+        this.machinePlayer.resetUnoStatus();
+
         this.gameOver = false;
         this.winner = null;
         this.skipNextTurn = false;
@@ -73,26 +80,14 @@ public class GameState implements IGameState {
         // Establecer color y valor por defecto iniciales
         this.currentValidColor = firstCard.getColor();
         this.currentValidValue = firstCard.getValue();
-
-        // Aplicar reglas especiales para la primera carta
-        Value firstValue = firstCard.getValue();
-
-        if (this.currentValidColor == Color.WILD) {
-            // si la primera carta es un WILD se elige un color aleatorio
-            Random random = new Random();
-            Color[] playableColors = {Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE};
-            int randomIndex = random.nextInt(playableColors.length);
-            this.currentValidColor = playableColors[randomIndex];
-            this.currentValidValue = null;
-        }
-
-        // por ahora, se considera que el humano siempre empieza
+        // El humano siempre empieza
         this.currentPlayer = this.humanPlayer;
     }
 
     /**
      * Se llama cada vez que el turno pasa de un jugador a otro.(Funcion que pertenece al controlador de los eventos)
      * @param currentPlayer El jugador que ahora tiene el turno.
+     * TODO: este método probablemente tenga que removerse luego.
      */
     public void onTurnChanged(Player currentPlayer) {
     }
@@ -122,6 +117,9 @@ public class GameState implements IGameState {
     public boolean playCard(Player player, Card card) {
         player.removeCardOfCards(card);
         this.discardStack.discard(card);
+        // Resetear el estado UNO del jugador antes de evaluar la nueva situación
+        player.resetUnoStatus();
+
         if (card instanceof ActionCard) {
             this.applyCardEffect(card, player);
         }
@@ -129,15 +127,15 @@ public class GameState implements IGameState {
             this.currentValidColor = card.getColor();
             this.currentValidValue = card.getValue();
         }
-        //this.applyCardEffect(card, player);
-        // comprobar si el jugador gano
+
+        // comprobar si el jugador gano o queda en estado UNO
         if (player.getNumeroCartas() == 0) {
             this.gameOver = true;
             this.winner = player;
             return true;
+        } else if (player.getNumeroCartas() == 1) {
+            player.setUnoCandidate(true); // candidato para declarar UNO
         }
-
-        this.advanceTurn();
         return false;
     }
 
@@ -149,7 +147,7 @@ public class GameState implements IGameState {
         Player nextPlayer = this.getOpponent(this.currentPlayer);
 
         if (this.skipNextTurn) {
-            // sigue siendo el turno del jugador actual
+            // sigue siendo el turno del jugador actual dado que el siguiente se saltó
             this.skipNextTurn = false;
         } else {
             this.currentPlayer = nextPlayer;
@@ -235,7 +233,8 @@ public class GameState implements IGameState {
      */
     @Override
     public void forceDraw(Player player, int numberOfCards) {
-        int cardsActuallyDrawn = 0; // Contador por si no hay suficientes cartas TODO: esto no se me hace con sentido, ademas lo hago mas simple con los cambios.
+        // TODO: esto no se me hace con sentido, ademas lo hago mas simple con los cambios.
+        int cardsActuallyDrawn = 0; // Contador por si no hay suficientes cartas
         if (this.deck.getNumeroCartas() < numberOfCards) {
             this.recyclingDeck();
         }
@@ -261,18 +260,31 @@ public class GameState implements IGameState {
     @Override
     public void onColorChosen(Color color) {
         this.currentValidColor = color;
-        // ya no importa el valor anterior
+        // ya no importa el valor anterior, solo el color importa tras usar WILD
         this.currentValidValue = null;
     }
 
     /**
-     * Verifica si el estado UNO de un jugador ha cambiado y llama a onUnoStateChanged.
-     * @param player El jugador a verificar.
+     * Registra que un jugador ha declarado "UNO".
+     * @param player El jugador que declara "UNO".
      */
-    private void checkUnoState(Player player) {
-        // TODO: Necesitaríamos saber el estado *anterior* para una notificación más precisa
-        // de "entró en estado UNO" vs "salió de estado UNO".
-        boolean hasOneCard = player.getNumeroCartas() == 1;
+    @Override
+    public void playerDeclaresUno(Player player) {
+        if (player.isUnoCandidate()) {
+            player.setHasDeclaredUnoThisTurn(true);
+            player.setUnoCandidate(false);
+        }
+    }
+
+    /**
+     * Penaliza a un jugador por no declarar "UNO" correctamente.
+     * El jugador roba un número determinado de cartas.
+     * @param playerToPenalize El jugador que será penalizado.
+     */
+    @Override
+    public void penalizePlayerForUno(Player playerToPenalize) {
+        this.forceDraw(playerToPenalize, PENALTY_CARDS_FOR_UNO);
+        playerToPenalize.resetUnoStatus();
     }
 
     /**
@@ -417,9 +429,8 @@ public class GameState implements IGameState {
         Card drawnCard = takeSingleCardFromDeckInternal();
         if (drawnCard != null) {
             player.addCard(drawnCard);
-            // onPlayerDrewCard(player, drawnCard); // Posible notificación futura
+            player.resetUnoStatus(); // ya no es candidato a uno al pasar
         }
-        // devolver la carta robada (o null si no se pudo robar)
         return drawnCard;
     }
 
