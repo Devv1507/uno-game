@@ -74,7 +74,10 @@ public class GameState implements IGameState {
         this.dealInitialCards();
 
         // Sacar una carta y colocarla en la pila de descarte
-        Card firstCard = this.takeSingleCardFromDeckInternal();
+        Card firstCard = null;
+        do {
+            firstCard = this.takeSingleCardFromDeckInternal();
+        } while (firstCard instanceof ActionCard);
         this.discardStack.discard(firstCard);
 
         // Establecer color y valor por defecto iniciales
