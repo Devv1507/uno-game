@@ -18,6 +18,7 @@
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="univalle.tedesoft.uno.controller.GameController" style="-fx-background-color: linear-gradient(to bottom, #f5f7fa, #c3cfe2);">
     <top>
         <VBox alignment="CENTER" prefHeight="200.0" spacing="15.0" BorderPane.alignment="CENTER" style="-fx-background-color: rgba(255,255,255,0.9); -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 3);">
+            <Label fx:id="playerNameLabel" text="Jugador: " style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);"/>
             <Label fx:id="machineCardsCountLabel" text="Cartas Máquina: 5" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);"/>
             <HBox fx:id="machineHandHBox" alignment="CENTER" prefHeight="120.0" spacing="8.0">
             </HBox>

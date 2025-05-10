@@ -35,14 +35,15 @@ import java.util.stream.Collectors;
  * @author Santiago David Guerrero
  */
 public class GameView extends Stage {
-    // Referencia al controlador
-    private final GameController controller;
+    // Referencia a los controladores
+    private final GameController gameController;
     // Constantes de UI
     private static final double CARD_HEIGHT = 100.0;
     private static final String CARD_IMAGE_PATH_PREFIX = "/univalle/tedesoft/uno/images/";
     private static final String CARD_IMAGE_EXTENSION = ".png";
     private static final String BACK_CARD_IMAGE_NAME = "deck_of_cards";
     private static final String EMPTY_IMAGE_NAME = "card_uno"; // Placeholder
+    private String playerName;
 
     /**
      * Clase interna para implementar el patrón Singleton.
@@ -70,10 +71,10 @@ public class GameView extends Stage {
     private GameView() throws IOException {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("game-view.fxml"));
         Scene scene = new Scene(loader.load());
-        this.controller = loader.getController(); // Obtiene la instancia del controlador creada por FXML
+        this.gameController = loader.getController(); // Obtiene la instancia del controlador creada por FXML
 
-        if (this.controller != null) {
-            this.controller.setGameView(this); // Inyecta esta vista en el controlador
+        if (this.gameController != null) {
+            this.gameController.setGameView(this); // Inyecta esta vista en el controlador
         } else {
             throw new IOException("No se pudo obtener el GameController desde el FXML");
         }
@@ -93,18 +94,18 @@ public class GameView extends Stage {
             // Configurar imagen inicial del mazo
             Image backImage = getCardImageByName(BACK_CARD_IMAGE_NAME);
             if (backImage != null) {
-                this.controller.deckImageView.setImage(backImage);
-                this.controller.deckImageView.setFitHeight(CARD_HEIGHT);
-                this.controller.deckImageView.setPreserveRatio(true);
+                this.gameController.deckImageView.setImage(backImage);
+                this.gameController.deckImageView.setFitHeight(CARD_HEIGHT);
+                this.gameController.deckImageView.setPreserveRatio(true);
             }
 
             // Configurar imagen inicial (vacía) de la pila de descarte
             Image emptyImage = getCardImageByName(EMPTY_IMAGE_NAME);
             if (emptyImage != null) {
-                this.controller.discardPileImageView.setImage(emptyImage);
-                this.controller.discardPileImageView.setFitHeight(CARD_HEIGHT);
-                this.controller.discardPileImageView.setPreserveRatio(true);
-                this.controller.discardPileImageView.setEffect(null); // Sin efectos iniciales
+                this.gameController.discardPileImageView.setImage(emptyImage);
+                this.gameController.discardPileImageView.setFitHeight(CARD_HEIGHT);
+                this.gameController.discardPileImageView.setPreserveRatio(true);
+                this.gameController.discardPileImageView.setEffect(null); // Sin efectos iniciales
             }
         });
     }
@@ -116,7 +117,7 @@ public class GameView extends Stage {
      */
     public void displayInitialState(List<Card> playerHand, Card topDiscardCard, Color effectiveColor, int machineCardCount, String initialPlayerName) {
         Platform.runLater(() -> {
-            this.updatePlayerHand(playerHand, this.controller); // Renderiza mano inicial
+            this.updatePlayerHand(playerHand, this.gameController); // Renderiza mano inicial
             this.updateDiscardPile(topDiscardCard, effectiveColor); // Renderiza descarte inicial
             this.updateMachineHand(machineCardCount); // Renderiza mano máquina inicial
             this.updateTurnIndicator(initialPlayerName); // Muestra turno inicial
@@ -130,14 +131,14 @@ public class GameView extends Stage {
      */
     public void updatePlayerHand(List<Card> hand, GameController ctrl) {
         Platform.runLater(() -> {
-            this.controller.playerHandHBox.getChildren().clear(); // Limpiar vista anterior
+            this.gameController.playerHandHBox.getChildren().clear(); // Limpiar vista anterior
             for (Card card : hand) {
                 ImageView cardView = createCardImageView(card);
                 // Asignar el handler del *controlador* al evento de clic
                 cardView.setOnMouseClicked(ctrl::handlePlayCardClick);
                 // Guardar la carta en el ImageView para recuperarla en el handler
                 cardView.setUserData(card);
-                this.controller.playerHandHBox.getChildren().add(cardView);
+                this.gameController.playerHandHBox.getChildren().add(cardView);
             }
         });
     }
@@ -149,10 +150,10 @@ public class GameView extends Stage {
     public void updateMachineHand(int cardCount) {
         Platform.runLater(() -> {
             // Actualizar etiqueta del contador
-            this.controller.machineCardsCountLabel.setText("Cartas Máquina: " + cardCount);
+            this.gameController.machineCardsCountLabel.setText("Cartas Máquina: " + cardCount);
 
             // Renderizar cartas boca abajo (o placeholder)
-            this.controller.machineHandHBox.getChildren().clear();
+            this.gameController.machineHandHBox.getChildren().clear();
             Image backImage = getCardImageByName(EMPTY_IMAGE_NAME); // Usar placeholder
 
             if (backImage != null) {
@@ -163,7 +164,7 @@ public class GameView extends Stage {
                     cardView.setSmooth(true);
                     // Añadir un pequeño margen si se solapan mucho
                     HBox.setMargin(cardView, new Insets(0, -CARD_HEIGHT * 0.4, 0, 0)); // Solapamiento
-                    this.controller.machineHandHBox.getChildren().add(cardView);
+                    this.gameController.machineHandHBox.getChildren().add(cardView);
                 }
             }
         });
@@ -185,10 +186,10 @@ public class GameView extends Stage {
             }
 
             if (cardImage != null) {
-                this.controller.discardPileImageView.setImage(cardImage);
+                this.gameController.discardPileImageView.setImage(cardImage);
             } else {
                 // Fallback si la imagen no se carga
-                this.controller.discardPileImageView.setImage(getCardImageByName(EMPTY_IMAGE_NAME));
+                this.gameController.discardPileImageView.setImage(getCardImageByName(EMPTY_IMAGE_NAME));
             }
 
             // Aplicar o quitar el efecto de color basado en `effectiveColor`
@@ -197,12 +198,12 @@ public class GameView extends Stage {
                 this.applyDiscardPileColorIndicator(effectiveColor);
             } else {
                 // Quitar brillo si es una carta normal o no hay color efectivo
-                this.controller.discardPileImageView.setEffect(null);
+                this.gameController.discardPileImageView.setEffect(null);
             }
 
             // Asegurar tamaño estándar
-            this.controller.discardPileImageView.setFitHeight(CARD_HEIGHT);
-            this.controller.discardPileImageView.setPreserveRatio(true);
+            this.gameController.discardPileImageView.setFitHeight(CARD_HEIGHT);
+            this.gameController.discardPileImageView.setPreserveRatio(true);
         });
     }
 
@@ -211,7 +212,13 @@ public class GameView extends Stage {
      * @param playerName El nombre del jugador actual.
      */
     public void updateTurnIndicator(String playerName) {
-        Platform.runLater(() -> this.controller.turnLabel.setText("Turno de: " + playerName));
+        String displayName;
+        if (playerName != null && playerName.toLowerCase().contains("mach")) {
+            displayName = "Máquina";
+        } else {
+            displayName = "Jugador";
+        }
+        Platform.runLater(() -> this.gameController.turnLabel.setText("Turno de: " + displayName));
     }
 
     // --- Métodos de Control de la UI ---
@@ -222,9 +229,9 @@ public class GameView extends Stage {
      */
     public void enablePlayerInteraction(boolean enable) {
         Platform.runLater(() -> {
-            this.controller.playerHandHBox.setDisable(!enable);
-            this.controller.deckImageView.setDisable(!enable);
-            this.controller.aidButton.setDisable(!enable);
+            this.gameController.playerHandHBox.setDisable(!enable);
+            this.gameController.deckImageView.setDisable(!enable);
+            this.gameController.aidButton.setDisable(!enable);
         });
     }
 
@@ -233,7 +240,7 @@ public class GameView extends Stage {
      * @param enable true para habilitar, false para deshabilitar.
      */
     public void enablePassButton(boolean enable) {
-        Platform.runLater(() -> this.controller.passButton.setDisable(!enable));
+        Platform.runLater(() -> this.gameController.passButton.setDisable(!enable));
     }
 
     /**
@@ -241,7 +248,7 @@ public class GameView extends Stage {
      * @param show true para mostrar, false para ocultar.
      */
     public void showUnoButton(boolean show) {
-        Platform.runLater(() -> this.controller.unoButton.setVisible(show));
+        Platform.runLater(() -> this.gameController.unoButton.setVisible(show));
     }
 
     /**
@@ -250,7 +257,7 @@ public class GameView extends Stage {
      */
     public void showUnoPenaltyTimer(boolean show) {
         // TODO: implementar el temporizador de penalización
-        Platform.runLater(() -> this.controller.unoTimerIndicator.setVisible(show));
+        Platform.runLater(() -> this.gameController.unoTimerIndicator.setVisible(show));
     }
 
     /**
@@ -258,7 +265,7 @@ public class GameView extends Stage {
      * @param enable true para habilitar, false para deshabilitar.
      */
     public void enableRestartButton(boolean enable) {
-        Platform.runLater(() -> this.controller.restartButton.setDisable(!enable));
+        Platform.runLater(() -> this.gameController.restartButton.setDisable(!enable));
     }
 
     /**
@@ -269,7 +276,7 @@ public class GameView extends Stage {
             this.enablePlayerInteraction(false);
             this.enablePassButton(false);
             this.showUnoButton(false);
-            this.controller.aidButton.setDisable(true);
+            this.gameController.aidButton.setDisable(true);
         });
     }
 
@@ -280,7 +287,7 @@ public class GameView extends Stage {
      * @param message El texto a mostrar.
      */
     public void displayMessage(String message) {
-        Platform.runLater(() -> this.controller.messageLabel.setText(message));
+        Platform.runLater(() -> this.gameController.messageLabel.setText(message));
     }
 
     /**
@@ -347,7 +354,7 @@ public class GameView extends Stage {
             playableGlow.setHeight(20);
             playableGlow.setSpread(0.6);
 
-            for (Node node : this.controller.playerHandHBox.getChildren()) {
+            for (Node node : this.gameController.playerHandHBox.getChildren()) {
                 if (node instanceof ImageView) {
                     ImageView imageView = (ImageView) node;
                     Object cardData = imageView.getUserData();
@@ -371,7 +378,7 @@ public class GameView extends Stage {
      */
     public void clearPlayerHandHighlights() {
         Platform.runLater(() -> {
-            for (Node node : this.controller.playerHandHBox.getChildren()) {
+            for (Node node : this.gameController.playerHandHBox.getChildren()) {
                 node.setEffect(null); // Quita cualquier efecto (DropShadow, etc.)
                 node.setOpacity(1.0); // Restaura opacidad completa
             }
@@ -390,9 +397,9 @@ public class GameView extends Stage {
                 deckGlow.setWidth(25);
                 deckGlow.setHeight(25);
                 deckGlow.setSpread(0.7);
-                this.controller.deckImageView.setEffect(deckGlow);
+                this.gameController.deckImageView.setEffect(deckGlow);
             } else {
-                this.controller.deckImageView.setEffect(null);
+                this.gameController.deckImageView.setEffect(null);
             }
         });
     }
@@ -402,21 +409,21 @@ public class GameView extends Stage {
      */
     public void resetUIForNewGame() {
         Platform.runLater(() -> {
-            this.controller.playerHandHBox.getChildren().clear();
-            this.controller.machineHandHBox.getChildren().clear();
-            this.controller.messageLabel.setText("Iniciando nueva partida...");
-            this.controller.turnLabel.setText("Turno de:");
-            this.controller.machineCardsCountLabel.setText("Cartas Máquina: ?");
+            this.gameController.playerHandHBox.getChildren().clear();
+            this.gameController.machineHandHBox.getChildren().clear();
+            this.gameController.messageLabel.setText("Iniciando nueva partida...");
+//            this.gameController.turnLabel.setText("Turno de:");
+            this.gameController.machineCardsCountLabel.setText("Cartas Máquina: ?");
 
             // Restablecer imágenes por defecto
             this.initializeUI();
 
             // Ocultar y deshabilitar botones relevantes
-            this.controller.unoButton.setVisible(false);
-            this.controller.unoTimerIndicator.setVisible(false);
-            this.controller.passButton.setDisable(true);
-            this.controller.aidButton.setDisable(true);
-            this.controller.restartButton.setDisable(false);
+            this.gameController.unoButton.setVisible(false);
+            this.gameController.unoTimerIndicator.setVisible(false);
+            this.gameController.passButton.setDisable(true);
+            this.gameController.aidButton.setDisable(true);
+            this.gameController.restartButton.setDisable(false);
 
             // Limpiar resaltados
             this.clearPlayerHandHighlights();
@@ -528,7 +535,7 @@ public class GameView extends Stage {
         borderGlow.setHeight(30);
         borderGlow.setSpread(0.7);
 
-        this.controller.discardPileImageView.setEffect(borderGlow);
+        this.gameController.discardPileImageView.setEffect(borderGlow);
     }
 
     /**
@@ -584,5 +591,27 @@ public class GameView extends Stage {
         }
         String valuePart = card.getValue().name().replace("_", " ");
         return colorPart + valuePart;
+    }
+
+    /**
+     * Establece el nombre del jugador humano y actualiza la interfaz.
+     * @param playerName El nombre del jugador
+     */
+
+
+    /**
+     * Obtiene el nombre del jugador humano.
+     * @return El nombre del jugador
+     */
+    public String getPlayerName() {
+        return this.playerName;
+    }
+
+    /**
+     * Obtiene el controlador del juego.
+     * @return La instancia del GameController
+     */
+    public GameController getGameController() {
+        return this.gameController;
     }
 }
