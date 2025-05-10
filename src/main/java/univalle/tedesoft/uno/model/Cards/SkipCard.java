@@ -19,13 +19,4 @@ public class SkipCard extends ActionCard{
     public SkipCard(Color color) {
         super(color, Value.SKIP);
     }
-
-    /**
-     * Aplica el efecto de la carta Skip.
-     * Este metodo debe ser complementado con la logica de juego para
-     * forzar al siguiente jugador a perder su turno.
-     */
-    public void appliedEffect() {
-        System.out.println("¡El oponente te deja sin turno!");
-    }
 }

@@ -44,13 +44,4 @@ public abstract class Card {
     public Value getValue() {
         return value;
     }
-    /**
-     * Indica si la carta ya fue usada.
-     *
-     * @return true si fue usada, false en caso contrario
-     */
-    //Puede que elimine esto, solo es provisional
-    public Boolean getIsUsed() {
-        return isUsed;
-    }
 }

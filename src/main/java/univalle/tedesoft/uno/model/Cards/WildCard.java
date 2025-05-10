@@ -19,13 +19,4 @@ public class WildCard extends ActionCard {
     public WildCard() {
         super(Color.WILD, Value.WILD);
     }
-
-    /**
-     * Aplica el efecto de la carta Wild.
-     * Permite cambiar el color del juego, lo cual debe ser
-     * implementado en la logica del controlador del juego.
-     */
-    public void appliedEffect() {
-        System.out.println("¡Han cambiado el color del  juego!");
-    }
 }

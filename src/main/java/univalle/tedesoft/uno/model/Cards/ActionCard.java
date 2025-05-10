@@ -21,10 +21,4 @@ public abstract class ActionCard extends Card {
     public ActionCard(Color color, Value value) {
         super(color, value);
     }
-
-    /**
-     * Metodo abstracto que representa el efecto especial de la carta.
-     * Las subclases deben implementar este metodo para definir su comportamiento.
-     */
-    public abstract void appliedEffect();
 }

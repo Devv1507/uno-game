@@ -36,7 +36,7 @@ public class Player {
      * Remueve una carta de la mano del jugador.
      * @param card Carta que se eliminara de la mano
      */
-    public void playCard(Card card){
+    public void removeCardOfCards(Card card){
         cards.remove(card);
     }
     /**
