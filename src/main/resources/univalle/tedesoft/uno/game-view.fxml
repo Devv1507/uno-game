@@ -1,42 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.effect.DropShadow?>
-<?import javafx.scene.effect.InnerShadow?>
-<?import javafx.scene.effect.BlurType?>
-<?import javafx.scene.paint.LinearGradient?>
-<?import javafx.scene.paint.Stop?>
-<?import javafx.scene.paint.CycleMethod?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="univalle.tedesoft.uno.controller.GameController" style="-fx-background-color: linear-gradient(to bottom, #f5f7fa, #c3cfe2);">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: linear-gradient(to bottom, #f5f7fa, #c3cfe2);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="univalle.tedesoft.uno.controller.GameController">
     <top>
-        <VBox alignment="CENTER" prefHeight="200.0" spacing="15.0" BorderPane.alignment="CENTER" style="-fx-background-color: rgba(255,255,255,0.9); -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 3);">
-            <Label fx:id="playerNameLabel" text="Jugador: " style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);"/>
-            <Label fx:id="machineCardsCountLabel" text="Cartas Máquina: 5" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);"/>
+        <VBox alignment="CENTER" prefHeight="200.0" spacing="15.0" style="-fx-background-color: rgba(255,255,255,0.9); -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 15, 0, 0, 3);" BorderPane.alignment="CENTER">
+            <Label fx:id="playerNameLabel" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);" text="Jugador: " />
+            <Label fx:id="machineCardsCountLabel" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);" text="Cartas Máquina: 5" />
             <HBox fx:id="machineHandHBox" alignment="CENTER" prefHeight="120.0" spacing="8.0">
             </HBox>
             <padding>
-                <Insets top="20.0" bottom="20.0" left="25.0" right="25.0" />
+                <Insets bottom="20.0" left="25.0" right="25.0" top="20.0" />
             </padding>
         </VBox>
     </top>
     <center>
         <HBox alignment="CENTER" prefHeight="200.0" spacing="100.0" BorderPane.alignment="CENTER">
-            <ImageView fx:id="deckImageView" fitHeight="130.0" pickOnBounds="true" preserveRatio="true" onMouseClicked="#handleMazoClick">
+            <ImageView fx:id="deckImageView" fitHeight="130.0" onMouseClicked="#handleMazoClick" pickOnBounds="true" preserveRatio="true">
                 <effect>
-                    <DropShadow radius="8.0" offsetX="3.0" offsetY="3.0" color="#00000080"/>
+                    <DropShadow color="#00000080" offsetX="3.0" offsetY="3.0" radius="8.0" />
                 </effect>
             </ImageView>
             <ImageView fx:id="discardPileImageView" fitHeight="130.0" pickOnBounds="true" preserveRatio="true">
                 <effect>
-                    <DropShadow radius="8.0" offsetX="3.0" offsetY="3.0" color="#00000080"/>
+                    <DropShadow color="#00000080" offsetX="3.0" offsetY="3.0" radius="8.0" />
                 </effect>
             </ImageView>
         </HBox>
@@ -48,40 +43,29 @@
             <HBox fx:id="playerHandHBox" alignment="CENTER" prefHeight="120.0" spacing="8.0">
             </HBox>
             <HBox alignment="CENTER" spacing="40.0">
-                <Button fx:id="passButton" mnemonicParsing="false" onAction="#handlePassButtonAction" text="Pasar"
-                    style="-fx-background-color: linear-gradient(to bottom, #e74c3c, #c0392b); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 8; -fx-padding: 10 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);"/>
-                <Button fx:id="unoButton" mnemonicParsing="false" onAction="#handleUnoButtonAction" text="UNO!"
-                    style="-fx-background-color: linear-gradient(to bottom, #f1c40f, #f39c12); -fx-text-fill: #2c3e50; -fx-font-weight: bold; -fx-font-size: 18px; -fx-background-radius: 8; -fx-padding: 10 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);"/>
-                <ProgressIndicator fx:id="unoTimerIndicator" progress="0.0" prefWidth="45.0" prefHeight="45.0" style="-fx-progress-color: #2ecc71;"/>
+                <Button fx:id="punishUnoButton" mnemonicParsing="false" onAction="#handlePunishUnoButtonAction" prefHeight="60.0" style="-fx-background-color: linear-gradient(to bottom, #f1c40f, #f39c12); -fx-text-fill: #2c3e50; -fx-font-weight: bold; -fx-font-size: 18px; -fx-background-radius: 8; -fx-padding: 10 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);" text="CANTA!" />
+                <Button fx:id="unoButton" mnemonicParsing="false" onAction="#handleUnoButtonAction" style="-fx-background-color: linear-gradient(to bottom, #f1c40f, #f39c12); -fx-text-fill: #2c3e50; -fx-font-weight: bold; -fx-font-size: 18px; -fx-background-radius: 8; -fx-padding: 10 25; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);" text="UNO!" />
+                <ProgressIndicator fx:id="unoTimerIndicator" prefHeight="45.0" prefWidth="45.0" progress="0.0" style="-fx-progress-color: #2ecc71;" />
                 <padding>
-                    <Insets top="20.0" bottom="30.0" />
+                    <Insets bottom="30.0" top="20.0" />
                 </padding>
             </HBox>
         </VBox>
     </bottom>
     <left>
         <VBox alignment="TOP_CENTER" prefWidth="130.0" spacing="30.0" BorderPane.alignment="CENTER">
-            <Button fx:id="restartButton" mnemonicParsing="false" onAction="#handleRestartButtonAction" text="Reiniciar"
-                style="-fx-background-color: linear-gradient(to bottom, #3498db, #2980b9); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 8; -fx-padding: 10 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);"/>
+            <Button fx:id="restartButton" mnemonicParsing="false" onAction="#handleRestartButtonAction" style="-fx-background-color: linear-gradient(to bottom, #3498db, #2980b9); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 8; -fx-padding: 10 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);" text="Reiniciar" />
             <padding>
-                <Insets top="30.0" left="20.0" right="20.0" />
+                <Insets left="20.0" right="20.0" top="30.0" />
             </padding>
         </VBox>
     </left>
     <right>
         <VBox alignment="TOP_CENTER" prefWidth="130.0" spacing="30.0" BorderPane.alignment="CENTER">
             <padding>
-                <Insets top="30.0" left="20.0" right="20.0" bottom="30.0" /> <!-- Añadido bottom padding -->
+                <Insets bottom="30.0" left="20.0" right="20.0" top="30.0" />
             </padding>
-            <Button fx:id="aidButton" mnemonicParsing="false" onAction="#handleAidButtonAction" text="?"
-                style="-fx-background-color: linear-gradient(to bottom, #2ecc71, #27ae60); -fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);"/>
-            <Button fx:id="punishUnoButton" mnemonicParsing="false" onAction="#handlePunishUnoButtonAction" text="¡Atrapar!"
-                    style="-fx-background-color: linear-gradient(to bottom, #f1c40f, #f39c12); -fx-text-fill: #2c3e50; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 8; -fx-padding: 10 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);"
-                    prefHeight="60.0" prefWidth="80.0" visible="false" disable="true">
-            </Button>
-            <padding>
-                <Insets top="30.0" left="20.0" right="20.0" />
-            </padding>
+            <Button fx:id="aidButton" mnemonicParsing="false" onAction="#handleAidButtonAction" style="-fx-background-color: linear-gradient(to bottom, #2ecc71, #27ae60); -fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);" text="?" />
         </VBox>
     </right>
 </BorderPane>
