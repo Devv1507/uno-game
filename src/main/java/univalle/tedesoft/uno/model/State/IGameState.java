@@ -113,4 +113,17 @@ public interface IGameState {
      * el siguiente jugador debe perder su turno.
      */
     void advanceTurn();
+
+    /**
+     * Aplica una penalización al jugador especificado por no haber declarado "UNO"
+     * de acuerdo con las reglas del juego.
+     * @param playerToPenalize El jugador que recibirá la penalización.
+     */
+    void penalizePlayerForUno(Player playerToPenalize);
+
+    /**
+     * Registra que el jugador especificado ha declarado "UNO" correctamente.
+     * @param player El jugador que ha declarado "UNO".
+     */
+    void playerDeclaresUno(Player player);
 }
