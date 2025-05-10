@@ -86,8 +86,18 @@ public interface IGameState {
      */
     void onMustChooseColor(Player player);
 
+    /**
+     * Retorna al ganador del juego una vez que este termina.
+     * @return la instancia de Player que representa al ganador del juego,
+     * o null si aún no hay un ganador o el juego no ha terminado.
+     */
     Player getWinner();
 
+    /**
+     * Retorna una descripción textual de una carta dada, incluyendo su valor y color.
+     * @param card La carta para la que se proporcionará la descripción.
+     * @return un texto que contiene la descripción de la carta.
+     */
     String getCardDescription(Card card);
 
     /**
@@ -98,7 +108,22 @@ public interface IGameState {
     Card drawTurnCard(Player player);
 
     /**
-     *
+     * Avanza el turno al siguiente jugador. Gestiona la transición entre el jugador actual y
+     * y el siguiente en la secuencia lógica del juego 2v2. I.e. si un jugador usa una carta SKIP,
+     * el siguiente jugador debe perder su turno.
      */
     void advanceTurn();
+
+    /**
+     * Aplica una penalización al jugador especificado por no haber declarado "UNO"
+     * de acuerdo con las reglas del juego.
+     * @param playerToPenalize El jugador que recibirá la penalización.
+     */
+    void penalizePlayerForUno(Player playerToPenalize);
+
+    /**
+     * Registra que el jugador especificado ha declarado "UNO" correctamente.
+     * @param player El jugador que ha declarado "UNO".
+     */
+    void playerDeclaresUno(Player player);
 }

@@ -6,7 +6,7 @@ import univalle.tedesoft.uno.model.Cards.Card;
 
 /**
  * Clase que representa un jugador en el juego UNO.
- * Contiene la lista de cartas del jugador y metodos basicos para
+ * Contiene la lista de cartas del jugador y métodos básicos para
  * agregar, remover y contar cartas en su mano.
  * @author David Esteban Valencia
  * @author Santiago David Guerrero
@@ -18,6 +18,14 @@ public class Player {
     public List<Card> cards = new ArrayList<>();
 
     public String name;
+    /**
+     * Indicador para un jugador que tiene la ventana de oportunidad para declarar "UNO".
+     */
+    private boolean isUnoCandidate = false;
+    /**
+     * Indicar para un jugador que efectivamente declaró "UNO" durante su ventana de oportunidad.
+     */
+    private boolean hasDeclaredUnoThisTurn = false;
 
     /**
      * Constructor por defecto del jugador.
@@ -72,5 +80,46 @@ public class Player {
      */
     public void clearHand() {
         this.cards.clear();
+    }
+
+    /**
+     * Verifica si el jugador es actualmente un candidato para declarar "UNO".
+     * (Tiene 1 carta y está en la ventana de oportunidad).
+     * @return true si es candidato a UNO, false en caso contrario.
+     */
+    public boolean isUnoCandidate() {
+        return this.isUnoCandidate;
+    }
+
+    /**
+     * Establece si el jugador es un candidato para declarar "UNO".
+     * @param unoCandidate true si es candidato, false en caso contrario.
+     */
+    public void setUnoCandidate(boolean unoCandidate) {
+        this.isUnoCandidate = unoCandidate;
+    }
+
+    /**
+     * Verifica si el jugador ha declarado "UNO" en la oportunidad actual.
+     * @return true si ya declaró UNO, false en caso contrario.
+     */
+    public boolean hasDeclaredUnoThisTurn() {
+        return this.hasDeclaredUnoThisTurn;
+    }
+
+    /**
+     * Establece si el jugador ha declarado "UNO" en la oportunidad actual.
+     * @param hasDeclaredUnoThisTurn true si declaró UNO, false en caso contrario.
+     */
+    public void setHasDeclaredUnoThisTurn(boolean hasDeclaredUnoThisTurn) {
+        this.hasDeclaredUnoThisTurn = hasDeclaredUnoThisTurn;
+    }
+
+    /**
+     * Resetea los estados relacionados con la declaración de "UNO" del jugador.
+     */
+    public void resetUnoStatus() {
+        this.isUnoCandidate = false;
+        this.hasDeclaredUnoThisTurn = false;
     }
 }

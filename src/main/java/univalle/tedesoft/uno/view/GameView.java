@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tooltip;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
@@ -236,19 +237,15 @@ public class GameView extends Stage {
     }
 
     /**
-     * Habilita o deshabilita el botón de "Pasar"
-     * @param enable true para habilitar, false para deshabilitar.
-     */
-    public void enablePassButton(boolean enable) {
-        Platform.runLater(() -> this.gameController.passButton.setDisable(!enable));
-    }
-
-    /**
      * Muestra u oculta el botón "UNO!".
      * @param show true para mostrar, false para ocultar.
      */
     public void showUnoButton(boolean show) {
-        Platform.runLater(() -> this.gameController.unoButton.setVisible(show));
+        Platform.runLater(() -> {
+            if (this.gameController.unoButton != null) {
+                this.gameController.unoButton.setVisible(show);
+            }
+        });
     }
 
     /**
@@ -256,8 +253,17 @@ public class GameView extends Stage {
      * @param show true para mostrar, false para ocultar.
      */
     public void showUnoPenaltyTimer(boolean show) {
-        // TODO: implementar el temporizador de penalización
-        Platform.runLater(() -> this.gameController.unoTimerIndicator.setVisible(show));
+        Platform.runLater(() -> {
+            if (this.gameController.unoTimerIndicator != null) {
+                this.gameController.unoTimerIndicator.setVisible(show);
+                if (show) {
+                    // Puedes usar INDETERMINATE_PROGRESS o un valor fijo si no hay cuenta regresiva
+                    this.gameController.unoTimerIndicator.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+                } else {
+                    this.gameController.unoTimerIndicator.setProgress(0); // Resetear progreso al ocultar
+                }
+            }
+        });
     }
 
     /**
@@ -274,7 +280,6 @@ public class GameView extends Stage {
     public void disableGameInteractions() {
         Platform.runLater(() -> {
             this.enablePlayerInteraction(false);
-            this.enablePassButton(false);
             this.showUnoButton(false);
             this.gameController.aidButton.setDisable(true);
         });
@@ -412,7 +417,6 @@ public class GameView extends Stage {
             this.gameController.playerHandHBox.getChildren().clear();
             this.gameController.machineHandHBox.getChildren().clear();
             this.gameController.messageLabel.setText("Iniciando nueva partida...");
-//            this.gameController.turnLabel.setText("Turno de:");
             this.gameController.machineCardsCountLabel.setText("Cartas Máquina: ?");
 
             // Restablecer imágenes por defecto
@@ -421,10 +425,11 @@ public class GameView extends Stage {
             // Ocultar y deshabilitar botones relevantes
             this.gameController.unoButton.setVisible(false);
             this.gameController.unoTimerIndicator.setVisible(false);
-            this.gameController.passButton.setDisable(true);
             this.gameController.aidButton.setDisable(true);
             this.gameController.restartButton.setDisable(false);
 
+            this.showUnoButton(false);
+            this.showUnoPenaltyTimer(false);
             // Limpiar resaltados
             this.clearPlayerHandHighlights();
             this.highlightDeck(false);
