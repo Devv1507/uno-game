@@ -39,6 +39,7 @@ public class GameController {
     @FXML public Button restartButton;
     @FXML public Button aidButton;
     @FXML public Label playerNameLabel;
+    @FXML public Button punishUnoButton;
 
     // --- Model ---
     private IGameState gameState;
@@ -68,9 +69,12 @@ public class GameController {
     private static final int MACHINE_CATCH_MIN_DELAY_MS = 2000; // 2 segundos
     private static final int MACHINE_CATCH_MAX_DELAY_MS = 4000; // 4 segundos
     private static final long MACHINE_TURN_THINK_DELAY_MS = 1500;
+    private static final double CHANCE_MACHINE_FORGETS_UNO = 0.3; // 30% de probabilidad de que la máquina olvide
 
     // Bandera para controlar si el avance del turno es debido al timer de UNO del jugador
     private boolean advanceDueToUnoTimer = false;
+    private boolean isChoosingColor = false;
+    private boolean canPunishMachine = false; // Nueva bandera
 
     @FXML
     public void initialize() {
@@ -95,6 +99,11 @@ public class GameController {
         }
         if (this.unoTimerIndicator != null) {
             this.unoTimerIndicator.setVisible(false);
+        }
+        // TODO: recordar mover esto a la lógica de GameView
+        if (this.punishUnoButton != null) { // Inicializar estado del nuevo botón
+            this.punishUnoButton.setVisible(false);
+            this.punishUnoButton.setDisable(true);
         }
     }
 
@@ -157,6 +166,9 @@ public class GameController {
         this.machinePlayer.resetUnoStatus();
         this.updateUnoVisualsForHuman();
         this.advanceDueToUnoTimer = false;
+        this.isChoosingColor = false;
+        this.canPunishMachine = false; // Resetear bandera
+        this.updatePunishUnoButtonVisuals(); // Actualizar estado del botón
     }
 
     /**
@@ -185,10 +197,13 @@ public class GameController {
      */
     @FXML
     public void handlePlayCardClick(MouseEvent mouseEvent) {
-        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer) {
-            this.gameView.displayMessage(this.gameState.isGameOver() ? "El juego ha terminado." : "Espera tu turno.");
+        // TODO: pasar este ternario a if-else clásico
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
+            this.gameView.displayMessage(this.gameState.isGameOver() ? "El juego ha terminado." :
+                    (this.isChoosingColor ? "Elige un color primero." : "Espera tu turno."));
             return;
         }
+        this.canPunishMachine = false;
         // Si el jugador era candidato a UNO y juega otra carta sin decir UNO, se penaliza
         if (this.humanPlayer.isUnoCandidate()) {
             this.penalizeHumanForMissingUno("¡Debiste decir UNO antes de jugar otra carta!");
@@ -253,14 +268,13 @@ public class GameController {
      */
     @FXML
     public void handleMazoClick(MouseEvent mouseEvent) {
-        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer) {
-            if (this.gameState.isGameOver()) {
-                this.gameView.displayMessage("El juego ha terminado.");
-            } else {
-                this.gameView.displayMessage("Espera tu turno.");
-            }
+        // TODO: lo mismo
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
+            this.gameView.displayMessage(this.gameState.isGameOver() ? "El juego ha terminado." :
+                    (this.isChoosingColor ? "Elige un color primero." : "Espera tu turno."));
             return;
         }
+        this.canPunishMachine = false;
         // Penalizar si era candidato a UNO y roba en lugar de decir UNO
         if (this.humanPlayer.isUnoCandidate() && !this.humanPlayer.hasDeclaredUnoThisTurn()) {
             this.penalizeHumanForMissingUno("¡Debiste decir UNO antes de robar!");
@@ -304,7 +318,7 @@ public class GameController {
      */
     @FXML
     public void handleUnoButtonAction(ActionEvent actionEvent) {
-        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer) {
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
             return;
         }
         // Evaluar si es candidato para declarar UNO
@@ -316,11 +330,10 @@ public class GameController {
             this.updateUnoVisualsForHuman();
             // Si el jugador declaró UNO y estaba pendiente una elección de color (por un comodín previo)
             // no avanzamos el turno aún.
-            boolean choicePending = (this.gameState.getTopDiscardCard() != null &&
-                    this.gameState.getTopDiscardCard().getColor() == Color.WILD &&
-                    this.gameState.getCurrentValidColor() == Color.WILD);
+            this.canPunishMachine = false; // Ya no se puede castigar a la máquina si el humano acaba de decir UNO
+            this.updatePunishUnoButtonVisuals();
 
-            if (!choicePending) {
+            if (!this.isChoosingColor) {
                 this.processTurnAdvancement();
             }
         } else {
@@ -334,7 +347,7 @@ public class GameController {
      */
     @FXML
     public void handleAidButtonAction(ActionEvent actionEvent) {
-        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer) {
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
             return;
         }
 
@@ -368,10 +381,14 @@ public class GameController {
      */
     @FXML
     public void handlePassButtonAction(ActionEvent actionEvent) {
-        // Ignorar si no es turno del humano o el juego terminó
-        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer) {
+        // TODO: mejorar la legibilidad de este operador ternario
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
+            this.gameView.displayMessage(this.gameState.isGameOver() ? "El juego ha terminado." :
+                    (this.isChoosingColor ? "Elige un color primero." : "Espera tu turno."));
             return;
         }
+        this.canPunishMachine = false; // Si el humano pasa, pierde la oportunidad de castigar
+        this.updatePunishUnoButtonVisuals();
         // Penalizar si era candidato a UNO y pasa en lugar de decir UNO
         if (this.humanPlayer.isUnoCandidate()) {
             this.penalizeHumanForMissingUno("¡Debiste decir UNO antes de pasar!");
@@ -387,6 +404,40 @@ public class GameController {
         this.processTurnAdvancement();
     }
 
+    /**
+     * Maneja la acción del botón para castigar a la máquina por no decir "UNO".
+     * @param actionEvent El evento de acción.
+     */
+    @FXML
+    public void handlePunishUnoButtonAction(ActionEvent actionEvent) {
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
+            this.gameView.displayMessage("No puedes castigar ahora.");
+            return;
+        }
+
+        // Condiciones para castigar a la máquina:
+        // 1. Es turno del humano (implícito por la guarda anterior).
+        // 2. La máquina tiene 1 carta.
+        // 3. La máquina es candidata a UNO (significa que jugó una carta que la dejó con 1).
+        // 4. La máquina NO ha declarado UNO en su oportunidad.
+        if (this.machinePlayer.getNumeroCartas() == 1 &&
+                this.machinePlayer.isUnoCandidate() &&
+                !this.machinePlayer.hasDeclaredUnoThisTurn()) {
+
+            this.gameView.displayMessage("¡Atrapaste a la Máquina! No dijo UNO. Roba " + GameState.PENALTY_CARDS_FOR_UNO + " cartas.");
+            this.gameState.penalizePlayerForUno(this.machinePlayer);
+            this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas());
+
+            this.canPunishMachine = false; // Oportunidad de castigo usada
+            this.updatePunishUnoButtonVisuals(); // Ocultar el botón
+            // El turno del humano continúa. No se avanza el turno aquí.
+        } else {
+            this.gameView.displayMessage("No es el momento de castigar a la máquina.");
+            this.canPunishMachine = false; // No había nada que castigar, ocultar botón.
+            this.updatePunishUnoButtonVisuals();
+        }
+    }
+
     // --- Lógica del Juego ---
 
     /**
@@ -395,6 +446,9 @@ public class GameController {
      * manejando el turno de la máquina si corresponde.
      */
     private void processTurnAdvancement() {
+        if (this.isChoosingColor) {
+            return;
+        }
         this.advanceDueToUnoTimer = false; // Resetear la bandera
         // Limpiar ayudas visuales
         this.cancelHumanUnoTimer();
@@ -409,6 +463,7 @@ public class GameController {
         // Actualizar mensaje y controles
         this.gameView.clearPlayerHandHighlights();
         this.gameView.highlightDeck(false);
+        this.canPunishMachine = false; // Resetear al cambiar de turno
         this.gameView.updateTurnIndicator(this.currentPlayer.getName());
         this.gameView.displayMessage("Turno de " + this.currentPlayer.getName());
         this.updateInteractionBasedOnTurn();
@@ -426,6 +481,15 @@ public class GameController {
             }
         } else {
             this.cancelMachineCatchUnoTimer();
+            // Verificar si la máquina acaba de jugar y "olvidó" decir UNO
+            if (previousPlayer == this.machinePlayer &&
+                    this.machinePlayer.getNumeroCartas() == 1 &&
+                    this.machinePlayer.isUnoCandidate() && // Es importante que sea candidata (jugó y quedó con 1)
+                    !this.machinePlayer.hasDeclaredUnoThisTurn()) {
+                this.canPunishMachine = true;
+                this.gameView.displayMessage("¡La máquina tiene UNO y no lo ha dicho! ¡Puedes castigarla!");
+            }
+            this.updatePunishUnoButtonVisuals();
         }
     }
 
@@ -433,7 +497,13 @@ public class GameController {
      * Pide a la vista que muestre el diálogo de elección de color y procesa la selección.
      */
     private void promptHumanForColorChoice() {
+        this.isChoosingColor = true;
+        this.gameView.enablePlayerInteraction(false);
         Optional<String> result = this.gameView.promptForColorChoice(); // La vista mostrará el diálogo de elección
+
+        this.isChoosingColor = false;
+        this.gameView.enablePlayerInteraction(true);
+        this.updateInteractionBasedOnTurn(); // Actualizar botones ahora que el diálogo cerró
         result.ifPresentOrElse(
                 colorName -> {
                     Color chosenColor = Color.valueOf(colorName);
@@ -489,10 +559,14 @@ public class GameController {
                 this.handleGameOver();
                 return;
             }
-            // Comprobar UNO para la máquina
+            // Lógica para que la máquina "diga" o "olvide" UNO
             if (this.machinePlayer.isUnoCandidate()) {
-                this.gameState.playerDeclaresUno(this.machinePlayer); // Máquina "dice" UNO
-                this.gameView.displayMessage("¡Máquina dice UNO!");
+                if (this.randomGenerator.nextDouble() > CHANCE_MACHINE_FORGETS_UNO) {
+                    this.gameState.playerDeclaresUno(this.machinePlayer);
+                    this.gameView.displayMessage("¡Máquina dice UNO!");
+                } else {
+                    this.gameView.displayMessage("Máquina tiene una carta... (parece que olvidó decir UNO)");
+                }
             }
             // Si la máquina jugó comodín
             if (cardToPlay.getColor() == Color.WILD) {
@@ -592,10 +666,13 @@ public class GameController {
      * Habilita el botón de 'Pasar' solo si es turno humano y no está obligado a tomar cartas.
      */
     private void updateInteractionBasedOnTurn() {
-        boolean isHumanTurn = (this.currentPlayer == this.humanPlayer);
-        this.gameView.enablePlayerInteraction(isHumanTurn);
-        this.gameView.enablePassButton(isHumanTurn);
-        // TODO: toca revisar como reutilizar este método para el caso de la máquina, que botones queremos deshabilitar o así
+        boolean canInteractBase = (this.currentPlayer == this.humanPlayer &&
+                !this.gameState.isGameOver() &&
+                !this.isChoosingColor);
+        this.gameView.enablePlayerInteraction(canInteractBase);
+        this.gameView.enablePassButton(canInteractBase);
+        this.updatePunishUnoButtonVisuals();
+        // TODO: toca revisar este método
     }
 
     /**
@@ -712,13 +789,34 @@ public class GameController {
             Platform.runLater(() -> {
                 // Solo penalizar y avanzar si el timer realmente expiró
                 // y el jugador aún es candidato y no ha declarado UNO.
-                if (this.humanPlayer.isUnoCandidate() && !this.humanPlayer.hasDeclaredUnoThisTurn()) {
+                if (!this.gameState.isGameOver() && this.humanPlayer.isUnoCandidate() && !this.humanPlayer.hasDeclaredUnoThisTurn()) {
                     this.penalizeHumanForMissingUno(this.humanPlayer.getName() + " no dijo UNO a tiempo.");
                     this.humanPlayer.resetUnoStatus();
-                    this.advanceDueToUnoTimer = true; // Marcar que el avance es por el timer
-                    this.processTurnAdvancement();
+
+                    this.advanceDueToUnoTimer = true;
+                    if (!this.isChoosingColor) {
+                        this.processTurnAdvancement();
+                    }
                 }
             });
         }, UNO_PLAYER_RESPONSE_TIME_SECONDS, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Actualiza la visibilidad y el estado de habilitación del botón para castigar a la máquina.
+     * El botón es visible y está habilitado si {@code canPunishMachine} es verdadero
+     * y es el turno del jugador humano y el juego no ha terminado.
+     */
+    private void updatePunishUnoButtonVisuals() {
+        Platform.runLater(() -> {
+            boolean showButton = this.canPunishMachine &&
+                    this.currentPlayer == this.humanPlayer &&
+                    !this.gameState.isGameOver() &&
+                    !this.isChoosingColor;
+            if (this.punishUnoButton != null) {
+                this.punishUnoButton.setVisible(showButton);
+                this.punishUnoButton.setDisable(!showButton);
+            }
+        });
     }
 }
