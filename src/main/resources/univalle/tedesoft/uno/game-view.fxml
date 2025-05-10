@@ -70,8 +70,15 @@
     </left>
     <right>
         <VBox alignment="TOP_CENTER" prefWidth="130.0" spacing="30.0" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets top="30.0" left="20.0" right="20.0" bottom="30.0" /> <!-- Añadido bottom padding -->
+            </padding>
             <Button fx:id="aidButton" mnemonicParsing="false" onAction="#handleAidButtonAction" text="?"
                 style="-fx-background-color: linear-gradient(to bottom, #2ecc71, #27ae60); -fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);"/>
+            <Button fx:id="punishUnoButton" mnemonicParsing="false" onAction="#handlePunishUnoButtonAction" text="¡Atrapar!"
+                    style="-fx-background-color: linear-gradient(to bottom, #f1c40f, #f39c12); -fx-text-fill: #2c3e50; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 8; -fx-padding: 10 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);"
+                    prefHeight="60.0" prefWidth="80.0" visible="false" disable="true">
+            </Button>
             <padding>
                 <Insets top="30.0" left="20.0" right="20.0" />
             </padding>
