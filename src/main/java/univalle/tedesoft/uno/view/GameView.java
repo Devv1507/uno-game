@@ -237,14 +237,6 @@ public class GameView extends Stage {
     }
 
     /**
-     * Habilita o deshabilita el botón de "Pasar"
-     * @param enable true para habilitar, false para deshabilitar.
-     */
-    public void enablePassButton(boolean enable) {
-        Platform.runLater(() -> this.gameController.passButton.setDisable(!enable));
-    }
-
-    /**
      * Muestra u oculta el botón "UNO!".
      * @param show true para mostrar, false para ocultar.
      */
@@ -288,7 +280,6 @@ public class GameView extends Stage {
     public void disableGameInteractions() {
         Platform.runLater(() -> {
             this.enablePlayerInteraction(false);
-            this.enablePassButton(false);
             this.showUnoButton(false);
             this.gameController.aidButton.setDisable(true);
         });
@@ -434,7 +425,6 @@ public class GameView extends Stage {
             // Ocultar y deshabilitar botones relevantes
             this.gameController.unoButton.setVisible(false);
             this.gameController.unoTimerIndicator.setVisible(false);
-            this.gameController.passButton.setDisable(true);
             this.gameController.aidButton.setDisable(true);
             this.gameController.restartButton.setDisable(false);
 
