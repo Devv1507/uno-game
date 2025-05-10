@@ -33,7 +33,6 @@ public class GameController {
     @FXML public Label messageLabel;
     @FXML public Label turnLabel;
     @FXML public HBox playerHandHBox;
-    @FXML public Button passButton;
     @FXML public Button unoButton;
     @FXML public ProgressIndicator unoTimerIndicator;
     @FXML public Button restartButton;
@@ -299,7 +298,6 @@ public class GameController {
             // Comprobar si la carta robada se puede jugar
             if (this.gameState.isValidPlay(drawnCard)) {
                 this.gameView.displayMessage("¡Robaste una carta jugable! Puedes jugarla o pasar.");
-                this.gameView.enablePassButton(true);
             } else {
                 // Pasar turno automáticamente si no es jugable
                 // TODO: evaluar si esto es válido de acuerdo a los requerimientos
@@ -373,35 +371,6 @@ public class GameController {
     @FXML
     public void handleRestartButtonAction(ActionEvent actionEvent) {
         this.startNewGame();
-    }
-
-    /**
-     * Maneja la acción del botón "Pasar".
-     * @param actionEvent El evento de acción.
-     */
-    @FXML
-    public void handlePassButtonAction(ActionEvent actionEvent) {
-        // TODO: mejorar la legibilidad de este operador ternario
-        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
-            this.gameView.displayMessage(this.gameState.isGameOver() ? "El juego ha terminado." :
-                    (this.isChoosingColor ? "Elige un color primero." : "Espera tu turno."));
-            return;
-        }
-        this.canPunishMachine = false; // Si el humano pasa, pierde la oportunidad de castigar
-        this.updatePunishUnoButtonVisuals();
-        // Penalizar si era candidato a UNO y pasa en lugar de decir UNO
-        if (this.humanPlayer.isUnoCandidate()) {
-            this.penalizeHumanForMissingUno("¡Debiste decir UNO antes de pasar!");
-            this.humanPlayer.resetUnoStatus();
-            this.processTurnAdvancement();
-            return;
-        }
-        this.cancelHumanUnoTimer(); // Cancelar cualquier timer de UNO pendiente
-        this.updateUnoVisualsForHuman(); // Ocultar botón/timer de UNO
-
-        this.gameView.clearPlayerHandHighlights();
-        this.gameView.displayMessage("Turno pasado.");
-        this.processTurnAdvancement();
     }
 
     /**
@@ -670,7 +639,6 @@ public class GameController {
                 !this.gameState.isGameOver() &&
                 !this.isChoosingColor);
         this.gameView.enablePlayerInteraction(canInteractBase);
-        this.gameView.enablePassButton(canInteractBase);
         this.updatePunishUnoButtonVisuals();
         // TODO: toca revisar este método
     }
