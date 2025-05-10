@@ -463,17 +463,15 @@ public class GameController {
         // Actualizar mensaje y controles
         this.gameView.clearPlayerHandHighlights();
         this.gameView.highlightDeck(false);
-        this.canPunishMachine = false; // Resetear al cambiar de turno
         this.gameView.updateTurnIndicator(this.currentPlayer.getName());
         this.gameView.displayMessage("Turno de " + this.currentPlayer.getName());
-        this.updateInteractionBasedOnTurn();
+        this.canPunishMachine = false; // Resetear el condicional de castigar
 
         // Lógica para que la máquina "atrape" al humano
         // Chequea si el humano TIENE 1 carta y NO ha declarado UNO en su turno.
         if (this.currentPlayer == this.machinePlayer) {
-            if (previousPlayer == this.humanPlayer &&
-                    this.humanPlayer.getNumeroCartas() == 1 &&
-                    !this.humanPlayer.hasDeclaredUnoThisTurn()) {
+            this.cancelMachineCatchUnoTimer();
+            if (previousPlayer == this.humanPlayer &&  this.humanPlayer.getNumeroCartas() == 1 &&  !this.humanPlayer.hasDeclaredUnoThisTurn()) {
                 this.startMachineCatchUnoTimer();
             } else {
                 this.cancelMachineCatchUnoTimer();
@@ -491,6 +489,8 @@ public class GameController {
             }
             this.updatePunishUnoButtonVisuals();
         }
+        // Actualizar la interacción y los botones después de toda la lógica de cambio de turno
+        this.updateInteractionBasedOnTurn();
     }
 
     /**
