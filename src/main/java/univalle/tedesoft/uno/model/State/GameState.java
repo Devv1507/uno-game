@@ -120,9 +120,16 @@ public class GameState implements IGameState {
      */
     @Override
     public boolean playCard(Player player, Card card) {
-        player.playCard(card);
+        player.removeCardOfCards(card);
         this.discardStack.discard(card);
-        this.applyCardEffect(card, player);
+        if (card instanceof ActionCard) {
+            this.applyCardEffect(card, player);
+        }
+        if (card.getColor() != Color.WILD) {
+            this.currentValidColor = card.getColor();
+            this.currentValidValue = card.getValue();
+        }
+        //this.applyCardEffect(card, player);
         // comprobar si el jugador gano
         if (player.getNumeroCartas() == 0) {
             this.gameOver = true;
@@ -138,7 +145,7 @@ public class GameState implements IGameState {
      * Determina y avanza al siguiente jugador, manejando los saltos.
      * @see #playCard(Player, Card)
      */
-    private void advanceTurn() {
+    public void advanceTurn() {
         Player nextPlayer = this.getOpponent(this.currentPlayer);
 
         if (this.skipNextTurn) {
@@ -151,6 +158,8 @@ public class GameState implements IGameState {
 
     /**
      * Getter del oponente en un juego de 2 jugadores
+     * @param player jugador que esta en este momento en turno.
+     * @return player jugador oponente al player que se ingreso.
      */
     private Player getOpponent(Player player) {
         if (player == this.humanPlayer) {
@@ -167,7 +176,12 @@ public class GameState implements IGameState {
      * @see #playCard
      */
     private void applyCardEffect(Card card, Player playerWhoPlayed) {
-        Player opponent = (playerWhoPlayed == this.humanPlayer) ? this.machinePlayer : this.humanPlayer;
+        Player opponent;
+        if (playerWhoPlayed == this.humanPlayer) {
+            opponent = this.machinePlayer;
+        } else {
+            opponent = this.humanPlayer;
+        }
         if (card instanceof DrawTwoCard) {
             this.forceDraw(opponent, 2);
             this.skipNextTurn = true; // El oponente pierde el turno
@@ -220,21 +234,23 @@ public class GameState implements IGameState {
      * @param numberOfCards La cantidad de cartas que será forzado a tomar.
      */
     @Override
-    public int forceDraw(Player player, int numberOfCards) {
-        int cardsActuallyDrawn = 0; // Contador por si no hay suficientes cartas
-
+    public void forceDraw(Player player, int numberOfCards) {
+        int cardsActuallyDrawn = 0; // Contador por si no hay suficientes cartas TODO: esto no se me hace con sentido, ademas lo hago mas simple con los cambios.
+        if (this.deck.getNumeroCartas() < numberOfCards) {
+            this.recyclingDeck();
+        }
         for (int i = 0; i < numberOfCards; i++) {
-            Card card = this.takeSingleCardFromDeckInternal();
-            if (card != null) {
+            Card card = this.deck.takeCard();
+            if (card != null) {//TODO: Se borra si se contempla innecesaria.
                 player.addCard(card);
-                cardsActuallyDrawn++;
+                //cardsActuallyDrawn++;
             } else {
                 break; // No hay más cartas
             }
             // Notificar por cada carta robada individualmente (si es necesario)
             // onPlayerDrewCard(player, card);  }
         }
-        return cardsActuallyDrawn;
+        //return cardsActuallyDrawn;
     }
 
     /**
@@ -262,10 +278,12 @@ public class GameState implements IGameState {
     /**
      * Recicla las cartas de la pila de descarte de vuelta al mazo principal
      * cuando este se queda vacío.
+     * TODO: Explicacion: voy a cambiar este metodo, a uno que solo recicle el mazo, no tiene sentido verificar si esta vacio, es mejor saber si tiene la capacidad
      */
     @Override
-    public void onEmptyDeck() {
+    public void recyclingDeck() {
         ArrayList<Card> recycledCards = (ArrayList<Card>) this.discardStack.recycleDeck();
+        /*
         if (!recycledCards.isEmpty()) {
             for (Card card : recycledCards) {
                 // Añade cada carta al final de la pila
@@ -276,6 +294,12 @@ public class GameState implements IGameState {
         } else {
             System.out.println("No hay suficientes cartas en la pila de descarte para reciclar.");
         }
+         */
+        for (Card card : recycledCards) {
+            // Añade cada carta al final de la pila
+            this.deck.getCards().add(card);
+        }
+        this.deck.shuffle();
     }
 
 
@@ -383,6 +407,11 @@ public class GameState implements IGameState {
         return this.gameOver;
     }
 
+    /**
+     * Metodo con el objetivo de tomar una carta del mazo cuando no hay cartas jugables en el mazo.
+     * @param player El jugador que está robando la carta.
+     * @return drawnCard carta que se roba del mazo principal(Deck)
+     */
     @Override
     public Card drawTurnCard(Player player) {
         Card drawnCard = takeSingleCardFromDeckInternal();
@@ -402,7 +431,7 @@ public class GameState implements IGameState {
     private Card takeSingleCardFromDeckInternal() {
         // Verificar si el mazo esta vacio ANTES de intentar tomar
         if (this.deck.getNumeroCartas() == 0) {
-            this.onEmptyDeck();
+            this.recyclingDeck();
         }
         if (this.deck.getNumeroCartas() == 0) {
             System.err.println("Advertencia: El mazo y la pila de descarte están vacíos.");
