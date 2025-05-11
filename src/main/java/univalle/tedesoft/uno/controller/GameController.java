@@ -7,7 +7,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 
 import univalle.tedesoft.uno.model.Cards.Card;
 import univalle.tedesoft.uno.model.Enum.Color;
@@ -40,7 +39,6 @@ public class GameController {
     @FXML public Button aidButton;
     @FXML public Label playerNameLabel;
     @FXML public Button punishUnoButton;
-    @FXML public VBox messageContainer;
 
     // --- Model ---
     private IGameState gameState;
@@ -64,13 +62,13 @@ public class GameController {
     // --- Timers para declarar UNO --
     private ScheduledFuture<?> humanUnoTimerTask;
     private ScheduledFuture<?> machineCatchUnoTimerTask;
-    private final Random randomGenerator = new Random();
+    private ScheduledFuture<?> machineDeclareUnoTimerTask;
+
     // --- Constantes para controlar las ventanas de tiempo para declarar UNO ---
     private static final int UNO_PLAYER_RESPONSE_TIME_SECONDS = 4;
     private static final int MACHINE_CATCH_MIN_DELAY_MS = 2000; // 2 segundos
     private static final int MACHINE_CATCH_MAX_DELAY_MS = 4000; // 4 segundos
     private static final long MACHINE_TURN_THINK_DELAY_MS = 1500;
-    private static final double CHANCE_MACHINE_FORGETS_UNO = 0.3; // 30% de probabilidad de que la máquina olvide
 
     // Bandera para controlar si el avance del turno es debido al timer de UNO del jugador
     private boolean advanceDueToUnoTimer = false;
@@ -199,16 +197,25 @@ public class GameController {
     @FXML
     public void handlePlayCardClick(MouseEvent mouseEvent) {
         // TODO: pasar este ternario a if-else clásico
-        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
+        if (this.gameState.isGameOver() ||
+                this.currentPlayer != this.humanPlayer ||
+                this.isChoosingColor
+        ) {
             this.gameView.displayMessage(this.gameState.isGameOver() ? "El juego ha terminado." :
                     (this.isChoosingColor ? "Elige un color primero." : "Espera tu turno."));
             return;
         }
-        this.canPunishMachine = false;
+        // Si el humano juega/roba en lugar de castigar a la máquina
+        if (this.canPunishMachine) {
+            this.canPunishMachine = false;
+            this.updatePunishUnoButtonVisuals();
+            if (this.machinePlayer.isUnoCandidate() && !this.machinePlayer.hasDeclaredUnoThisTurn()) {
+                this.gameState.playerDeclaresUno(this.machinePlayer); // Máquina "dijo" UNO implícitamente
+            }
+        }
         // Si el jugador era candidato a UNO y juega otra carta sin decir UNO, se penaliza
         if (this.humanPlayer.isUnoCandidate()) {
             this.penalizeHumanForMissingUno("¡Debiste decir UNO antes de jugar otra carta!");
-            this.humanPlayer.resetUnoStatus();
             this.processTurnAdvancement();
             return;
         }
@@ -275,11 +282,17 @@ public class GameController {
                     (this.isChoosingColor ? "Elige un color primero." : "Espera tu turno."));
             return;
         }
-        this.canPunishMachine = false;
+        // Si el humano juega en lugar de castigar
+        if (this.canPunishMachine) {
+            this.canPunishMachine = false;
+            this.updatePunishUnoButtonVisuals();
+            if (this.machinePlayer.isUnoCandidate() && !this.machinePlayer.hasDeclaredUnoThisTurn()) {
+                this.gameState.playerDeclaresUno(this.machinePlayer); // Máquina "dijo" UNO implícitamente
+            }
+        }
         // Penalizar si era candidato a UNO y roba en lugar de decir UNO
         if (this.humanPlayer.isUnoCandidate() && !this.humanPlayer.hasDeclaredUnoThisTurn()) {
             this.penalizeHumanForMissingUno("¡Debiste decir UNO antes de robar!");
-            this.humanPlayer.resetUnoStatus();
             this.processTurnAdvancement();
             return;
         }
@@ -296,16 +309,8 @@ public class GameController {
         this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this);
 
         if (drawnCard != null) {
-            this.gameView.displayMessage("Robaste: " + this.gameState.getCardDescription(drawnCard));
-            // Comprobar si la carta robada se puede jugar
-            if (this.gameState.isValidPlay(drawnCard)) {
-                this.gameView.displayMessage("¡Robaste una carta jugable! Puedes jugarla o pasar.");
-            } else {
-                // Pasar turno automáticamente si no es jugable
-                // TODO: evaluar si esto es válido de acuerdo a los requerimientos
-                this.gameView.displayMessage("No puedes jugar la carta robada. Pasando turno...");
-                this.processTurnAdvancement();
-            }
+            this.gameView.displayMessage("Sacaste: " + this.gameState.getCardDescription(drawnCard));
+            this.processTurnAdvancement();
         } else {
             this.gameView.displayMessage("No hay más cartas para robar. Pasando turno...");
             this.processTurnAdvancement();
@@ -381,30 +386,26 @@ public class GameController {
      */
     @FXML
     public void handlePunishUnoButtonAction(ActionEvent actionEvent) {
-        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
-            this.gameView.displayMessage("No puedes castigar ahora.");
-            return;
-        }
-
         // Condiciones para castigar a la máquina:
         // 1. Es turno del humano (implícito por la guarda anterior).
         // 2. La máquina tiene 1 carta.
         // 3. La máquina es candidata a UNO (significa que jugó una carta que la dejó con 1).
         // 4. La máquina NO ha declarado UNO en su oportunidad.
-        if (this.machinePlayer.getNumeroCartas() == 1 &&
+        if (this.canPunishMachine &&
+                this.machinePlayer.getNumeroCartas() == 1 &&
                 this.machinePlayer.isUnoCandidate() &&
-                !this.machinePlayer.hasDeclaredUnoThisTurn()) {
-
+                !this.machinePlayer.hasDeclaredUnoThisTurn()
+        ) {
             this.gameView.displayMessage("¡Atrapaste a la Máquina! No dijo UNO. Roba " + GameState.PENALTY_CARDS_FOR_UNO + " cartas.");
             this.gameState.penalizePlayerForUno(this.machinePlayer);
             this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas());
-
-            this.canPunishMachine = false; // Oportunidad de castigo usada
-            this.updatePunishUnoButtonVisuals(); // Ocultar el botón
-            // El turno del humano continúa. No se avanza el turno aquí.
+            // Esto asegura que la máquina no diga UNO después de ser penalizada
+            this.cancelMachineDeclareUnoTimer();
+            this.canPunishMachine = false;
+            this.updatePunishUnoButtonVisuals();
         } else {
             this.gameView.displayMessage("No es el momento de castigar a la máquina.");
-            this.canPunishMachine = false; // No había nada que castigar, ocultar botón.
+            this.canPunishMachine = false;
             this.updatePunishUnoButtonVisuals();
         }
     }
@@ -426,27 +427,32 @@ public class GameController {
         this.updateUnoVisualsForHuman();
         // Guardar quién era el jugador anterior para la lógica de "atrapar UNO"
         Player previousPlayer = this.currentPlayer;
-        // Actualizar el jugador actual desde el GameState
-        this.gameState.advanceTurn();
-        // Actualizar indicador de turno en la vista con el nombre del jugador actual
+
+        this.gameState.advanceTurn(); // Actualizar el jugador actual desde el GameState
         this.currentPlayer = this.gameState.getCurrentPlayer();
-        this.currentPlayer.resetUnoStatus();
+        if (this.currentPlayer != previousPlayer) {
+            this.currentPlayer.resetUnoStatus();
+        }
         // Actualizar mensaje y controles
         this.gameView.clearPlayerHandHighlights();
         this.gameView.highlightDeck(false);
         this.gameView.updateTurnIndicator(this.currentPlayer.getName());
         this.gameView.displayMessage("Turno de " + this.currentPlayer.getName());
-        this.canPunishMachine = false; // Resetear el condicional de castigar
 
         // Lógica para que la máquina "atrape" al humano
         // Chequea si el humano TIENE 1 carta y NO ha declarado UNO en su turno.
         if (this.currentPlayer == this.machinePlayer) {
+            this.canPunishMachine = false;
+            this.updatePunishUnoButtonVisuals(); // Asegurar que el botón de castigo se oculte
             this.cancelMachineCatchUnoTimer();
-            if (previousPlayer == this.humanPlayer &&  this.humanPlayer.getNumeroCartas() == 1 &&  !this.humanPlayer.hasDeclaredUnoThisTurn()) {
-                this.startMachineCatchUnoTimer();
+            // Si el jugador anterior fue el humano, quedo con 1 carta y no ha dicho UNO
+            if (previousPlayer == this.humanPlayer &&
+                    this.humanPlayer.getNumeroCartas() == 1 &&
+                    !this.humanPlayer.hasDeclaredUnoThisTurn()
+            ) {
+                this.startMachineCatchUnoTimer(); // Máquina intenta atrapar al humano
             } else {
-                this.cancelMachineCatchUnoTimer();
-                this.scheduleMachineTurn();
+                this.scheduleMachineTurn(); // Turno normal de la máquina
             }
         } else {
             this.cancelMachineCatchUnoTimer();
@@ -454,14 +460,15 @@ public class GameController {
             if (previousPlayer == this.machinePlayer &&
                     this.machinePlayer.getNumeroCartas() == 1 &&
                     this.machinePlayer.isUnoCandidate() && // Es importante que sea candidata (jugó y quedó con 1)
-                    !this.machinePlayer.hasDeclaredUnoThisTurn()) {
+                    !this.machinePlayer.hasDeclaredUnoThisTurn()
+            ) {
                 this.canPunishMachine = true;
-                this.gameView.displayMessage("¡La máquina tiene UNO y no lo ha dicho! ¡Puedes castigarla!");
+            } else {
+                this.canPunishMachine = false;
             }
-            this.updatePunishUnoButtonVisuals();
+            // Actualizar la interacción y los botones después de toda la lógica de cambio de turno
+            this.updateInteractionBasedOnTurn();
         }
-        // Actualizar la interacción y los botones después de toda la lógica de cambio de turno
-        this.updateInteractionBasedOnTurn();
     }
 
     /**
@@ -484,7 +491,10 @@ public class GameController {
                     this.gameView.updateDiscardPile(this.gameState.getTopDiscardCard(), chosenColor);
                     this.gameView.displayMessage("Color cambiado a " + chosenColor.name());
                     // Avanzar el turno
-                    if (this.humanUnoTimerTask == null || this.humanUnoTimerTask.isDone() || this.humanPlayer.hasDeclaredUnoThisTurn()) {
+                    if (this.humanUnoTimerTask == null ||
+                            this.humanUnoTimerTask.isDone() ||
+                            this.humanPlayer.hasDeclaredUnoThisTurn()
+                    ) {
                         this.processTurnAdvancement();
                     }
                 },
@@ -510,6 +520,44 @@ public class GameController {
         }, MACHINE_TURN_THINK_DELAY_MS, TimeUnit.MILLISECONDS); // Retraso de MACHINE_TURN_THINK_DELAY_MS segundos
     }
 
+    /**
+     * Maneja las acciones posteriores a que la máquina haya jugado una carta.
+     * Esto incluye actualizar la UI, verificar si el juego terminó,
+     * manejar la lógica de UNO para la máquina y avanzar el turno.
+     *
+     * @param playedCard La carta que jugó la máquina.
+     * @param gameEnded  True si la jugada de la máquina terminó el juego.
+     */
+    private void handleMachinePlayedCard(Card playedCard, boolean gameEnded) {
+        if (gameEnded) {
+            this.handleGameOver();
+            return;
+        }
+
+        // Actualizar la vista de la pila de descarte.
+        // Si la máquina jugó un comodín, gameState.onMustChooseColor ya habrá sido llamado
+        // dentro de gameState.playCard(), y el gameState.currentValidColor estará actualizado.
+        this.gameView.updateDiscardPile(this.gameState.getTopDiscardCard(), this.gameState.getCurrentValidColor());
+
+        // Si la máquina jugó un comodín, mostrar mensaje de cambio de color.
+        if (playedCard.getColor() == Color.WILD) {
+            this.gameView.displayMessage("Máquina cambió el color a " + this.gameState.getCurrentValidColor().name());
+        }
+
+        if (this.machinePlayer.isUnoCandidate()) {
+            // La máquina está en situación de UNO.
+            // 1. Programar su intento de declarar UNO.
+            this.startMachineDeclareUnoTimer();
+            // 2. Avanzar el turno INMEDIATAMENTE.
+            //    Esto da al jugador humano la oportunidad de castigar a la máquina
+            //    antes de que el temporizador de la máquina para declarar UNO expire.
+            this.processTurnAdvancement();
+        } else {
+            // La máquina no quedó en situación de UNO, simplemente avanzar el turno.
+            this.processTurnAdvancement();
+        }
+    }
+
 
     /**
      * Ejecuta la lógica del turno de la máquina.
@@ -525,25 +573,7 @@ public class GameController {
             this.gameView.displayMessage("Máquina juega: " + this.gameState.getCardDescription(cardToPlay));
             boolean gameEnded = this.gameState.playCard(this.machinePlayer, cardToPlay);
             this.updateViewAfterMachinePlay(cardToPlay);
-
-            if (gameEnded) {
-                this.handleGameOver();
-                return;
-            }
-            // Lógica para que la máquina "diga" o "olvide" UNO
-            if (this.machinePlayer.isUnoCandidate()) {
-                if (this.randomGenerator.nextDouble() > CHANCE_MACHINE_FORGETS_UNO) {
-                    this.gameState.playerDeclaresUno(this.machinePlayer);
-                    this.gameView.displayMessage("¡Máquina dice UNO!");
-                } else {
-                    this.gameView.displayMessage("Máquina tiene una carta... (parece que olvidó decir UNO)");
-                }
-            }
-            // Si la máquina jugó comodín
-            if (cardToPlay.getColor() == Color.WILD) {
-                this.gameView.displayMessage("Máquina cambió el color a " + this.gameState.getCurrentValidColor().name());
-            }
-            this.processTurnAdvancement();
+            this.handleMachinePlayedCard(cardToPlay, gameEnded);
         } else {
             // 2. La máquina no encontró carta jugable, así que va a tomar una
             this.gameView.displayMessage("Máquina no tiene jugadas, robando...");
@@ -557,30 +587,52 @@ public class GameController {
                 return;
             }
             this.gameView.displayMessage("Máquina robó una carta.");
+
             // 3. Intentar jugar la carta robada
             if (this.gameState.isValidPlay(drawnCard)) {
                 this.gameView.displayMessage("Máquina juega la carta robada: " + this.gameState.getCardDescription(drawnCard));
                 boolean gameEnded = this.gameState.playCard(this.machinePlayer, drawnCard);
                 this.updateViewAfterMachinePlay(drawnCard);
-
-                if (gameEnded) {
-                    this.handleGameOver();
-                    return;
-                }
-                if (this.machinePlayer.isUnoCandidate()) {
-                    this.gameState.playerDeclaresUno(this.machinePlayer);
-                    this.gameView.displayMessage("¡Máquina dice UNO!");
-                }
-                if (drawnCard.getColor() == Color.WILD) {
-                    this.gameView.displayMessage("Máquina cambió el color a " + this.gameState.getCurrentValidColor().name());
-                }
-
+                this.handleMachinePlayedCard(drawnCard, gameEnded);
             } else {
                 // 4. No se jugó nada más, solo se robó. Avanzamos turno.
                 this.gameView.displayMessage("Máquina no puede jugar la carta robada. Pasando turno.");
+                this.processTurnAdvancement();
             }
-            this.processTurnAdvancement();
         }
+    }
+
+    /**
+     * Inicia un temporizador para que la máquina declare "UNO" después de un breve retraso aleatorio.
+     * Este retraso simula un tiempo de reacción y da una pequeña ventana para que el jugador
+     * humano pueda intentar "atrapar" a la máquina.
+     */
+    private void startMachineDeclareUnoTimer() {
+        this.cancelMachineDeclareUnoTimer(); // Cancelar cualquier timer de declaración previo
+
+        // Retraso aleatorio para declarar UNO
+        Random randomGenerator = new Random();
+        long delay = 2000 + randomGenerator.nextInt(2000); // entre 2 a 4 segundos
+
+        this.machineDeclareUnoTimerTask = this.executorService.schedule(() -> {
+            Platform.runLater(() -> {
+                boolean machineSuccessfullyDeclaredUno = false;
+                // Verificar si la máquina aún debe declarar UNO (no fue atrapada y sigue con 1 carta)
+                if (!this.gameState.isGameOver() &&
+                        this.machinePlayer.isUnoCandidate() &&
+                        !this.machinePlayer.hasDeclaredUnoThisTurn()
+                ) {
+                    this.gameState.playerDeclaresUno(this.machinePlayer);
+                    this.gameView.displayMessage("¡Máquina dice UNO!");
+                    machineSuccessfullyDeclaredUno = true;
+                }
+                // Si la máquina efectivamente declaró UNO, ya no se le puede castigar
+                if (machineSuccessfullyDeclaredUno) {
+                    this.canPunishMachine = false;
+                    this.updatePunishUnoButtonVisuals();
+                }
+            });
+        }, delay, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -655,7 +707,8 @@ public class GameController {
      */
     private void startMachineCatchUnoTimer() {
         this.cancelMachineCatchUnoTimer();
-        long delay = MACHINE_CATCH_MIN_DELAY_MS + this.randomGenerator.nextInt((int) (MACHINE_CATCH_MAX_DELAY_MS - MACHINE_CATCH_MIN_DELAY_MS + 1));
+        Random randomGenerator = new Random();
+        long delay = MACHINE_CATCH_MIN_DELAY_MS + randomGenerator.nextInt((int) (MACHINE_CATCH_MAX_DELAY_MS - MACHINE_CATCH_MIN_DELAY_MS + 1));
         this.gameView.displayMessage("Máquina está observando si dijiste UNO...");
 
         this.machineCatchUnoTimerTask = this.executorService.schedule(() -> {
@@ -716,6 +769,7 @@ public class GameController {
     private void cancelAllTimers() {
         this.cancelHumanUnoTimer();
         this.cancelMachineCatchUnoTimer();
+        this.cancelMachineDeclareUnoTimer();
     }
 
     /**
@@ -726,6 +780,15 @@ public class GameController {
     private void cancelHumanUnoTimer() {
         if (this.humanUnoTimerTask != null && !this.humanUnoTimerTask.isDone()) {
             this.humanUnoTimerTask.cancel(false);
+        }
+    }
+
+    /**
+     * Cancela el temporizador activo que está programado para que la máquina declare "UNO".
+     */
+    private void cancelMachineDeclareUnoTimer() {
+        if (this.machineDeclareUnoTimerTask != null && !this.machineDeclareUnoTimerTask.isDone()) {
+            this.machineDeclareUnoTimerTask.cancel(false);
         }
     }
 
