@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javafx.animation.FadeTransition;
+import javafx.animation.TranslateTransition;
+import javafx.util.Duration;
+
 /**
  * Esta clase representa la vista principal del juego UNO.
  * Es responsable de toda la manipulación de la UI de JavaFX,
@@ -446,11 +450,34 @@ public class GameView extends Stage {
         ImageView imageView = new ImageView(img);
         imageView.setFitHeight(CARD_HEIGHT);
         imageView.setPreserveRatio(true);
-        imageView.setSmooth(true); // Mejor calidad visual
+        imageView.setSmooth(true);
 
         // Añadir Tooltip con la descripción de la carta
-        String description = this.getCardDescription(card); // Usar helper local
+        String description = this.getCardDescription(card);
         Tooltip.install(imageView, new Tooltip(description));
+
+        // Crear transiciones para el movimiento
+        TranslateTransition translateTransition = new TranslateTransition(Duration.millis(150), imageView);
+        translateTransition.setToY(-10);
+
+        TranslateTransition returnTransition = new TranslateTransition(Duration.millis(150), imageView);
+        returnTransition.setToY(0);
+
+        // Crear la sombra
+        DropShadow shadow = new DropShadow(10, 0, 0, javafx.scene.paint.Color.rgb(0, 0, 0, 0.3));
+
+        // Agregar efecto de hover con animaciones
+        imageView.setOnMouseEntered(event -> {
+            returnTransition.stop(); // Detener la transición de retorno si está activa
+            translateTransition.playFromStart();
+            imageView.setEffect(shadow);
+        });
+
+        imageView.setOnMouseExited(event -> {
+            translateTransition.stop(); // Detener la transición de elevación si está activa
+            returnTransition.playFromStart();
+            imageView.setEffect(null);
+        });
 
         return imageView;
     }
@@ -602,7 +629,10 @@ public class GameView extends Stage {
      * Establece el nombre del jugador humano y actualiza la interfaz.
      * @param playerName El nombre del jugador
      */
-
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
+        Platform.runLater(() -> this.gameController.playerNameLabel.setText("Jugador: " + playerName));
+    }
 
     /**
      * Obtiene el nombre del jugador humano.
