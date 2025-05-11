@@ -1,4 +1,4 @@
-package univalle.tedesoft.uno.model.Threads;
+package univalle.tedesoft.uno.threads;
 
 import javafx.application.Platform;
 import univalle.tedesoft.uno.controller.GameController;
