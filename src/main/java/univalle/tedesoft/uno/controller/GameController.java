@@ -74,10 +74,9 @@ public class GameController {
     private static final int MACHINE_CATCH_MAX_DELAY_MS = 4000; // 4 segundos
     private static final long MACHINE_TURN_THINK_DELAY_MS = 1500;
 
-    // Bandera para controlar si el avance del turno es debido al timer de UNO del jugador
-    private boolean advanceDueToUnoTimer = false;
+    // --- Banderas para controlar lógica de decisión ---
     private boolean isChoosingColor = false;
-    private boolean canPunishMachine = false; // Nueva bandera
+    private boolean canPunishMachine = false;
 
     @FXML
     public void initialize() {
@@ -172,7 +171,6 @@ public class GameController {
         this.humanPlayer.resetUnoStatus();
         this.machinePlayer.resetUnoStatus();
         this.updateUnoVisualsForHuman();
-        this.advanceDueToUnoTimer = false;
         this.isChoosingColor = false;
         this.canPunishMachine = false; // Resetear bandera
         this.updatePunishUnoButtonVisuals(); // Actualizar estado del botón
@@ -432,7 +430,6 @@ public class GameController {
         if (this.isChoosingColor) {
             return;
         }
-        this.advanceDueToUnoTimer = false; // Resetear la bandera
         // Limpiar ayudas visuales
         this.cancelHumanUnoTimer();
         this.updateUnoVisualsForHuman();
@@ -856,7 +853,6 @@ public class GameController {
                     this.penalizeHumanForMissingUno(this.humanPlayer.getName() + " no dijo UNO a tiempo.");
                     this.humanPlayer.resetUnoStatus();
 
-                    this.advanceDueToUnoTimer = true;
                     if (!this.isChoosingColor) {
                         this.processTurnAdvancement();
                     }
