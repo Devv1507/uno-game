@@ -15,6 +15,7 @@ import java.io.IOException;
  *
  * @author Juan Pablo Escamilla
  * @author David Esteban Valencia
+ * @author Santiago Guerrero
  */
 public class WelcomeView extends Stage {
     private final WelcomeController controller;

@@ -11,6 +11,14 @@ import univalle.tedesoft.uno.view.WelcomeView;
 
 import java.io.IOException;
 
+/**
+ * Clase encargada de
+ *
+ * @author Juan Pablo Escamilla
+ * @author David Esteban Valencia
+ * @author Santiago Guerrero
+ */
+
 public class WelcomeController {
     @FXML private Button enterNameButton;
     @FXML private Button exitButton;

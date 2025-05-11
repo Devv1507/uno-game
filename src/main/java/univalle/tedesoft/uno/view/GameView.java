@@ -3,6 +3,7 @@ package univalle.tedesoft.uno.view;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ChoiceDialog;
@@ -30,6 +31,7 @@ import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
 import javafx.util.Duration;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 
 /**
  * Esta clase representa la vista principal del juego UNO.
@@ -50,6 +52,8 @@ public class GameView extends Stage {
     private static final String BACK_CARD_IMAGE_NAME = "deck_of_cards";
     private static final String EMPTY_IMAGE_NAME = "card_uno"; // Placeholder
     private String playerName;
+    private static final int MAX_MESSAGES = 3; // Número máximo de mensajes visibles
+    private static final double MESSAGE_FADE_DURATION = 1000; // Duración de la transición en ms
 
     /**
      * Clase interna para implementar el patrón Singleton.
@@ -163,13 +167,38 @@ public class GameView extends Stage {
      */
     public void updatePlayerHand(List<Card> hand, GameController ctrl) {
         Platform.runLater(() -> {
-            this.gameController.playerHandHBox.getChildren().clear(); // Limpiar vista anterior
-            for (Card card : hand) {
+            this.gameController.playerHandHBox.getChildren().clear();
+            
+            // Configurar el HBox para el abanico
+            this.gameController.playerHandHBox.setSpacing(-20); // Solapamiento de cartas
+            this.gameController.playerHandHBox.setAlignment(Pos.CENTER);
+            
+            // Calcular el ángulo de rotación para cada carta
+            double totalAngle = 30.0; // Ángulo total del abanico
+            double angleStep = totalAngle / (hand.size() - 1);
+            double startAngle = -totalAngle / 2;
+            
+            for (int i = 0; i < hand.size(); i++) {
+                Card card = hand.get(i);
                 ImageView cardView = createCardImageView(card);
-                // Asignar el handler del *controlador* al evento de clic
+                
+                // Calcular la rotación para esta carta
+                double rotation = startAngle + (i * angleStep);
+                
+                // Aplicar la rotación
+                cardView.setRotate(rotation);
+                
+                // Ajustar la posición Y para compensar la rotación
+                double yOffset = Math.abs(rotation) * 0.5;
+                cardView.setTranslateY(yOffset);
+                
+                // Asignar el handler del controlador al evento de clic
                 cardView.setOnMouseClicked(ctrl::handlePlayCardClick);
-                // Guardar la carta en el ImageView para recuperarla en el handler
                 cardView.setUserData(card);
+                
+                // Agregar margen para el efecto de elevación
+                HBox.setMargin(cardView, new Insets(0, 0, 20, 0));
+                
                 this.gameController.playerHandHBox.getChildren().add(cardView);
             }
         });
@@ -181,21 +210,34 @@ public class GameView extends Stage {
      */
     public void updateMachineHand(int cardCount) {
         Platform.runLater(() -> {
-            // Actualizar etiqueta del contador
             this.gameController.machineCardsCountLabel.setText("Cartas Máquina: " + cardCount);
-
-            // Renderizar cartas boca abajo (o placeholder)
             this.gameController.machineHandHBox.getChildren().clear();
-            Image backImage = getCardImageByName(EMPTY_IMAGE_NAME); // Usar placeholder
+            this.gameController.machineHandHBox.setSpacing(-20);
+            this.gameController.machineHandHBox.setAlignment(Pos.CENTER);
+            
+            Image backImage = getCardImageByName(EMPTY_IMAGE_NAME);
 
             if (backImage != null) {
+                // Calcular el ángulo de rotación para cada carta
+                double totalAngle = 30.0;
+                double angleStep = totalAngle / (cardCount - 1);
+                double startAngle = -totalAngle / 2;
+                
                 for (int i = 0; i < cardCount; i++) {
                     ImageView cardView = new ImageView(backImage);
-                    cardView.setFitHeight(CARD_HEIGHT * 0.8); // Ligeramente más pequeñas quizás
+                    cardView.setFitHeight(CARD_HEIGHT * 0.8);
                     cardView.setPreserveRatio(true);
                     cardView.setSmooth(true);
-                    // Añadir un pequeño margen si se solapan mucho
-                    HBox.setMargin(cardView, new Insets(0, -CARD_HEIGHT * 0.4, 0, 0)); // Solapamiento
+                    
+                    // Aplicar la rotación
+                    double rotation = startAngle + (i * angleStep);
+                    cardView.setRotate(rotation);
+                    
+                    // Ajustar la posición Y para compensar la rotación
+                    double yOffset = Math.abs(rotation) * 0.5;
+                    cardView.setTranslateY(yOffset);
+                    
+                    HBox.setMargin(cardView, new Insets(0, 0, 20, 0));
                     this.gameController.machineHandHBox.getChildren().add(cardView);
                 }
             }
@@ -323,7 +365,45 @@ public class GameView extends Stage {
      * @param message El texto a mostrar.
      */
     public void displayMessage(String message) {
-        Platform.runLater(() -> this.gameController.messageLabel.setText(message));
+        Platform.runLater(() -> {
+            // Crear nueva etiqueta para el mensaje
+            Label newMessage = new Label(message);
+            newMessage.setStyle("-fx-font-size: 24px; " +
+                              "-fx-font-weight: bold; " +
+                              "-fx-text-fill: #2c3e50; " +
+                              "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);");
+            
+            // Agregar la nueva etiqueta al principio del contenedor
+            this.gameController.messageContainer.getChildren().add(0, newMessage);
+            
+            // Limitar el número de mensajes visibles
+            if (this.gameController.messageContainer.getChildren().size() > MAX_MESSAGES) {
+                this.gameController.messageContainer.getChildren().remove(MAX_MESSAGES);
+            }
+            
+            // Aplicar efectos a todos los mensajes
+            for (int i = 0; i < this.gameController.messageContainer.getChildren().size(); i++) {
+                Node node = this.gameController.messageContainer.getChildren().get(i);
+                if (node instanceof Label label) {
+                    // El mensaje más reciente (i=0) se mantiene grande y oscuro
+                    if (i == 0) {
+                        label.setStyle("-fx-font-size: 24px; " +
+                                     "-fx-font-weight: bold; " +
+                                     "-fx-text-fill: #2c3e50; " +
+                                     "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);");
+                    } else {
+                        // Los mensajes anteriores se hacen más pequeños y claros
+                        double fontSize = 24 - (i * 4); // Reduce el tamaño gradualmente
+                        double opacity = 1.0 - (i * 0.3); // Reduce la opacidad gradualmente
+                        label.setStyle("-fx-font-size: " + fontSize + "px; " +
+                                     "-fx-font-weight: bold; " +
+                                     "-fx-text-fill: #2c3e50; " +
+                                     "-fx-opacity: " + opacity + "; " +
+                                     "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);");
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -447,7 +527,7 @@ public class GameView extends Stage {
         Platform.runLater(() -> {
             this.gameController.playerHandHBox.getChildren().clear();
             this.gameController.machineHandHBox.getChildren().clear();
-            this.gameController.messageLabel.setText("Iniciando nueva partida...");
+            this.gameController.messageContainer.getChildren().clear(); // Limpiar mensajes
             this.gameController.machineCardsCountLabel.setText("Cartas Máquina: ?");
 
             // Restablecer imágenes por defecto
@@ -485,25 +565,36 @@ public class GameView extends Stage {
 
         // Crear transiciones para el movimiento
         TranslateTransition translateTransition = new TranslateTransition(Duration.millis(150), imageView);
-        translateTransition.setToY(-10);
+        translateTransition.setToY(-20);
 
         TranslateTransition returnTransition = new TranslateTransition(Duration.millis(150), imageView);
-        returnTransition.setToY(0);
+        returnTransition.setToY(imageView.getTranslateY()); // Mantener el offset Y actual
 
         // Crear la sombra
-        DropShadow shadow = new DropShadow(10, 0, 0, javafx.scene.paint.Color.rgb(0, 0, 0, 0.3));
+        DropShadow shadow = new DropShadow(15, 0, 0, javafx.scene.paint.Color.rgb(0, 0, 0, 0.3));
 
         // Agregar efecto de hover con animaciones
         imageView.setOnMouseEntered(event -> {
-            returnTransition.stop(); // Detener la transición de retorno si está activa
+            returnTransition.stop();
             translateTransition.playFromStart();
             imageView.setEffect(shadow);
+            imageView.setRotate(0); // Enderezar la carta al hacer hover
         });
 
         imageView.setOnMouseExited(event -> {
-            translateTransition.stop(); // Detener la transición de elevación si está activa
+            translateTransition.stop();
             returnTransition.playFromStart();
             imageView.setEffect(null);
+            // Restaurar la rotación original
+            if (imageView.getUserData() instanceof Card) {
+                int index = this.gameController.playerHandHBox.getChildren().indexOf(imageView);
+                if (index != -1) {
+                    double totalAngle = 30.0;
+                    double angleStep = totalAngle / (this.gameController.playerHandHBox.getChildren().size() - 1);
+                    double startAngle = -totalAngle / 2;
+                    imageView.setRotate(startAngle + (index * angleStep));
+                }
+            }
         });
 
         return imageView;
