@@ -16,6 +16,7 @@ import univalle.tedesoft.uno.model.Players.MachinePlayer;
 import univalle.tedesoft.uno.model.Players.Player;
 import univalle.tedesoft.uno.model.State.GameState;
 import univalle.tedesoft.uno.model.State.IGameState;
+import univalle.tedesoft.uno.model.Threads.MachinePlayerRunnable;
 import univalle.tedesoft.uno.view.GameView;
 
 import java.util.List;
@@ -61,6 +62,7 @@ public class GameController {
 
     // --- Threads ---
     private ScheduledExecutorService executorService;
+    private Thread machineTurnThread;
     // --- Timers para declarar UNO --
     private ScheduledFuture<?> humanUnoTimerTask;
     private ScheduledFuture<?> machineCatchUnoTimerTask;
@@ -130,6 +132,10 @@ public class GameController {
     private void startNewGame() {
         // Detener tareas programadas anteriores si existen
         this.cancelAllTimers();
+        // Interrumpir el hilo del turno de la máquina si está activo
+        if (this.machineTurnThread != null && this.machineTurnThread.isAlive()) {
+            this.machineTurnThread.interrupt();
+        }
         if (this.executorService != null && !this.executorService.isShutdown()) {
             this.executorService.shutdownNow(); // Detener tareas anteriores
         }
@@ -281,16 +287,10 @@ public class GameController {
      */
     @FXML
     public void handleMazoClick(MouseEvent mouseEvent) {
-        if (this.gameState.isGameOver()) {
-            this.gameView.displayMessage("El juego ha terminado.");
-            return;
-        }
-        if (this.currentPlayer != this.humanPlayer) {
-            this.gameView.displayMessage("Espera tu turno.");
-            return;
-        }
-        if (this.isChoosingColor) {
-            this.gameView.displayMessage("Elige un color primero.");
+        // TODO: lo mismo
+        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
+            this.gameView.displayMessage(this.gameState.isGameOver() ? "El juego ha terminado." :
+                    (this.isChoosingColor ? "Elige un color primero." : "Espera tu turno."));
             return;
         }
         // Si el humano juega en lugar de castigar
@@ -376,7 +376,7 @@ public class GameController {
             this.gameView.displayMessage("No tienes jugadas válidas. Debes robar del mazo.");
             this.gameView.highlightDeck(true);
         } else {
-            // Si tiene cartas jugables, le damos una ayuda de cuáles puede jugar
+            // Si tiene cartas jugables, le damos una ayuda de cuales puede jugar
             this.gameView.highlightPlayableCards(playableCards);
             this.gameView.displayMessage("Cartas resaltadas son las que puedes jugar.");
         }
@@ -525,10 +525,25 @@ public class GameController {
             return;
         }
         this.gameView.displayMessage("Máquina pensando...");
+        // Interrumpir el hilo anterior si existiera y estuviera vivo (por si acaso)
+        if (this.machineTurnThread != null && this.machineTurnThread.isAlive()) {
+            this.machineTurnThread.interrupt();
+            try {
+                this.machineTurnThread.join(100); // 100 ms de delay
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        MachinePlayerRunnable machineRunnable = new MachinePlayerRunnable(this, MACHINE_TURN_THINK_DELAY_MS);
+        this.machineTurnThread = new Thread(machineRunnable);
+        this.machineTurnThread.setName("MachinePlayerTurnThread-" + System.currentTimeMillis());
+        this.machineTurnThread.setDaemon(true); // Permite que la JVM cierre si solo quedan hilos daemon
+        this.machineTurnThread.start();
+
         // Usar el servicio de ejecución para demorar el turno de la máquina
-        this.executorService.schedule(() -> {
-            Platform.runLater(this::executeMachineTurnLogic); // Ejecutar en el hilo de JavaFX
-        }, MACHINE_TURN_THINK_DELAY_MS, TimeUnit.MILLISECONDS); // Retraso de MACHINE_TURN_THINK_DELAY_MS segundos
+//        this.executorService.schedule(() -> {
+//            Platform.runLater(this::executeMachineTurnLogic); // Ejecutar en el hilo de JavaFX
+//        }, MACHINE_TURN_THINK_DELAY_MS, TimeUnit.MILLISECONDS); // Retraso de MACHINE_TURN_THINK_DELAY_MS segundos
     }
 
     /**
@@ -661,6 +676,10 @@ public class GameController {
         this.gameView.disableGameInteractions();
         this.gameView.enableRestartButton(true);
         this.updateUnoVisualsForHuman();
+        // Interrumpir el hilo de la máquina si estuviera activo
+        if (this.machineTurnThread != null && this.machineTurnThread.isAlive()) {
+            this.machineTurnThread.interrupt();
+        }
     }
 
     /**
@@ -863,4 +882,33 @@ public class GameController {
             }
         });
     }
+
+    // --- Getters para MachinePlayerRunnable ---
+    /**
+     * Devuelve el estado actual del juego.
+     * Necesario para que MachinePlayerRunnable pueda verificar condiciones.
+     * @return la instancia de IGameState.
+     */
+    public IGameState getGameState() {
+        return this.gameState;
+    }
+
+    /**
+     * Devuelve el jugador actual.
+     * Necesario para que MachinePlayerRunnable pueda verificar condiciones.
+     * @return la instancia del Player actual.
+     */
+    public Player getCurrentPlayer() {
+        return this.currentPlayer;
+    }
+
+    /**
+     * Devuelve la instancia del jugador máquina.
+     * Necesario para que MachinePlayerRunnable pueda verificar condiciones.
+     * @return la instancia de MachinePlayer.
+     */
+    public MachinePlayer getMachinePlayer() {
+        return this.machinePlayer;
+    }
+
 }
