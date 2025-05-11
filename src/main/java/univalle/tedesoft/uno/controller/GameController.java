@@ -197,7 +197,10 @@ public class GameController {
     @FXML
     public void handlePlayCardClick(MouseEvent mouseEvent) {
         // TODO: pasar este ternario a if-else clásico
-        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
+        if (this.gameState.isGameOver() ||
+                this.currentPlayer != this.humanPlayer ||
+                this.isChoosingColor
+        ) {
             this.gameView.displayMessage(this.gameState.isGameOver() ? "El juego ha terminado." :
                     (this.isChoosingColor ? "Elige un color primero." : "Espera tu turno."));
             return;
@@ -306,16 +309,8 @@ public class GameController {
         this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this);
 
         if (drawnCard != null) {
-            this.gameView.displayMessage("Robaste: " + this.gameState.getCardDescription(drawnCard));
-            // Comprobar si la carta robada se puede jugar
-            if (this.gameState.isValidPlay(drawnCard)) {
-                this.gameView.displayMessage("¡Robaste una carta jugable! Puedes jugarla o pasar.");
-            } else {
-                // Pasar turno automáticamente si no es jugable
-                // TODO: evaluar si esto es válido de acuerdo a los requerimientos
-                this.gameView.displayMessage("No puedes jugar la carta robada. Pasando turno...");
-                this.processTurnAdvancement();
-            }
+            this.gameView.displayMessage("Sacaste: " + this.gameState.getCardDescription(drawnCard));
+            this.processTurnAdvancement();
         } else {
             this.gameView.displayMessage("No hay más cartas para robar. Pasando turno...");
             this.processTurnAdvancement();
@@ -387,15 +382,15 @@ public class GameController {
 
     /**
      * Maneja la acción del botón para castigar a la máquina por no decir "UNO".
-     * Para castigar a la máquina se debe cumplir:
-     * (1) Es turno del humano,
-     * (2) La máquina tiene 1 carta (por ende, es candidata a UNO),
-     * (3) La máquina NO ha declarado UNO en su oportunidad.
      * @param actionEvent El evento de acción.
      */
     @FXML
     public void handlePunishUnoButtonAction(ActionEvent actionEvent) {
-        // Condiciones para castigar a la máquina
+        // Condiciones para castigar a la máquina:
+        // 1. Es turno del humano (implícito por la guarda anterior).
+        // 2. La máquina tiene 1 carta.
+        // 3. La máquina es candidata a UNO (significa que jugó una carta que la dejó con 1).
+        // 4. La máquina NO ha declarado UNO en su oportunidad.
         if (this.canPunishMachine &&
                 this.machinePlayer.getNumeroCartas() == 1 &&
                 this.machinePlayer.isUnoCandidate() &&
@@ -534,27 +529,35 @@ public class GameController {
      * @param gameEnded  True si la jugada de la máquina terminó el juego.
      */
     private void handleMachinePlayedCard(Card playedCard, boolean gameEnded) {
-        // Evaluar si el juego termino
         if (gameEnded) {
             this.handleGameOver();
             return;
         }
+
         // Actualizar la vista de la pila de descarte.
+        // Si la máquina jugó un comodín, gameState.onMustChooseColor ya habrá sido llamado
+        // dentro de gameState.playCard(), y el gameState.currentValidColor estará actualizado.
         this.gameView.updateDiscardPile(this.gameState.getTopDiscardCard(), this.gameState.getCurrentValidColor());
+
         // Si la máquina jugó un comodín, mostrar mensaje de cambio de color.
         if (playedCard.getColor() == Color.WILD) {
             this.gameView.displayMessage("Máquina cambió el color a " + this.gameState.getCurrentValidColor().name());
         }
-        // Evaluar si la máquina está en situación de UNO
+
         if (this.machinePlayer.isUnoCandidate()) {
-            // Programar su intento de declarar UNO y avanzar el turno
+            // La máquina está en situación de UNO.
+            // 1. Programar su intento de declarar UNO.
             this.startMachineDeclareUnoTimer();
+            // 2. Avanzar el turno INMEDIATAMENTE.
+            //    Esto da al jugador humano la oportunidad de castigar a la máquina
+            //    antes de que el temporizador de la máquina para declarar UNO expire.
             this.processTurnAdvancement();
         } else {
             // La máquina no quedó en situación de UNO, simplemente avanzar el turno.
             this.processTurnAdvancement();
         }
     }
+
 
     /**
      * Ejecuta la lógica del turno de la máquina.
