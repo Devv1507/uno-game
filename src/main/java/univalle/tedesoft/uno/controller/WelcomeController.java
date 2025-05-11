@@ -61,10 +61,6 @@ public class WelcomeController {
         return nameTextField.getText().trim();
     }
 
-    public String setName() {
-        return userLabel.getText();
-    }
-
     /**
      * Maneja el evento del botón de salir.
      */

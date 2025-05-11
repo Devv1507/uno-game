@@ -342,6 +342,8 @@ public class GameController {
             this.cancelHumanUnoTimer();
             this.cancelMachineCatchUnoTimer(); // Detener timer de la máquina si estaba intentando atrapar
             this.updateUnoVisualsForHuman();
+            // Actualizar la vista de las cartas del jugador
+            this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this);
             // Si el jugador declaró UNO y estaba pendiente una elección de color (por un comodín previo)
             // no avanzamos el turno aún.
             this.canPunishMachine = false; // Ya no se puede castigar a la máquina si el humano acaba de decir UNO
