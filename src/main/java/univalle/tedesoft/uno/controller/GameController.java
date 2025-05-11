@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 import univalle.tedesoft.uno.model.Cards.Card;
 import univalle.tedesoft.uno.model.Enum.Color;
@@ -39,6 +40,7 @@ public class GameController {
     @FXML public Button aidButton;
     @FXML public Label playerNameLabel;
     @FXML public Button punishUnoButton;
+    @FXML public VBox messageContainer;
 
     // --- Model ---
     private IGameState gameState;
@@ -196,13 +198,16 @@ public class GameController {
      */
     @FXML
     public void handlePlayCardClick(MouseEvent mouseEvent) {
-        // TODO: pasar este ternario a if-else clásico
-        if (this.gameState.isGameOver() ||
-                this.currentPlayer != this.humanPlayer ||
-                this.isChoosingColor
-        ) {
-            this.gameView.displayMessage(this.gameState.isGameOver() ? "El juego ha terminado." :
-                    (this.isChoosingColor ? "Elige un color primero." : "Espera tu turno."));
+        if (this.gameState.isGameOver()) {
+            this.gameView.displayMessage("El juego ha terminado.");
+            return;
+        }
+        if (this.currentPlayer != this.humanPlayer) {
+            this.gameView.displayMessage("Espera tu turno.");
+            return;
+        }
+        if (this.isChoosingColor) {
+            this.gameView.displayMessage("Elige un color primero.");
             return;
         }
         // Si el humano juega/roba en lugar de castigar a la máquina
@@ -276,10 +281,16 @@ public class GameController {
      */
     @FXML
     public void handleMazoClick(MouseEvent mouseEvent) {
-        // TODO: lo mismo
-        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
-            this.gameView.displayMessage(this.gameState.isGameOver() ? "El juego ha terminado." :
-                    (this.isChoosingColor ? "Elige un color primero." : "Espera tu turno."));
+        if (this.gameState.isGameOver()) {
+            this.gameView.displayMessage("El juego ha terminado.");
+            return;
+        }
+        if (this.currentPlayer != this.humanPlayer) {
+            this.gameView.displayMessage("Espera tu turno.");
+            return;
+        }
+        if (this.isChoosingColor) {
+            this.gameView.displayMessage("Elige un color primero.");
             return;
         }
         // Si el humano juega en lugar de castigar
@@ -365,7 +376,7 @@ public class GameController {
             this.gameView.displayMessage("No tienes jugadas válidas. Debes robar del mazo.");
             this.gameView.highlightDeck(true);
         } else {
-            // Si tiene cartas jugables, le damos una ayuda de cuales puede jugar
+            // Si tiene cartas jugables, le damos una ayuda de cuáles puede jugar
             this.gameView.highlightPlayableCards(playableCards);
             this.gameView.displayMessage("Cartas resaltadas son las que puedes jugar.");
         }
@@ -562,7 +573,7 @@ public class GameController {
     /**
      * Ejecuta la lógica del turno de la máquina.
      */
-    private void executeMachineTurnLogic() {
+    public void executeMachineTurnLogic() {
         if (this.gameState.isGameOver() || this.currentPlayer != this.machinePlayer) {
             return;
         }
