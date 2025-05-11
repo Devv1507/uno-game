@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import javafx.animation.FadeTransition;
 import javafx.animation.TranslateTransition;
 import javafx.util.Duration;
+import javafx.scene.control.Button;
 
 /**
  * Esta clase representa la vista principal del juego UNO.
@@ -76,16 +77,42 @@ public class GameView extends Stage {
     private GameView() throws IOException {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("game-view.fxml"));
         Scene scene = new Scene(loader.load());
-        this.gameController = loader.getController(); // Obtiene la instancia del controlador creada por FXML
+        this.gameController = loader.getController();
 
         if (this.gameController != null) {
-            this.gameController.setGameView(this); // Inyecta esta vista en el controlador
+            this.gameController.setGameView(this);
         } else {
             throw new IOException("No se pudo obtener el GameController desde el FXML");
         }
 
+        // Agregar efectos hover a los botones
+        addHoverEffects();
+
         this.setTitle("UNO! Game");
         this.setScene(scene);
+    }
+
+    private void addHoverEffects() {
+        // Agregar efectos hover a los botones específicos
+        addHoverEffectToButton(this.gameController.unoButton);
+        addHoverEffectToButton(this.gameController.aidButton);
+        addHoverEffectToButton(this.gameController.restartButton);
+        addHoverEffectToButton(this.gameController.punishUnoButton);
+    }
+
+    private void addHoverEffectToButton(Button button) {
+        if (button != null) {
+            String originalStyle = button.getStyle();
+            
+            button.setOnMouseEntered(e -> {
+                button.setStyle(originalStyle + 
+                    "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
+            });
+            
+            button.setOnMouseExited(e -> {
+                button.setStyle(originalStyle);
+            });
+        }
     }
 
     /**
