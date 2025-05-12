@@ -16,6 +16,7 @@ import univalle.tedesoft.uno.model.Players.MachinePlayer;
 import univalle.tedesoft.uno.model.Players.Player;
 import univalle.tedesoft.uno.model.State.GameState;
 import univalle.tedesoft.uno.model.State.IGameState;
+import univalle.tedesoft.uno.threads.MachineCatchUnoRunnable;
 import univalle.tedesoft.uno.threads.MachinePlayerRunnable;
 import univalle.tedesoft.uno.view.GameView;
 
@@ -63,6 +64,7 @@ public class GameController {
     // --- Threads ---
     private ScheduledExecutorService executorService;
     private Thread machineTurnThread;
+    private Thread machineCatchUnoThread;
     // --- Timers para declarar UNO --
     private ScheduledFuture<?> humanUnoTimerTask;
     private ScheduledFuture<?> machineCatchUnoTimerTask;
@@ -517,7 +519,7 @@ public class GameController {
     /**
      * Programa la ejecución del turno de la máquina con un retraso.
      */
-    private void scheduleMachineTurn() {
+    public void scheduleMachineTurn() {
         if (this.currentPlayer != this.machinePlayer || this.gameState.isGameOver()) {
             return;
         }
@@ -626,6 +628,7 @@ public class GameController {
     }
 
     /**
+     * TODO: Here
      * Inicia un temporizador para que la máquina declare "UNO" después de un breve retraso aleatorio.
      * Este retraso simula un tiempo de reacción y da una pequeña ventana para que el jugador
      * humano pueda intentar "atrapar" a la máquina.
@@ -725,6 +728,7 @@ public class GameController {
     }
 
     /**
+     * TODO: Here
      * Inicia un temporizador para que la máquina intente "atrapar" al jugador humano
      * si este último terminó su turno con una sola carta y no declaró "UNO".
      * El temporizador tiene una duración aleatoria dentro de un rango definido en MACHINE_CATCH_MIN_DELAY_MS.
@@ -732,6 +736,21 @@ public class GameController {
      * @see #penalizeHumanForMissingUno(String)
      * @see #cancelMachineCatchUnoTimer()
      */
+    private void startMachineCatchUnoTimer() {
+        this.cancelMachineCatchUnoTimer(); // Ahora interrumpe el Thread
+        Random randomGenerator = new Random();
+        long delay = MACHINE_CATCH_MIN_DELAY_MS + randomGenerator.nextInt((int) (MACHINE_CATCH_MAX_DELAY_MS - MACHINE_CATCH_MIN_DELAY_MS + 1));
+        this.gameView.displayMessage("Máquina está observando si dijiste UNO...");
+
+        // Crear y empezar el nuevo Thread
+        MachineCatchUnoRunnable runnable = new MachineCatchUnoRunnable(this, delay);
+        this.machineCatchUnoThread = new Thread(runnable);
+        this.machineCatchUnoThread.setName("MachineCatchUnoThread-" + System.currentTimeMillis());
+        this.machineCatchUnoThread.setDaemon(true); // Importante para que no bloquee el cierre de la JVM
+        this.machineCatchUnoThread.start();
+    }
+
+    /*
     private void startMachineCatchUnoTimer() {
         this.cancelMachineCatchUnoTimer();
         Random randomGenerator = new Random();
@@ -751,6 +770,8 @@ public class GameController {
             });
         }, delay, TimeUnit.MILLISECONDS);
     }
+
+     */
 
     /**
      * Aplica una penalización al jugador humano por no declarar "UNO" a tiempo o
@@ -831,6 +852,7 @@ public class GameController {
     }
 
     /**
+     * TODO: Here
      * Inicia un temporizador que otorga al jugador humano un período de tiempo (definido por
      * UNO_PLAYER_RESPONSE_TIME_SECONDS) para declarar "UNO".
      * Si el temporizador expira y el jugador no declaro "UNO", se le penaliza.
@@ -905,6 +927,24 @@ public class GameController {
      */
     public MachinePlayer getMachinePlayer() {
         return this.machinePlayer;
+    }
+
+    /**
+     * Devuelve la instancia del jugador humano.
+     * Necesario para que MachineCatchUnoRunnable pueda verificar condiciones.
+     * @return la instancia de humanPlayer.
+     */
+    public HumanPlayer getHumanPlayer() {
+        return this.humanPlayer;
+    }
+
+    /**
+     * Devuelve la instancia de vista.
+     * Necesario para implementar MachineCatchUnoRunnable.
+     * @return la instancia de gameView
+     */
+    public GameView getGameView() {
+        return this.gameView;
     }
 
 }
