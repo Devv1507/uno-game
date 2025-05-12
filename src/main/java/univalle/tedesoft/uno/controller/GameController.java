@@ -508,11 +508,8 @@ public class GameController {
                     // Actualizar la vista para reflejar el color elegido en el borde de la pila de descarte
                     this.gameView.updateDiscardPile(this.gameState.getTopDiscardCard(), chosenColor);
                     this.gameView.displayMessage("Color cambiado a " + chosenColor.name());
-                    // Avanzar el turno
-                    if (this.humanUnoTimerTask == null ||
-                            this.humanUnoTimerTask.isDone() ||
-                            this.humanPlayer.hasDeclaredUnoThisTurn()
-                    ) {
+                    // El turno NO debe avanzar aquí si el jugador humano tiene la chance de declarar UNO
+                    if (!this.humanPlayer.isUnoCandidate() || this.humanPlayer.hasDeclaredUnoThisTurn()) {
                         this.processTurnAdvancement();
                     }
                 },
@@ -934,6 +931,7 @@ public class GameController {
         this.humanUnoTimerThread.setDaemon(true);
         this.humanUnoTimerThread.start();
     }
+
     /*
     private void startHumanUnoTimer() {
         this.cancelHumanUnoTimer(); // Asegurar que no haya timers duplicados
