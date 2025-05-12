@@ -616,19 +616,8 @@ public class GameController {
                 this.processTurnAdvancement();
                 return;
             }
-            this.gameView.displayMessage("Máquina robó una carta.");
-
-            // 3. Intentar jugar la carta robada
-            if (this.gameState.isValidPlay(drawnCard)) {
-                this.gameView.displayMessage("Máquina juega la carta robada: " + this.gameState.getCardDescription(drawnCard));
-                boolean gameEnded = this.gameState.playCard(this.machinePlayer, drawnCard);
-                this.updateViewAfterMachinePlay(drawnCard);
-                this.handleMachinePlayedCard(drawnCard, gameEnded);
-            } else {
-                // 4. No se jugó nada más, solo se robó. Avanzamos turno.
-                this.gameView.displayMessage("Máquina no puede jugar la carta robada. Pasando turno.");
-                this.processTurnAdvancement();
-            }
+            this.gameView.displayMessage("Máquina robó la carta: " + this.gameState.getCardDescription(drawnCard));
+            this.processTurnAdvancement();
         }
     }
 
