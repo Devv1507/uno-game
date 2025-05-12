@@ -18,6 +18,7 @@ import univalle.tedesoft.uno.model.State.GameState;
 import univalle.tedesoft.uno.model.State.IGameState;
 import univalle.tedesoft.uno.threads.HumanUnoTimerRunnable;
 import univalle.tedesoft.uno.threads.MachineCatchUnoRunnable;
+import univalle.tedesoft.uno.threads.MachineDeclareUnoRunnable;
 import univalle.tedesoft.uno.threads.MachinePlayerRunnable;
 import univalle.tedesoft.uno.view.GameView;
 
@@ -67,6 +68,7 @@ public class GameController {
     private Thread machineTurnThread;
     private Thread machineCatchUnoThread;
     private Thread humanUnoTimerThread;
+    private Thread machineDeclareUnoThread;
     // --- Timers para declarar UNO --
     private ScheduledFuture<?> humanUnoTimerTask;
     private ScheduledFuture<?> machineCatchUnoTimerTask;
@@ -640,6 +642,21 @@ public class GameController {
      * humano pueda intentar "atrapar" a la máquina.
      */
     private void startMachineDeclareUnoTimer() {
+        this.cancelMachineDeclareUnoTimer(); // Ahora interrumpe el Thread
+
+        // Retraso aleatorio para declarar UNO
+        Random randomGenerator = new Random();
+        long delay = 2000 + randomGenerator.nextInt(2000); // entre 2 a 4 segundos
+
+        // Crear y empezar el nuevo Thread
+        MachineDeclareUnoRunnable runnable = new MachineDeclareUnoRunnable(this, delay);
+        this.machineDeclareUnoThread = new Thread(runnable);
+        this.machineDeclareUnoThread.setName("MachineDeclareUnoThread-" + System.currentTimeMillis());
+        this.machineDeclareUnoThread.setDaemon(true);
+        this.machineDeclareUnoThread.start();
+    }
+    /*
+    private void startMachineDeclareUnoTimer() {
         this.cancelMachineDeclareUnoTimer(); // Cancelar cualquier timer de declaración previo
 
         // Retraso aleatorio para declarar UNO
@@ -666,6 +683,8 @@ public class GameController {
             });
         }, delay, TimeUnit.MILLISECONDS);
     }
+
+     */
 
     /**
      * Maneja el final de la partida.
@@ -852,9 +871,21 @@ public class GameController {
      * Cancela el temporizador activo que está programado para que la máquina declare "UNO".
      */
     private void cancelMachineDeclareUnoTimer() {
+        // Interrumpir el Thread si está vivo
+        if (this.machineDeclareUnoThread != null && this.machineDeclareUnoThread.isAlive()) {
+            this.machineDeclareUnoThread.interrupt();
+            try {
+                this.machineDeclareUnoThread.join(100); // Opcional
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        /*
         if (this.machineDeclareUnoTimerTask != null && !this.machineDeclareUnoTimerTask.isDone()) {
             this.machineDeclareUnoTimerTask.cancel(false);
         }
+
+         */
     }
 
     /**
@@ -929,7 +960,7 @@ public class GameController {
      * El botón es visible y está habilitado si {@code canPunishMachine} es verdadero
      * y es el turno del jugador humano y el juego no ha terminado.
      */
-    private void updatePunishUnoButtonVisuals() {
+    public void updatePunishUnoButtonVisuals() {
         Platform.runLater(() -> {
             boolean showButton = this.canPunishMachine &&
                     this.currentPlayer == this.humanPlayer &&
@@ -995,5 +1026,14 @@ public class GameController {
      */
     public boolean getIsChoosingColor() {
         return this.isChoosingColor;
+    }
+
+    /**
+     * Setter para el booleano isChoosingColor.
+     * Necesario para implementar MachineDeclareUnoRunnable.
+     * @param canPunish booleano que cambia segun el flujo del juego y ciertas condiciones especificas.
+     */
+    public void setCanPunishMachine(boolean canPunish) {
+        this.canPunishMachine = canPunish;
     }
 }
