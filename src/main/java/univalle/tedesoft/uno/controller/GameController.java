@@ -16,6 +16,7 @@ import univalle.tedesoft.uno.model.Players.MachinePlayer;
 import univalle.tedesoft.uno.model.Players.Player;
 import univalle.tedesoft.uno.model.State.GameState;
 import univalle.tedesoft.uno.model.State.IGameState;
+import univalle.tedesoft.uno.threads.HumanUnoTimerRunnable;
 import univalle.tedesoft.uno.threads.MachineCatchUnoRunnable;
 import univalle.tedesoft.uno.threads.MachinePlayerRunnable;
 import univalle.tedesoft.uno.view.GameView;
@@ -65,6 +66,7 @@ public class GameController {
     private ScheduledExecutorService executorService;
     private Thread machineTurnThread;
     private Thread machineCatchUnoThread;
+    private Thread humanUnoTimerThread;
     // --- Timers para declarar UNO --
     private ScheduledFuture<?> humanUnoTimerTask;
     private ScheduledFuture<?> machineCatchUnoTimerTask;
@@ -423,12 +425,16 @@ public class GameController {
 
     // --- Lógica del Juego ---
 
+    public Label getMachineCardsCountLabel() {
+        return machineCardsCountLabel;
+    }
+
     /**
      * Procesa el avance del turno y las lógicas asociadas.
      * Este es el punto central para cambiar de jugador, actualizando la UI y
      * manejando el turno de la máquina si corresponde.
      */
-    private void processTurnAdvancement() {
+     public void processTurnAdvancement() {
         if (this.isChoosingColor) {
             return;
         }
@@ -783,7 +789,7 @@ public class GameController {
      * @see #cancelHumanUnoTimer()
      * @see #updateUnoVisualsForHuman()
      */
-    private void penalizeHumanForMissingUno(String message) {
+    public void penalizeHumanForMissingUno(String message) {
         this.gameView.displayMessage(message + " Robas " + GameState.PENALTY_CARDS_FOR_UNO + " cartas.");
         this.gameState.penalizePlayerForUno(this.humanPlayer);
         this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this);
@@ -826,8 +832,19 @@ public class GameController {
      * @see #humanUnoTimerTask
      */
     private void cancelHumanUnoTimer() {
+        /*
         if (this.humanUnoTimerTask != null && !this.humanUnoTimerTask.isDone()) {
             this.humanUnoTimerTask.cancel(false);
+        }
+         */
+        // Interrumpir el Thread si está vivo
+        if (this.humanUnoTimerThread != null && this.humanUnoTimerThread.isAlive()) {
+            this.humanUnoTimerThread.interrupt();
+            try {
+                this.humanUnoTimerThread.join(100); // Opcional
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -846,8 +863,20 @@ public class GameController {
      * @see #machineCatchUnoTimerTask
      */
     private void cancelMachineCatchUnoTimer() {
+        /*
         if (this.machineCatchUnoTimerTask != null && !this.machineCatchUnoTimerTask.isDone()) {
             this.machineCatchUnoTimerTask.cancel(false);
+        }
+         */
+        // Interrumpir el Thread si está vivo
+        if (this.machineCatchUnoThread != null && this.machineCatchUnoThread.isAlive()) {
+            this.machineCatchUnoThread.interrupt();
+            try {
+                // Opcionalmente, esperar un poco para que el hilo termine
+                this.machineCatchUnoThread.join(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
@@ -863,6 +892,18 @@ public class GameController {
      * @see #penalizeHumanForMissingUno(String)
      * @see #processTurnAdvancement()
      */
+    private void startHumanUnoTimer() {
+        this.cancelHumanUnoTimer(); // Ahora interrumpe el Thread
+        this.updateUnoVisualsForHuman(); // Mostrar botón y timer
+
+        // Crear y empezar el nuevo Thread
+        HumanUnoTimerRunnable runnable = new HumanUnoTimerRunnable(this, UNO_PLAYER_RESPONSE_TIME_SECONDS);
+        this.humanUnoTimerThread = new Thread(runnable);
+        this.humanUnoTimerThread.setName("HumanUnoTimerThread-" + System.currentTimeMillis());
+        this.humanUnoTimerThread.setDaemon(true);
+        this.humanUnoTimerThread.start();
+    }
+    /*
     private void startHumanUnoTimer() {
         this.cancelHumanUnoTimer(); // Asegurar que no haya timers duplicados
         this.updateUnoVisualsForHuman(); // Mostrar botón y timer
@@ -882,7 +923,7 @@ public class GameController {
             });
         }, UNO_PLAYER_RESPONSE_TIME_SECONDS, TimeUnit.SECONDS);
     }
-
+     */
     /**
      * Actualiza la visibilidad y el estado de habilitación del botón para castigar a la máquina.
      * El botón es visible y está habilitado si {@code canPunishMachine} es verdadero
@@ -947,4 +988,12 @@ public class GameController {
         return this.gameView;
     }
 
+    /**
+     * Devuelve el booleano isChoosingColor.
+     * Necesario para implementar HumanTimerRunnable.
+     * @return isChoosingColor
+     */
+    public boolean getIsChoosingColor() {
+        return this.isChoosingColor;
+    }
 }
