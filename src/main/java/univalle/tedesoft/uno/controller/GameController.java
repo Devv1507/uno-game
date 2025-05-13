@@ -325,6 +325,8 @@ public class GameController {
             this.gameView.displayMessage(this.humanPlayer.getName() + " declaró UNO!");
             this.cancelHumanUnoTimer();
             this.updateUnoVisualsForHuman();
+            // Actualizar la vista de las cartas del jugador
+            this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this);
             this.setCanPunishMachine(false); // no se puede castigar a la máquina si el jugador prefirió decir UNO
 
             if (!this.isChoosingColor) {

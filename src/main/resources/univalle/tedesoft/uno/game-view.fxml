@@ -37,19 +37,19 @@
         </HBox>
     </center>
     <bottom>
-        <VBox alignment="CENTER" prefHeight="200.0" spacing="10.0" style="-fx-background-color: rgba(255,255,255,0.95); -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0, 0, 5);" BorderPane.alignment="CENTER">
-            <VBox fx:id="messageContainer" alignment="CENTER" spacing="5" style="-fx-padding: 10;">
-                <Label fx:id="messageLabel" style="-fx-font-size: 24px;                             -fx-font-weight: bold;                             -fx-text-fill: #2c3e50;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);" text="Mensajes del juego aquí" />
+        <VBox alignment="CENTER" prefHeight="180.0" spacing="5.0" style="-fx-background-color: rgba(255,255,255,0.95); -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0, 0, 5);" BorderPane.alignment="CENTER">
+            <VBox fx:id="messageContainer" alignment="CENTER" spacing="2" style="-fx-padding: 5; -fx-max-height: 80;">
+                <Label fx:id="messageLabel" style="-fx-font-size: 20px;                             -fx-font-weight: bold;                             -fx-text-fill: #2c3e50;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);" text="Mensajes del juego aquí" />
             </VBox>
-            <Label fx:id="turnLabel" style="-fx-font-size: 20px;                         -fx-font-weight: bold;                         -fx-text-fill: #2c3e50;                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);                        -fx-padding: 10;" text="Turno de: Humano" />
-            <HBox fx:id="playerHandHBox" alignment="CENTER" prefHeight="120.0" spacing="8.0">
+            <Label fx:id="turnLabel" style="-fx-font-size: 20px;                         -fx-font-weight: bold;                         -fx-text-fill: #2c3e50;                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);                        -fx-padding: 5;" text="Turno de: Humano" />
+            <HBox fx:id="playerHandHBox" alignment="CENTER" prefHeight="100.0" spacing="8.0">
             </HBox>
             <HBox alignment="CENTER" spacing="40.0">
                 <Button fx:id="punishUnoButton" mnemonicParsing="false" onAction="#handlePunishUnoButtonAction" style="-fx-background-color: linear-gradient(to bottom, #e74c3c, #c0392b);                             -fx-text-fill: white;                             -fx-font-weight: bold;                             -fx-font-size: 18px;                             -fx-background-radius: 15;                             -fx-padding: 15 30;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);                            -fx-cursor: hand;" text="CANTA!" />
                 <Button fx:id="unoButton" mnemonicParsing="false" onAction="#handleUnoButtonAction" style="-fx-background-color: linear-gradient(to bottom, #f1c40f, #f39c12);                             -fx-text-fill: #2c3e50;                             -fx-font-weight: bold;                             -fx-font-size: 18px;                             -fx-background-radius: 15;                             -fx-padding: 15 30;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);                            -fx-cursor: hand;" text="UNO!" />
                 <ProgressIndicator fx:id="unoTimerIndicator" visible="false" />
                 <padding>
-                    <Insets bottom="30.0" top="20.0" />
+                    <Insets bottom="20.0" top="10.0" />
                 </padding>
             </HBox>
         </VBox>
