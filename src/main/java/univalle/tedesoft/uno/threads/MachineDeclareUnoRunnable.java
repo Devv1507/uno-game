@@ -41,8 +41,7 @@ public class MachineDeclareUnoRunnable implements Runnable {
 
                 // Si la máquina efectivamente declaró UNO, ya no se le puede castigar
                 if (machineSuccessfullyDeclaredUno) {
-                    gameController.setCanPunishMachine(false); // Necesitamos un método setter o hacerla interna
-                    gameController.updatePunishUnoButtonVisuals(); // Asumiendo método accesible
+                    gameController.setCanPunishMachine(false);
                 }
             });
 

@@ -201,8 +201,7 @@ public class GameController {
         }
         // Si el humano juega/roba en lugar de castigar a la máquina
         if (this.canPunishMachine) {
-            this.canPunishMachine = false;
-            this.updatePunishUnoButtonVisuals();
+            this.setCanPunishMachine(false);
             if (this.machinePlayer.isUnoCandidate() && !this.machinePlayer.hasDeclaredUnoThisTurn()) {
                 this.gameState.playerDeclaresUno(this.machinePlayer); // Máquina "dijo" UNO implícitamente
             }
@@ -283,8 +282,7 @@ public class GameController {
         }
         // Si el humano juega en lugar de castigar
         if (this.canPunishMachine) {
-            this.canPunishMachine = false;
-            this.updatePunishUnoButtonVisuals();
+            this.setCanPunishMachine(false);
             if (this.machinePlayer.isUnoCandidate() && !this.machinePlayer.hasDeclaredUnoThisTurn()) {
                 this.gameState.playerDeclaresUno(this.machinePlayer); // Máquina "dijo" UNO implícitamente
             }
@@ -331,10 +329,7 @@ public class GameController {
             this.cancelHumanUnoTimer();
             this.cancelMachineCatchUnoTimer(); // Detener timer de la máquina si estaba intentando atrapar
             this.updateUnoVisualsForHuman();
-            // Si el jugador declaró UNO y estaba pendiente una elección de color (por un comodín previo)
-            // no avanzamos el turno aún.
-            this.canPunishMachine = false; // Ya no se puede castigar a la máquina si el humano acaba de decir UNO
-            this.updatePunishUnoButtonVisuals();
+            this.setCanPunishMachine(false); // no se puede castigar a la máquina si el jugador prefirió decir UNO
 
             if (!this.isChoosingColor) {
                 this.processTurnAdvancement();
@@ -396,13 +391,10 @@ public class GameController {
             this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas());
             // Esto asegura que la máquina no diga UNO después de ser penalizada
             this.cancelMachineDeclareUnoTimer();
-            this.canPunishMachine = false;
-            this.updatePunishUnoButtonVisuals();
         } else {
             this.gameView.displayMessage("No es el momento de castigar a la máquina.");
-            this.canPunishMachine = false;
-            this.updatePunishUnoButtonVisuals();
         }
+        this.setCanPunishMachine(false);
     }
 
     // --- Lógica del Juego ---
@@ -440,8 +432,7 @@ public class GameController {
         // Lógica para que la máquina "atrape" al humano
         // Chequea si el humano TIENE 1 carta y NO ha declarado UNO en su turno.
         if (this.currentPlayer == this.machinePlayer) {
-            this.canPunishMachine = false;
-            this.updatePunishUnoButtonVisuals(); // Asegurar que el botón de castigo se oculte
+            this.setCanPunishMachine(false);
             this.cancelMachineCatchUnoTimer();
             // Si el jugador anterior fue el humano, quedo con 1 carta y no ha dicho UNO
             if (previousPlayer == this.humanPlayer &&
@@ -455,7 +446,7 @@ public class GameController {
         } else {
             this.cancelMachineCatchUnoTimer();
             // Verificar si la máquina acaba de jugar y "olvidó" decir UNO
-            this.canPunishMachine = this.shouldPunishMachine(previousPlayer);
+            this.setCanPunishMachine(this.shouldPunishMachine(previousPlayer));
             // Actualizar la interacción y los botones después de toda la lógica de cambio de turno
             this.updateInteractionBasedOnTurn();
         }
@@ -683,8 +674,6 @@ public class GameController {
                 !this.gameState.isGameOver() &&
                 !this.isChoosingColor);
         this.gameView.enablePlayerInteraction(canInteractBase);
-        this.updatePunishUnoButtonVisuals();
-        // TODO: toca revisar este método
     }
 
     /**
@@ -908,6 +897,9 @@ public class GameController {
      * @param canPunish booleano que cambia según el flujo del juego y ciertas condiciones específicas.
      */
     public void setCanPunishMachine(boolean canPunish) {
-        this.canPunishMachine = canPunish;
+        if (this.canPunishMachine != canPunish) { // Solo actualizar si el valor realmente cambia
+            this.canPunishMachine = canPunish;
+            this.updatePunishUnoButtonVisuals(); // Actualizar la UI cuando este estado específico cambia
+        }
     }
 }
