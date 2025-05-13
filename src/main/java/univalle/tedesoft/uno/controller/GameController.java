@@ -616,7 +616,7 @@ public class GameController {
                 this.processTurnAdvancement();
                 return;
             }
-            this.gameView.displayMessage("Máquina robó la carta: " + this.gameState.getCardDescription(drawnCard));
+            this.gameView.displayMessage("Máquina robó una carta");
             this.processTurnAdvancement();
         }
     }
