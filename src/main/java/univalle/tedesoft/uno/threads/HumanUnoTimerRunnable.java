@@ -7,17 +7,17 @@ import univalle.tedesoft.uno.model.Players.HumanPlayer;
 import java.util.concurrent.TimeUnit;
 public class HumanUnoTimerRunnable implements Runnable {
     private final GameController gameController;
-    private final long timeoutSeconds;
+    private final long timeoutMilliseconds;
 
-    public HumanUnoTimerRunnable(GameController gameController, long timeoutSeconds) {
+    public HumanUnoTimerRunnable(GameController gameController, long timeoutMilliseconds) {
         this.gameController = gameController;
-        this.timeoutSeconds = timeoutSeconds;
+        this.timeoutMilliseconds = timeoutMilliseconds;
     }
 
     @Override
     public void run() {
         try {
-            TimeUnit.SECONDS.sleep(this.timeoutSeconds);
+            TimeUnit.MILLISECONDS.sleep(this.timeoutMilliseconds);
 
             // Verificar si el hilo fue interrumpido durante el sleep
             if (Thread.currentThread().isInterrupted()) {
@@ -37,7 +37,7 @@ public class HumanUnoTimerRunnable implements Runnable {
                 if (humanPlayer.isUnoCandidate() && !humanPlayer.hasDeclaredUnoThisTurn()) {
                     // gameController.penalizeHumanForMissingUno ya maneja el mensaje, la penalización y la actualización de UI.
                     // Pero necesitamos pasarle el mensaje específico.
-                    gameController.penalizeHumanForMissingUno(humanPlayer.getName() + " no dijo UNO a tiempo.");
+                    gameController.penalizeHumanForMissingUno("Uh, " + humanPlayer.getName() + " no cantaste UNO a tiempo :l");
                     humanPlayer.resetUnoStatus(); // Ya se hace en penalizeHumanForMissingUno, pero por si acaso.
 
                     if (!gameController.getIsChoosingColor()) { // Asumiendo getter isChoosingColor()

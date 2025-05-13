@@ -16,7 +16,6 @@ import univalle.tedesoft.uno.model.Players.Player;
 import univalle.tedesoft.uno.model.State.GameState;
 import univalle.tedesoft.uno.model.State.IGameState;
 import univalle.tedesoft.uno.threads.HumanUnoTimerRunnable;
-import univalle.tedesoft.uno.threads.MachineCatchUnoRunnable;
 import univalle.tedesoft.uno.threads.MachineDeclareUnoRunnable;
 import univalle.tedesoft.uno.threads.MachinePlayerRunnable;
 import univalle.tedesoft.uno.view.GameView;
@@ -61,14 +60,12 @@ public class GameController {
 
     // --- Threads ---
     private Thread machineTurnThread;
-    private Thread machineCatchUnoThread;
     private Thread humanUnoTimerThread;
     private Thread machineDeclareUnoThread;
 
     // --- Constantes para controlar las ventanas de tiempo para declarar UNO ---
-    private static final int UNO_PLAYER_RESPONSE_TIME_SECONDS = 4;
-    private static final int MACHINE_CATCH_MIN_DELAY_MS = 2000; // 2 segundos
-    private static final int MACHINE_CATCH_MAX_DELAY_MS = 4000; // 4 segundos
+    private static final int CATCH_MIN_DELAY_MS = 2000; // 2 segundos
+    private static final int CATCH_MAX_DELAY_MS = 4000; // 4 segundos
     private static final long MACHINE_TURN_THINK_DELAY_MS = 1500;
 
     @FXML
@@ -235,7 +232,7 @@ public class GameController {
 
             // Lógica UNO para el jugador humano
             if (this.humanPlayer.isUnoCandidate()) {
-                this.gameView.displayMessage("¡Tienes una carta! ¡Presiona UNO en " + UNO_PLAYER_RESPONSE_TIME_SECONDS + " segundos!");
+                this.gameView.displayMessage("¡Tienes una carta! ¡Presiona UNO rápido!");
                 this.startHumanUnoTimer();
             } else {
                 // Si no es candidato a UNO, el turno avanza.
@@ -327,7 +324,6 @@ public class GameController {
             this.gameState.playerDeclaresUno(this.humanPlayer);
             this.gameView.displayMessage(this.humanPlayer.getName() + " declaró UNO!");
             this.cancelHumanUnoTimer();
-            this.cancelMachineCatchUnoTimer(); // Detener timer de la máquina si estaba intentando atrapar
             this.updateUnoVisualsForHuman();
             this.setCanPunishMachine(false); // no se puede castigar a la máquina si el jugador prefirió decir UNO
 
@@ -429,22 +425,11 @@ public class GameController {
         this.gameView.updateTurnIndicator(this.currentPlayer.getName());
         this.gameView.displayMessage("Turno de " + this.currentPlayer.getName());
 
-        // Lógica para que la máquina "atrape" al humano
-        // Chequea si el humano TIENE 1 carta y NO ha declarado UNO en su turno.
         if (this.currentPlayer == this.machinePlayer) {
+            // Turno normal de la máquina
             this.setCanPunishMachine(false);
-            this.cancelMachineCatchUnoTimer();
-            // Si el jugador anterior fue el humano, quedo con 1 carta y no ha dicho UNO
-            if (previousPlayer == this.humanPlayer &&
-                    this.humanPlayer.getNumeroCartas() == 1 &&
-                    !this.humanPlayer.hasDeclaredUnoThisTurn()
-            ) {
-                this.startMachineCatchUnoTimer(); // Máquina intenta atrapar al humano
-            } else {
-                this.scheduleMachineTurn(); // Turno normal de la máquina
-            }
+            this.scheduleMachineTurn();
         } else {
-            this.cancelMachineCatchUnoTimer();
             // Verificar si la máquina acaba de jugar y "olvidó" decir UNO
             this.setCanPunishMachine(this.shouldPunishMachine(previousPlayer));
             // Actualizar la interacción y los botones después de toda la lógica de cambio de turno
@@ -677,28 +662,6 @@ public class GameController {
     }
 
     /**
-     * Inicia un temporizador para que la máquina intente "atrapar" al jugador humano
-     * si este último terminó su turno con una sola carta y no declaró "UNO".
-     * El temporizador tiene una duración aleatoria dentro de un rango definido en MACHINE_CATCH_MIN_DELAY_MS.
-     * @see #scheduleMachineTurn()
-     * @see #penalizeHumanForMissingUno(String)
-     * @see #cancelMachineCatchUnoTimer()
-     */
-    private void startMachineCatchUnoTimer() {
-        this.cancelMachineCatchUnoTimer(); // Ahora interrumpe el Thread
-        Random randomGenerator = new Random();
-        long delay = MACHINE_CATCH_MIN_DELAY_MS + randomGenerator.nextInt(MACHINE_CATCH_MAX_DELAY_MS - MACHINE_CATCH_MIN_DELAY_MS + 1);
-        this.gameView.displayMessage("Máquina está observando si dijiste UNO...");
-
-        // Crear y empezar el nuevo Thread
-        MachineCatchUnoRunnable runnable = new MachineCatchUnoRunnable(this, delay);
-        this.machineCatchUnoThread = new Thread(runnable);
-        this.machineCatchUnoThread.setName("MachineCatchUnoThread-" + System.currentTimeMillis());
-        this.machineCatchUnoThread.setDaemon(true); // Importante para que no bloquee el cierre de la JVM
-        this.machineCatchUnoThread.start();
-    }
-
-    /**
      * Aplica una penalización al jugador humano por no declarar "UNO" a tiempo o
      * por realizar otra acción cuando debería haberlo declarado. En este caso, lo
      * fuerza a tomar un número predefinido de cartas con base en PENALTY_CARDS_FOR_UNO.
@@ -737,11 +700,10 @@ public class GameController {
     /**
      * Cancela todos los temporizadores activos relacionados con la mecánica de "UNO".
      * @see #cancelHumanUnoTimer()
-     * @see #cancelMachineCatchUnoTimer()
+     * @see #cancelMachineDeclareUnoTimer()
      */
     private void cancelAllTimers() {
         this.cancelHumanUnoTimer();
-        this.cancelMachineCatchUnoTimer();
         this.cancelMachineDeclareUnoTimer();
     }
 
@@ -778,24 +740,6 @@ public class GameController {
     }
 
     /**
-     * Cancela el temporizador activo que permite a la máquina "atrapar" al jugador humano
-     * si este no declara "UNO" a tiempo después de quedarse con una sola carta.
-     * @see #machineCatchUnoThread
-     */
-    private void cancelMachineCatchUnoTimer() {
-        // Interrumpir el Thread si está vivo
-        if (this.machineCatchUnoThread != null && this.machineCatchUnoThread.isAlive()) {
-            this.machineCatchUnoThread.interrupt();
-            try {
-                // Opcionalmente, esperar un poco para que el hilo termine
-                this.machineCatchUnoThread.join(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
-
-    /**
      * Inicia un temporizador que otorga al jugador humano un período de tiempo (definido por
      * UNO_PLAYER_RESPONSE_TIME_SECONDS) para declarar "UNO".
      * Si el temporizador expira y el jugador no declaro "UNO", se le penaliza.
@@ -810,8 +754,11 @@ public class GameController {
         this.cancelHumanUnoTimer(); // Ahora interrumpe el Thread
         this.updateUnoVisualsForHuman(); // Mostrar botón y timer
 
+        Random randomGenerator = new Random();
+        long delayTime = CATCH_MIN_DELAY_MS + (randomGenerator.nextInt(CATCH_MAX_DELAY_MS - CATCH_MIN_DELAY_MS + 1));
+
         // Crear y empezar el nuevo Thread
-        HumanUnoTimerRunnable runnable = new HumanUnoTimerRunnable(this, UNO_PLAYER_RESPONSE_TIME_SECONDS);
+        HumanUnoTimerRunnable runnable = new HumanUnoTimerRunnable(this, delayTime);
         this.humanUnoTimerThread = new Thread(runnable);
         this.humanUnoTimerThread.setName("HumanUnoTimerThread-" + System.currentTimeMillis());
         this.humanUnoTimerThread.setDaemon(true);
