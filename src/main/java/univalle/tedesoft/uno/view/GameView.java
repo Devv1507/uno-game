@@ -50,6 +50,7 @@ public class GameView extends Stage {
     private static final String CARD_IMAGE_PATH_PREFIX = "/univalle/tedesoft/uno/images/";
     private static final String CARD_IMAGE_EXTENSION = ".png";
     private static final String BACK_CARD_IMAGE_NAME = "deck_of_cards";
+    private static final String CARD_BACK_IMAGE_NAME = "card_back"; // Nueva constante para el reverso de las cartas
     private static final String EMPTY_IMAGE_NAME = "card_uno"; // Placeholder
     private String playerName;
     private static final int MAX_MESSAGES = 3; // Número máximo de mensajes visibles
@@ -215,30 +216,40 @@ public class GameView extends Stage {
             this.gameController.machineHandHBox.setSpacing(-20);
             this.gameController.machineHandHBox.setAlignment(Pos.CENTER);
             
-            Image backImage = getCardImageByName(EMPTY_IMAGE_NAME);
+            Image backImage = getCardImageByName(CARD_BACK_IMAGE_NAME);
 
             if (backImage != null) {
-                // Calcular el ángulo de rotación para cada carta
-                double totalAngle = 30.0;
-                double angleStep = totalAngle / (cardCount - 1);
-                double startAngle = -totalAngle / 2;
-                
-                for (int i = 0; i < cardCount; i++) {
+                // Si solo hay una carta, no aplicamos rotación
+                if (cardCount == 1) {
                     ImageView cardView = new ImageView(backImage);
                     cardView.setFitHeight(CARD_HEIGHT * 0.8);
                     cardView.setPreserveRatio(true);
                     cardView.setSmooth(true);
-                    
-                    // Aplicar la rotación
-                    double rotation = startAngle + (i * angleStep);
-                    cardView.setRotate(rotation);
-                    
-                    // Ajustar la posición Y para compensar la rotación
-                    double yOffset = Math.abs(rotation) * 0.5;
-                    cardView.setTranslateY(yOffset);
-                    
                     HBox.setMargin(cardView, new Insets(0, 0, 20, 0));
                     this.gameController.machineHandHBox.getChildren().add(cardView);
+                } else {
+                    // Calcular el ángulo de rotación para cada carta
+                    double totalAngle = 30.0;
+                    double angleStep = totalAngle / (cardCount - 1);
+                    double startAngle = -totalAngle / 2;
+                    
+                    for (int i = 0; i < cardCount; i++) {
+                        ImageView cardView = new ImageView(backImage);
+                        cardView.setFitHeight(CARD_HEIGHT * 0.8);
+                        cardView.setPreserveRatio(true);
+                        cardView.setSmooth(true);
+                        
+                        // Aplicar la rotación
+                        double rotation = startAngle + (i * angleStep);
+                        cardView.setRotate(rotation);
+                        
+                        // Ajustar la posición Y para compensar la rotación
+                        double yOffset = Math.abs(rotation) * 0.5;
+                        cardView.setTranslateY(yOffset);
+                        
+                        HBox.setMargin(cardView, new Insets(0, 0, 20, 0));
+                        this.gameController.machineHandHBox.getChildren().add(cardView);
+                    }
                 }
             }
         });
