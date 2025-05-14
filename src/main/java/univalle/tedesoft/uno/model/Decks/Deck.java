@@ -2,6 +2,8 @@ package univalle.tedesoft.uno.model.Decks;
 
 import java.util.Collections;
 import java.util.LinkedList;
+
+import univalle.tedesoft.uno.exceptions.EmptyDeckException;
 import univalle.tedesoft.uno.model.Cards.*;
 import univalle.tedesoft.uno.model.Enum.Color;
 import univalle.tedesoft.uno.model.Enum.Value;
@@ -72,9 +74,13 @@ public class Deck {
      * Toma la primera carta del mazo (parte superior).
      *
      * @return La carta retirada del mazo o null si está vacío.
+     * @throws EmptyDeckException si el mazo está vacío.
      */
-    public Card takeCard() {
-        return cards.poll(); // saca la primera
+    public Card takeCard() throws EmptyDeckException {
+        if (this.cards.isEmpty()) {
+            throw new EmptyDeckException("No se pueden tomar más cartas, el mazo principal está vacío.");
+        }
+        return cards.poll();
     }
 
     /**

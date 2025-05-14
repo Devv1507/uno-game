@@ -26,7 +26,9 @@ public class DiscardPile {
      * @param card Carta que se va a descartar.
      */
     public void discard(Card card) {
-        discarded.push(card);
+        if (card != null) {
+            this.discarded.push(card);
+        }
     }
     /**
      * Retorna la carta que esta en la parte superior de la pila de descarte,
@@ -35,6 +37,9 @@ public class DiscardPile {
      * @return Carta superior de la pila de descarte.
      */
     public Card SuperiorCard() {
+        if (this.discarded.isEmpty()) {
+            return null;
+        }
         return discarded.peek();
     }
     /**
