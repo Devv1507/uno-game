@@ -10,7 +10,7 @@ import univalle.tedesoft.uno.model.Enum.Value;
 import java.util.List;
 
 /**
- * Pruebas unitarias para la clase {@link Player}.
+ * Pruebas unitarias para la clase Player.
  * Cubre la funcionalidad básica de gestión de cartas, nombre y estados de UNO.
  * @author David Esteban Valencia
  * @author Santiago David Guerrero
@@ -34,7 +34,7 @@ class PlayerTest {
     }
 
     /**
-     * Verifica que el constructor de {@link Player} inicializa el objeto
+     * Verifica que el constructor de Player inicializa el objeto
      * con los valores por defecto esperados: lista de cartas vacia,
      * contador de cartas en cero, y los indicadores de UNO en falso.
      */
@@ -49,7 +49,7 @@ class PlayerTest {
     }
 
     /**
-     * Prueba que el metodo {@link Player#addCard(Card)} añade correctamente
+     * Prueba que el metodo Player.addCard(Card) añade correctamente
      * una carta a la mano del jugador e incrementa el contador de cartas.
      * Se prueba añadiendo una y luego una segunda carta.
      */
@@ -65,7 +65,7 @@ class PlayerTest {
     }
 
     /**
-     * Prueba que el metodo {@link Player#removeCardOfCards(Card)} elimina
+     * Prueba que el metodo Player.removeCardOfCards(Card) elimina
      * una carta existente de la mano del jugador y disminuye el contador
      * de cartas. Se verifica que la carta correcta sea eliminada y que
      * otras cartas permanezcan en la mano.
@@ -82,7 +82,7 @@ class PlayerTest {
     }
 
     /**
-     * Prueba el comportamiento del metodo {@link Player#removeCardOfCards(Card)}
+     * Prueba el comportamiento del metodo Player.removeCardOfCards(Card)
      * cuando se intenta eliminar una carta que no esta presente en la mano
      * del jugador. Se espera que la mano y el contador de cartas no sufran
      * modificaciones.
@@ -98,7 +98,7 @@ class PlayerTest {
     }
 
     /**
-     * Verifica que el metodo {@link Player#getNumeroCartas()} devuelve
+     * Verifica que el metodo Player.getNumeroCartas() devuelve
      * el numero correcto de cartas en la mano del jugador en diferentes
      * situaciones: inicialmente, despues de agregar cartas y despues
      * de eliminar cartas.
@@ -115,7 +115,7 @@ class PlayerTest {
     }
 
     /**
-     * Prueba que el metodo {@link Player#getCards()} devuelve una lista
+     * Prueba que el metodo Player.getCards() devuelve una lista
      * que refleja con precision las cartas actualmente en la mano del jugador.
      * Se verifica el estado inicial (lista vacia) y despues de agregar cartas.
      */
@@ -131,8 +131,8 @@ class PlayerTest {
     }
 
     /**
-     * Verifica la funcionalidad de los metodos {@link Player#setName(String)}
-     * y {@link Player#getName()}. Se prueba que el nombre se establece
+     * Verifica la funcionalidad de los metodos Player.setName(String)
+     * y Player.getName(). Se prueba que el nombre se establece
      * correctamente y que puede ser recuperado.
      */
     @Test
@@ -144,7 +144,7 @@ class PlayerTest {
     }
 
     /**
-     * Prueba que el metodo {@link Player#clearHand()} vacia completamente
+     * Prueba que el metodo Player.clearHand() vacia completamente
      * la mano del jugador, resultando en una lista de cartas vacia y un
      * contador de cartas en cero.
      */
@@ -160,8 +160,8 @@ class PlayerTest {
     }
 
     /**
-     * Verifica la funcionalidad de los metodos {@link Player#setUnoCandidate(boolean)}
-     * y {@link Player#isUnoCandidate()}. Se prueba que el estado de "candidato a UNO"
+     * Verifica la funcionalidad de los metodos Player.setUnoCandidate(boolean)
+     * y Player.isUnoCandidate(). Se prueba que el estado de "candidato a UNO"
      * se puede establecer en verdadero y falso, y que el getter refleja
      * estos cambios.
      */
@@ -175,8 +175,8 @@ class PlayerTest {
     }
 
     /**
-     * Verifica la funcionalidad de los metodos {@link Player#setHasDeclaredUnoThisTurn(boolean)}
-     * y {@link Player#hasDeclaredUnoThisTurn()}. Se prueba que el estado de
+     * Verifica la funcionalidad de los metodos Player.setHasDeclaredUnoThisTurn(boolean)
+     * y Player.hasDeclaredUnoThisTurn(). Se prueba que el estado de
      * "ha declarado UNO este turno" se puede establecer en verdadero y falso,
      * y que el getter refleja estos cambios.
      */
@@ -190,7 +190,7 @@ class PlayerTest {
     }
 
     /**
-     * Prueba que el metodo {@link Player#resetUnoStatus()} restablece
+     * Prueba que el metodo Player.resetUnoStatus() restablece
      * correctamente ambos indicadores de UNO ({@code isUnoCandidate} y
      * {@code hasDeclaredUnoThisTurn}) a falso, independientemente de su
      * estado previo.
@@ -206,7 +206,7 @@ class PlayerTest {
     }
 
     /**
-     * Verifica que el metodo {@link Player#resetUnoStatus()} funciona
+     * Verifica que el metodo Player.resetUnoStatus() funciona
      * correctamente incluso cuando los indicadores de UNO ya son falsos.
      * Esto asegura que no haya efectos secundarios inesperados al llamar
      * el metodo en este estado.
