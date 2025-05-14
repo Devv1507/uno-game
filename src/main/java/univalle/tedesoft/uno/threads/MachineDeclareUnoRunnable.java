@@ -21,7 +21,7 @@ public class MachineDeclareUnoRunnable implements Runnable {
     /**
      * Constructor para MachineDeclareUnoRunnable.
      *
-     * @param gameController La instancia del {@link GameController} para interactuar con la logica y la vista del juego.
+     * @param gameController La instancia del GameController para interactuar con la logica y la vista del juego.
      * @param delayMs  El tiempo en milisegundos que este hilo espera antes de intentar que la maquina declare UNO.
      */
     public MachineDeclareUnoRunnable(GameController gameController, long delayMs) {
