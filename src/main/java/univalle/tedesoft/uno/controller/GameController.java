@@ -8,6 +8,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import univalle.tedesoft.uno.exceptions.EmptyDeckException;
+import univalle.tedesoft.uno.exceptions.InvalidPlayException;
 import univalle.tedesoft.uno.model.Cards.Card;
 import univalle.tedesoft.uno.model.Enum.Color;
 import univalle.tedesoft.uno.model.Players.HumanPlayer;
@@ -129,7 +131,14 @@ public class GameController {
 
         // Crear nuevo estado de juego e inicializarlo
         this.gameState = new GameState(this.humanPlayer, this.machinePlayer);
-        this.gameState.onGameStart();
+        try {
+            this.gameState.onGameStart();
+        } catch (IllegalStateException e) {
+            this.gameView.displayMessage("Error crítico al iniciar: " + e.getMessage() + ". Reinicia el juego.");
+            this.gameView.disableGameInteractions();
+            this.gameView.enableRestartButton(true);
+            return;
+        }
         this.currentPlayer = this.gameState.getCurrentPlayer();
 
         // Pedir a la vista que se reinicie y muestre el estado inicial
@@ -219,7 +228,7 @@ public class GameController {
         // Limpiar resaltados
         this.gameView.clearPlayerHandHighlights();
         // revisar si la jugada es valida
-        if (this.gameState.isValidPlay(selectedCard)) {
+        try {
             // consultar con el modelo el resultado de la jugada
             boolean gameEnded = this.gameState.playCard(this.humanPlayer, selectedCard);
             // Actualizar la vista completa después de la jugada
@@ -237,17 +246,17 @@ public class GameController {
             } else {
                 // Si no es candidato a UNO, el turno avanza.
                 this.updateUnoVisualsForHuman();
-                if (selectedCard.getColor() != Color.WILD) {
-                    this.processTurnAdvancement();
-                }
             }
-
             // Si se jugó un comodín, el estado cambió y necesitamos elegir color
             if (selectedCard.getColor() == Color.WILD) {
                 // El turno avanzará después de elegir el color
                 this.promptHumanForColorChoice();
+            } else {
+                if (!this.humanPlayer.isUnoCandidate()) {
+                    this.processTurnAdvancement();
+                }
             }
-        } else {
+        } catch (InvalidPlayException e) {
             Card topCard = this.gameState.getTopDiscardCard();
             String playedCardDescription = this.gameState.getCardDescription(selectedCard);
             String topCardDescription = this.gameState.getCardDescription(topCard);
@@ -298,17 +307,32 @@ public class GameController {
         // Quitar resaltado del mazo si lo había
         this.gameView.highlightDeck(false);
         // Robar carta del modelo
-        Card drawnCard = this.gameState.drawTurnCard(this.humanPlayer);
+        Card drawnCard = null;
         // Actualizar vista de la mano
-        this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this);
+        try {
+            drawnCard = this.gameState.drawTurnCard(this.humanPlayer);
+        } catch (EmptyDeckException e) {
+            this.gameView.displayMessage("Mazo vacío. Reciclando cartas de la pila de descarte...");
+            this.gameState.recyclingDeck();
 
-        if (drawnCard != null) {
-            this.gameView.displayMessage("Sacaste: " + this.gameState.getCardDescription(drawnCard));
-            this.processTurnAdvancement();
-        } else {
-            this.gameView.displayMessage("No hay más cartas para robar. Pasando turno...");
-            this.processTurnAdvancement();
+            if (this.gameState.getDeck().getNumeroCartas() == 0) { // Verificar si el mazo sigue vacío
+                this.gameView.displayMessage("No hay cartas para reciclar del descarte. No se pudo robar.");
+                // drawnCard permanece null
+            } else {
+                try {
+                    drawnCard = this.gameState.drawTurnCard(this.humanPlayer); // Reintentar robar
+                } catch (EmptyDeckException e2) {
+                    // Esto podría pasar si, teóricamente, otro hilo vaciara el mazo entre recyclingDeck y el nuevo drawTurnCard,
+                    // o si recyclingDeck no añadió cartas y getDeck().getNumeroCartas() fue 0.
+                    this.gameView.displayMessage("No se pudo robar carta incluso después de reciclar. El mazo sigue vacío.");
+                    // drawnCard permanece null
+                }
+            }
         }
+
+        this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this); // Actualizar mano en la UI
+        this.gameView.displayMessage("Sacaste: " + this.gameState.getCardDescription(drawnCard));
+        this.processTurnAdvancement();
     }
 
     /**
@@ -559,25 +583,48 @@ public class GameController {
         Card cardToPlay = this.machinePlayer.chooseCardToPlay(this.gameState);
         if (cardToPlay != null) {
             // Jugar la carta elegida
-            this.gameView.displayMessage("Máquina juega: " + this.gameState.getCardDescription(cardToPlay));
-            boolean gameEnded = this.gameState.playCard(this.machinePlayer, cardToPlay);
-            this.updateViewAfterMachinePlay();
-            this.handleMachinePlayedCard(cardToPlay, gameEnded);
+            try {
+                this.gameView.displayMessage("Máquina juega: " + this.gameState.getCardDescription(cardToPlay));
+                boolean gameEnded = this.gameState.playCard(this.machinePlayer, cardToPlay);
+                this.updateViewAfterMachinePlay(); // Actualiza UI (contador, descarte)
+                this.handleMachinePlayedCard(cardToPlay, gameEnded); // Lógica post-jugada (UNO, avance)
+            } catch (InvalidPlayException e) {
+                // Esto sería un bug en la lógica de la máquina si elige una carta inválida.
+                this.gameView.displayMessage("Error: Máquina intentó una jugada inválida. Forzando robo.");
+                // Forzar a la máquina a robar como penalización/corrección
+                this.forceMachineToDrawOnError();
+                this.processTurnAdvancement();
+            }
         } else {
             // 2. La máquina no encontró carta jugable, así que va a tomar una
             this.gameView.displayMessage("Máquina no tiene jugadas, robando...");
-            Card drawnCard = this.gameState.drawTurnCard(this.machinePlayer);
-            this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas()); // Actualizar contador de cartas de la máquina
-
-            if (drawnCard == null) {
-                // TODO: toca evaluar esto en una excepción
-                this.gameView.displayMessage("Máquina no pudo robar (mazo vacío). Pasando.");
-                this.processTurnAdvancement();
-                return;
+            Card drawnCard = null;
+            try {
+                drawnCard = this.gameState.drawTurnCard(this.machinePlayer);
+            } catch (EmptyDeckException e) {
+                this.gameView.displayMessage("Máquina: Mazo vacío. Reciclando...");
+                this.gameState.recyclingDeck();
             }
-            this.gameView.displayMessage("Máquina robó una carta");
+            this.updateViewAfterMachinePlay();
+            if (drawnCard != null) {
+                this.gameView.displayMessage("Máquina robó una carta.");
+            }
             this.processTurnAdvancement();
         }
+    }
+
+    private void forceMachineToDrawOnError() {
+        try {
+            this.gameState.drawTurnCard(this.machinePlayer);
+        } catch (EmptyDeckException e) {
+            this.gameState.recyclingDeck();
+            if (this.gameState.getDeck().getNumeroCartas() > 0) {
+                try {
+                    this.gameState.drawTurnCard(this.machinePlayer);
+                } catch (EmptyDeckException ignored) { /* No pudo robar */ }
+            }
+        }
+        this.updateViewAfterMachinePlay();
     }
 
     /**
