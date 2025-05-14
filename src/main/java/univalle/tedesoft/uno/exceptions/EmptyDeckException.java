@@ -1,4 +1,4 @@
-package univalle.tedesoft.uno.model.Exceptions;
+package univalle.tedesoft.uno.exceptions;
 
 /**
  * Excepción lanzada cuando se intenta tomar una carta de un mazo (Deck)
@@ -8,13 +8,13 @@ package univalle.tedesoft.uno.model.Exceptions;
  * @author Santiago David Guerrero
  * @author Juan Pablo Escamilla
  */
-public class ExceptionInEmptyDeck extends RuntimeException {
+public class EmptyDeckException extends Exception {
 
-    public ExceptionInEmptyDeck(String message) {
+    public EmptyDeckException(String message) {
         super(message);
     }
 
-    public ExceptionInEmptyDeck(String message, Throwable cause) {
+    public EmptyDeckException(String message, Throwable cause) {
         super(message, cause);
     }
 }
