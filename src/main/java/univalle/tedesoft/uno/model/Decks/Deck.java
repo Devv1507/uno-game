@@ -84,7 +84,7 @@ public class Deck {
     }
 
     /**
-     * Puede servir o puede borrarse luego,
+     * Trae el numero de cartas dentro del arreglo.
      * @return numero de cartas en el deck
      */
     public int getNumeroCartas() {
