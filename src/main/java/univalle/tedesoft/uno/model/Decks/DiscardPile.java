@@ -37,6 +37,21 @@ public class DiscardPile {
     public Card SuperiorCard() {
         return discarded.peek();
     }
+
+    /**
+     * Verifica si el stack esta vacio.
+     * @return discarded.isEmpty, el cual es un booleano que verifica esto(v para ocupado, f para vacio).
+     */
+    public boolean isEmpty() {
+        return discarded.isEmpty();
+    }
+    /**
+     * Metodo para conocer el tamaño del stack
+     * @return cantidad de cartas en el arreglo
+     */
+    public double size() {
+        return discarded.size();
+    }
     /**
      * Recicla las cartas de la pila de descarte cuando el mazo se queda sin cartas.
      * Retira temporalmente la carta superior, recoge el resto de cartas para reutilizarlas
@@ -57,4 +72,6 @@ public class DiscardPile {
 
         return recyclesCards;
     }
+
+
 }
