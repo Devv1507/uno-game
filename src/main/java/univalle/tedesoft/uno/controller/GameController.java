@@ -151,9 +151,9 @@ public class GameController {
                 this.currentPlayer.getName()
         );
         this.updateInteractionBasedOnTurn();
-        
+
         // Usar el nombre almacenado en playerName si existe
-        String displayName = this.playerName != null && !this.playerName.isEmpty() ? 
+        String displayName = this.playerName != null && !this.playerName.isEmpty() ?
             this.playerName : this.humanPlayer.getName();
         this.gameView.displayMessage("¡Tu turno, " + displayName + "!");
         this.gameView.enableRestartButton(true);
@@ -175,7 +175,7 @@ public class GameController {
         this.playerName = playerName;
         // Actualizar el nombre en el HumanPlayer
         this.humanPlayer.setName(playerName);
-        
+
         Platform.runLater(() -> {
             if (this.playerNameLabel != null) {
                 this.playerNameLabel.setText("Jugador: " + playerName);
@@ -256,12 +256,13 @@ public class GameController {
                     this.processTurnAdvancement();
                 }
             }
-        } catch (InvalidPlayException e) {
-            Card topCard = this.gameState.getTopDiscardCard();
-            String playedCardDescription = this.gameState.getCardDescription(selectedCard);
+        } catch (InvalidPlayException exception) {
+            Card topCard = exception.getTopDiscardCard();
+            Card attemptedCard = exception.getAttemptedCard();
+            String playedCardDescription = this.gameState.getCardDescription(attemptedCard);
             String topCardDescription = this.gameState.getCardDescription(topCard);
             this.gameView.displayInvalidPlayMessage(
-                    selectedCard,
+                    attemptedCard,
                     topCard,
                     playedCardDescription,
                     topCardDescription
@@ -306,32 +307,14 @@ public class GameController {
         this.gameView.clearPlayerHandHighlights();
         // Quitar resaltado del mazo si lo había
         this.gameView.highlightDeck(false);
-        // Robar carta del modelo
-        Card drawnCard = null;
-        // Actualizar vista de la mano
-        try {
-            drawnCard = this.gameState.drawTurnCard(this.humanPlayer);
-        } catch (EmptyDeckException e) {
-            this.gameView.displayMessage("Mazo vacío. Reciclando cartas de la pila de descarte...");
-            this.gameState.recyclingDeck();
-
-            if (this.gameState.getDeck().getNumeroCartas() == 0) { // Verificar si el mazo sigue vacío
-                this.gameView.displayMessage("No hay cartas para reciclar del descarte. No se pudo robar.");
-                // drawnCard permanece null
-            } else {
-                try {
-                    drawnCard = this.gameState.drawTurnCard(this.humanPlayer); // Reintentar robar
-                } catch (EmptyDeckException e2) {
-                    // Esto podría pasar si, teóricamente, otro hilo vaciara el mazo entre recyclingDeck y el nuevo drawTurnCard,
-                    // o si recyclingDeck no añadió cartas y getDeck().getNumeroCartas() fue 0.
-                    this.gameView.displayMessage("No se pudo robar carta incluso después de reciclar. El mazo sigue vacío.");
-                    // drawnCard permanece null
-                }
-            }
+        // Se intenta sacar una carta
+        Card drawnCard = tryDrawCard(this.humanPlayer, "Mazo vacío. Reciclando cartas de la pila de descarte...");
+        if (drawnCard == null) {
+            this.gameView.displayMessage("No hay cartas disponibles para robar, incluso después de reciclar x.x");
+        } else {
+            this.gameView.displayMessage("Sacaste: " + this.gameState.getCardDescription(drawnCard));
         }
-
         this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this); // Actualizar mano en la UI
-        this.gameView.displayMessage("Sacaste: " + this.gameState.getCardDescription(drawnCard));
         this.processTurnAdvancement();
     }
 
@@ -592,12 +575,13 @@ public class GameController {
                 // Esto sería un bug en la lógica de la máquina si elige una carta inválida.
                 this.gameView.displayMessage("Error: Máquina intentó una jugada inválida. Forzando robo.");
                 // Forzar a la máquina a robar como penalización/corrección
-                this.forceMachineToDrawOnError();
+                this.tryDrawCard(this.machinePlayer, null);
+                this.updateViewAfterMachinePlay();
                 this.processTurnAdvancement();
             }
         } else {
             // 2. La máquina no encontró carta jugable, así que va a tomar una
-            this.gameView.displayMessage("Máquina no tiene jugadas, robando...");
+            this.gameView.displayMessage("La máquina no tiene jugadas, robando...");
             Card drawnCard = null;
             try {
                 drawnCard = this.gameState.drawTurnCard(this.machinePlayer);
@@ -607,24 +591,41 @@ public class GameController {
             }
             this.updateViewAfterMachinePlay();
             if (drawnCard != null) {
-                this.gameView.displayMessage("Máquina robó una carta.");
+                this.gameView.displayMessage("La máquina robó una carta");
             }
             this.processTurnAdvancement();
         }
     }
 
-    private void forceMachineToDrawOnError() {
+    /**
+     * Intenta robar una carta para el jugador especificado, manejando el reciclaje
+     * del mazo en caso de que esté vacío.
+     * @param player el jugador que intenta robar la carta
+     * @param recycleMessage mensaje a mostrar cuando se necesita reciclar el mazo (puede ser null)
+     * @return la carta robada, o null si no fue posible robar después de intentar reciclar
+     * @see EmptyDeckException
+     */
+    private Card tryDrawCard(Player player, String recycleMessage) {
         try {
-            this.gameState.drawTurnCard(this.machinePlayer);
+            // primer intento de sacar una carta
+            return this.gameState.drawTurnCard(player);
         } catch (EmptyDeckException e) {
+            if (recycleMessage != null) {
+                this.gameView.displayMessage(recycleMessage);
+            }
+            // en caso de que se acabe el mazo, se recicla
             this.gameState.recyclingDeck();
             if (this.gameState.getDeck().getNumeroCartas() > 0) {
                 try {
-                    this.gameState.drawTurnCard(this.machinePlayer);
-                } catch (EmptyDeckException ignored) { /* No pudo robar */ }
+                    // segundo y último intento de sacar una carta
+                    return this.gameState.drawTurnCard(player);
+                } catch (EmptyDeckException ignored) {
+                    // No se pudo robar incluso tras reciclar
+                    return null;
+                }
             }
+            return null;
         }
-        this.updateViewAfterMachinePlay();
     }
 
     /**
