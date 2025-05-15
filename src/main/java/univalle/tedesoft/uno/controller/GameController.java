@@ -267,7 +267,7 @@ public class GameController {
      * Maneja el clic en el mazo para robar una carta.
      */
     @FXML
-    public void handleMazoClick() {
+    public void handleDeckClick() {
         if (this.gameState.isGameOver()) {
             this.gameView.displayMessage("El juego ha terminado.");
             return;

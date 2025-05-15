@@ -24,7 +24,7 @@
     </top>
     <center>
         <HBox alignment="CENTER" prefHeight="200.0" spacing="100.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 30; -fx-padding: 20;" BorderPane.alignment="CENTER">
-            <ImageView fx:id="deckImageView" fitHeight="130.0" onMouseClicked="#handleMazoClick" pickOnBounds="true" preserveRatio="true">
+            <ImageView fx:id="deckImageView" fitHeight="130.0" onMouseClicked="#handleDeckClick" pickOnBounds="true" preserveRatio="true">
                 <effect>
                     <DropShadow color="#00000080" offsetX="3.0" offsetY="3.0" radius="8.0" />
                 </effect>
