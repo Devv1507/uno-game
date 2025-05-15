@@ -144,6 +144,20 @@ public class GameView extends Stage {
                 this.gameController.discardPileImageView.setPreserveRatio(true);
                 this.gameController.discardPileImageView.setEffect(null); // Sin efectos iniciales
             }
+            // El punishUnoButton comienza oculto e inhabilitado
+            if (this.gameController.punishUnoButton != null) {
+                this.gameController.punishUnoButton.setVisible(false);
+                this.gameController.punishUnoButton.setDisable(true);
+            }
+            // El unoButton comienza oculto
+            if (this.gameController.unoButton != null) {
+                this.gameController.unoButton.setVisible(false);
+            }
+            // el temporizador para cantar UNO también comienza oculto
+            if (this.gameController.unoTimerIndicator != null) {
+                this.gameController.unoTimerIndicator.setVisible(false);
+                this.gameController.unoTimerIndicator.setProgress(0); // Asegurar que el progreso esté en 0
+            }
         });
     }
 
@@ -633,6 +647,22 @@ public class GameView extends Stage {
             }
             return null;
         }
+    }
+
+    /**
+     * Actualiza la visibilidad y el estado de habilitación del botón para castigar a la máquina.
+     */
+    public void updatePunishUnoButtonVisuals(boolean shouldShowButton, boolean isCurrentPlayerHuman, boolean isGameOver, boolean isChoosingColor) {
+        Platform.runLater(() -> {
+            if (this.gameController.punishUnoButton != null) {
+                boolean makeButtonVisibleAndEnabled = shouldShowButton &&
+                        isCurrentPlayerHuman &&
+                        !isGameOver &&
+                        !isChoosingColor;
+                this.gameController.punishUnoButton.setVisible(makeButtonVisibleAndEnabled);
+                this.gameController.punishUnoButton.setDisable(!makeButtonVisibleAndEnabled);
+            }
+        });
     }
 
     /**

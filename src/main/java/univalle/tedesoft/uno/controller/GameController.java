@@ -89,18 +89,6 @@ public class GameController {
                 this.playerNameLabel.setText("Jugador: " + this.playerName);
             }
         }
-        // Asegurar que el botón de UNO y el timer están ocultos al principio
-        if (this.unoButton != null) {
-            this.unoButton.setVisible(false);
-        }
-        if (this.unoTimerIndicator != null) {
-            this.unoTimerIndicator.setVisible(false);
-        }
-        // TODO: recordar mover esto a la lógica de GameView
-        if (this.punishUnoButton != null) { // Inicializar estado del nuevo botón
-            this.punishUnoButton.setVisible(false);
-            this.punishUnoButton.setDisable(true);
-        }
     }
 
     /**
@@ -169,8 +157,7 @@ public class GameController {
         this.machinePlayer.resetUnoStatus();
         this.updateUnoVisualsForHuman();
         this.isChoosingColor = false;
-        this.canPunishMachine = false; // Resetear bandera
-        this.updatePunishUnoButtonVisuals(); // Actualizar estado del botón
+        this.setCanPunishMachine(false);
     }
 
     /**
@@ -489,7 +476,9 @@ public class GameController {
     private void promptHumanForColorChoice() {
         this.isChoosingColor = true;
         this.gameView.enablePlayerInteraction(false);
-        Optional<String> result = this.gameView.promptForColorChoice(); // La vista mostrará el diálogo de elección
+
+        // Pedir a la vista que muestre el diálogo de elección
+        Optional<String> result = this.gameView.promptForColorChoice();
 
         this.isChoosingColor = false;
         this.gameView.enablePlayerInteraction(true);
@@ -835,24 +824,6 @@ public class GameController {
         this.humanUnoTimerThread.start();
     }
 
-    /**
-     * Actualiza la visibilidad y el estado de habilitación del botón para castigar a la máquina.
-     * El botón es visible y está habilitado si {@code canPunishMachine} es verdadero
-     * y es el turno del jugador humano y el juego no ha terminado.
-     */
-    public void updatePunishUnoButtonVisuals() {
-        Platform.runLater(() -> {
-            boolean showButton = this.canPunishMachine &&
-                    this.currentPlayer == this.humanPlayer &&
-                    !this.gameState.isGameOver() &&
-                    !this.isChoosingColor;
-            if (this.punishUnoButton != null) {
-                this.punishUnoButton.setVisible(showButton);
-                this.punishUnoButton.setDisable(!showButton);
-            }
-        });
-    }
-
     // --- Getters para MachinePlayerRunnable ---
     /**
      * Devuelve el estado actual del juego.
@@ -916,7 +887,12 @@ public class GameController {
     public void setCanPunishMachine(boolean canPunish) {
         if (this.canPunishMachine != canPunish) { // Solo actualizar si el valor realmente cambia
             this.canPunishMachine = canPunish;
-            this.updatePunishUnoButtonVisuals(); // Actualizar la UI cuando este estado específico cambia
+            this.gameView.updatePunishUnoButtonVisuals(
+                    this.canPunishMachine,
+                    (this.currentPlayer == this.humanPlayer),
+                    this.gameState.isGameOver(),
+                    this.isChoosingColor
+            ); // Actualizar la UI cuando este estado específico cambia
         }
     }
 }
