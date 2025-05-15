@@ -8,6 +8,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import univalle.tedesoft.uno.exceptions.EmptyDeckException;
+import univalle.tedesoft.uno.exceptions.InvalidPlayException;
 import univalle.tedesoft.uno.model.Cards.Card;
 import univalle.tedesoft.uno.model.Enum.Color;
 import univalle.tedesoft.uno.model.Players.HumanPlayer;
@@ -135,7 +137,14 @@ public class GameController {
 
         // Crear nuevo estado de juego e inicializarlo
         this.gameState = new GameState(this.humanPlayer, this.machinePlayer);
-        this.gameState.onGameStart();
+        try {
+            this.gameState.onGameStart();
+        } catch (IllegalStateException e) {
+            this.gameView.displayMessage("Error crítico al iniciar: " + e.getMessage() + ". Reinicia el juego.");
+            this.gameView.disableGameInteractions();
+            this.gameView.enableRestartButton(true);
+            return;
+        }
         this.currentPlayer = this.gameState.getCurrentPlayer();
 
         // Pedir a la vista que se reinicie y muestre el estado inicial
@@ -148,9 +157,9 @@ public class GameController {
                 this.currentPlayer.getName()
         );
         this.updateInteractionBasedOnTurn();
-        
+
         // Usar el nombre almacenado en playerName si existe
-        String displayName = this.playerName != null && !this.playerName.isEmpty() ? 
+        String displayName = this.playerName != null && !this.playerName.isEmpty() ?
             this.playerName : this.humanPlayer.getName();
         this.gameView.displayMessage("¡Tu turno, " + displayName + "!");
         this.gameView.enableRestartButton(true);
@@ -172,7 +181,7 @@ public class GameController {
         this.playerName = playerName;
         // Actualizar el nombre en el HumanPlayer
         this.humanPlayer.setName(playerName);
-        
+
         Platform.runLater(() -> {
             if (this.playerNameLabel != null) {
                 this.playerNameLabel.setText("Jugador: " + playerName);
@@ -225,7 +234,7 @@ public class GameController {
         // Limpiar resaltados
         this.gameView.clearPlayerHandHighlights();
         // revisar si la jugada es valida
-        if (this.gameState.isValidPlay(selectedCard)) {
+        try {
             // consultar con el modelo el resultado de la jugada
             boolean gameEnded = this.gameState.playCard(this.humanPlayer, selectedCard);
             // Actualizar la vista completa después de la jugada
@@ -243,22 +252,23 @@ public class GameController {
             } else {
                 // Si no es candidato a UNO, el turno avanza.
                 this.updateUnoVisualsForHuman();
-                if (selectedCard.getColor() != Color.WILD) {
-                    this.processTurnAdvancement();
-                }
             }
-
             // Si se jugó un comodín, el estado cambió y necesitamos elegir color
             if (selectedCard.getColor() == Color.WILD) {
                 // El turno avanzará después de elegir el color
                 this.promptHumanForColorChoice();
+            } else {
+                if (!this.humanPlayer.isUnoCandidate()) {
+                    this.processTurnAdvancement();
+                }
             }
-        } else {
-            Card topCard = this.gameState.getTopDiscardCard();
-            String playedCardDescription = this.gameState.getCardDescription(selectedCard);
+        } catch (InvalidPlayException exception) {
+            Card topCard = exception.getTopDiscardCard();
+            Card attemptedCard = exception.getAttemptedCard();
+            String playedCardDescription = this.gameState.getCardDescription(attemptedCard);
             String topCardDescription = this.gameState.getCardDescription(topCard);
             this.gameView.displayInvalidPlayMessage(
-                    selectedCard,
+                    attemptedCard,
                     topCard,
                     playedCardDescription,
                     topCardDescription
@@ -303,18 +313,15 @@ public class GameController {
         this.gameView.clearPlayerHandHighlights();
         // Quitar resaltado del mazo si lo había
         this.gameView.highlightDeck(false);
-        // Robar carta del modelo
-        Card drawnCard = this.gameState.drawTurnCard(this.humanPlayer);
-        // Actualizar vista de la mano
-        this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this);
-
-        if (drawnCard != null) {
-            this.gameView.displayMessage("Sacaste: " + this.gameState.getCardDescription(drawnCard));
-            this.processTurnAdvancement();
+        // Se intenta sacar una carta
+        Card drawnCard = tryDrawCard(this.humanPlayer, "Mazo vacío. Reciclando cartas de la pila de descarte...");
+        if (drawnCard == null) {
+            this.gameView.displayMessage("No hay cartas disponibles para robar, incluso después de reciclar x.x");
         } else {
-            this.gameView.displayMessage("No hay más cartas para robar. Pasando turno...");
-            this.processTurnAdvancement();
+            this.gameView.displayMessage("Sacaste: " + this.gameState.getCardDescription(drawnCard));
         }
+        this.gameView.updatePlayerHand(this.humanPlayer.getCards(), this); // Actualizar mano en la UI
+        this.processTurnAdvancement();
     }
 
     /**
@@ -377,34 +384,51 @@ public class GameController {
 
     /**
      * Maneja la acción del botón para castigar a la máquina por no decir "UNO".
+     * Condiciones para castigar a la máquina:
+     * 1. La máquina tiene 1 carta.
+     * 2. La máquina es candidata a UNO (significa que jugó una carta que la dejó con 1).
+     * 3. La máquina NO ha declarado UNO en su oportunidad.
      */
     @FXML
     public void handlePunishUnoButtonAction() {
-        // Condiciones para castigar a la máquina:
-        // 1. Es turno del humano (implícito por la guarda anterior).
-        // 2. La máquina tiene 1 carta.
-        // 3. La máquina es candidata a UNO (significa que jugó una carta que la dejó con 1).
-        // 4. La máquina NO ha declarado UNO en su oportunidad.
-        if (this.canPunishMachine &&
-                this.machinePlayer.getNumeroCartas() == 1 &&
-                this.machinePlayer.isUnoCandidate() &&
-                !this.machinePlayer.hasDeclaredUnoThisTurn()
-        ) {
-            this.gameView.displayMessage("¡Atrapaste a la Máquina! No dijo UNO. Roba " + GameState.PENALTY_CARDS_FOR_UNO + " cartas.");
-            this.gameState.penalizePlayerForUno(this.machinePlayer);
-            this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas());
-            // Esto asegura que la máquina no diga UNO después de ser penalizada
-            this.cancelMachineDeclareUnoTimer();
-        } else {
+        if (!canPunishMachine) {
             this.gameView.displayMessage("No es el momento de castigar a la máquina.");
+            return;
         }
-        this.setCanPunishMachine(false);
+        try {
+            if (this.shouldPenalizeMachineForUno()) {
+                this.gameView.displayMessage("¡Atrapaste a la Máquina! Roba " + GameState.PENALTY_CARDS_FOR_UNO + " cartas.");
+                this.gameState.penalizePlayerForUno(this.machinePlayer);
+                this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas());
+
+                // Esto asegura que la máquina no diga UNO después de ser penalizada
+                this.cancelMachineDeclareUnoTimer();
+            } else {
+                this.gameView.displayMessage("No es el momento de castigar a la máquina.");
+            }
+        } finally {
+            // Al final de la función siempre desactivamos la capacidad de castigar
+            this.setCanPunishMachine(false);
+        }
     }
 
     // --- Lógica del Juego ---
 
     public Label getMachineCardsCountLabel() {
         return machineCardsCountLabel;
+    }
+
+    /**
+     * Verifica si se cumplen las condiciones para penalizar a la máquina por no decir UNO.
+     * Estas condiciones son: (1) La máquina tiene 1 carta; (2) La máquina es candidata a
+     * UNO; (3) La máquina NO ha declarado UNO en su oportunidad.
+     * @return true si la máquina debe ser penalizada, false en caso contrario
+     */
+    private boolean shouldPenalizeMachineForUno() {
+        boolean shouldPenalizeMachine = this.machinePlayer.getNumeroCartas() == 1 &&
+                this.machinePlayer.isUnoCandidate() &&
+                !this.machinePlayer.hasDeclaredUnoThisTurn();
+        return shouldPenalizeMachine;
     }
 
     /**
@@ -540,15 +564,12 @@ public class GameController {
         }
 
         if (this.machinePlayer.isUnoCandidate()) {
-            // La máquina está en situación de UNO.
-            // 1. Programar su intento de declarar UNO.
+            // La máquina está en situación de UNO, se programa su intento de declarar UNO
             this.startMachineDeclareUnoTimer();
-            // 2. Avanzar el turno INMEDIATAMENTE.
-            //    Esto da al jugador humano la oportunidad de castigar a la máquina
-            //    antes de que el temporizador de la máquina para declarar UNO expire.
+            // Toca avanzar el turno INMEDIATAMENTE.
+            // Para que el jugador humano pueda castigar, antes de que el temporizador expire
             this.processTurnAdvancement();
         } else {
-            // La máquina no quedó en situación de UNO, simplemente avanzar el turno.
             this.processTurnAdvancement();
         }
     }
@@ -565,24 +586,65 @@ public class GameController {
         Card cardToPlay = this.machinePlayer.chooseCardToPlay(this.gameState);
         if (cardToPlay != null) {
             // Jugar la carta elegida
-            this.gameView.displayMessage("Máquina juega: " + this.gameState.getCardDescription(cardToPlay));
-            boolean gameEnded = this.gameState.playCard(this.machinePlayer, cardToPlay);
-            this.updateViewAfterMachinePlay();
-            this.handleMachinePlayedCard(cardToPlay, gameEnded);
+            try {
+                this.gameView.displayMessage("Máquina juega: " + this.gameState.getCardDescription(cardToPlay));
+                boolean gameEnded = this.gameState.playCard(this.machinePlayer, cardToPlay);
+                this.updateViewAfterMachinePlay(); // Actualiza UI (contador, descarte)
+                this.handleMachinePlayedCard(cardToPlay, gameEnded); // Lógica post-jugada (UNO, avance)
+            } catch (InvalidPlayException e) {
+                // Esto sería un bug en la lógica de la máquina si elige una carta inválida.
+                this.gameView.displayMessage("Error: Máquina intentó una jugada inválida. Forzando robo.");
+                // Forzar a la máquina a robar como penalización/corrección
+                this.tryDrawCard(this.machinePlayer, null);
+                this.updateViewAfterMachinePlay();
+                this.processTurnAdvancement();
+            }
         } else {
             // 2. La máquina no encontró carta jugable, así que va a tomar una
-            this.gameView.displayMessage("Máquina no tiene jugadas, robando...");
-            Card drawnCard = this.gameState.drawTurnCard(this.machinePlayer);
-            this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas()); // Actualizar contador de cartas de la máquina
-
-            if (drawnCard == null) {
-                // TODO: toca evaluar esto en una excepción
-                this.gameView.displayMessage("Máquina no pudo robar (mazo vacío). Pasando.");
-                this.processTurnAdvancement();
-                return;
+            this.gameView.displayMessage("La máquina no tiene jugadas, robando...");
+            Card drawnCard = null;
+            try {
+                drawnCard = this.gameState.drawTurnCard(this.machinePlayer);
+            } catch (EmptyDeckException e) {
+                this.gameView.displayMessage("Máquina: Mazo vacío. Reciclando...");
+                this.gameState.recyclingDeck();
             }
-            this.gameView.displayMessage("Máquina robó una carta");
+            this.updateViewAfterMachinePlay();
+            if (drawnCard != null) {
+                this.gameView.displayMessage("La máquina robó una carta");
+            }
             this.processTurnAdvancement();
+        }
+    }
+
+    /**
+     * Intenta robar una carta para el jugador especificado, manejando el reciclaje
+     * del mazo en caso de que esté vacío.
+     * @param player el jugador que intenta robar la carta
+     * @param recycleMessage mensaje a mostrar cuando se necesita reciclar el mazo (puede ser null)
+     * @return la carta robada, o null si no fue posible robar después de intentar reciclar
+     * @see EmptyDeckException
+     */
+    private Card tryDrawCard(Player player, String recycleMessage) {
+        try {
+            // primer intento de sacar una carta
+            return this.gameState.drawTurnCard(player);
+        } catch (EmptyDeckException e) {
+            if (recycleMessage != null) {
+                this.gameView.displayMessage(recycleMessage);
+            }
+            // en caso de que se acabe el mazo, se recicla
+            this.gameState.recyclingDeck();
+            if (this.gameState.getDeck().getNumeroCartas() > 0) {
+                try {
+                    // segundo y último intento de sacar una carta
+                    return this.gameState.drawTurnCard(player);
+                } catch (EmptyDeckException ignored) {
+                    // No se pudo robar incluso tras reciclar
+                    return null;
+                }
+            }
+            return null;
         }
     }
 

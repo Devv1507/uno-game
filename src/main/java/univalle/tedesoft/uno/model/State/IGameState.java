@@ -1,6 +1,9 @@
 package univalle.tedesoft.uno.model.State;
 
+import univalle.tedesoft.uno.exceptions.EmptyDeckException;
+import univalle.tedesoft.uno.exceptions.InvalidPlayException;
 import univalle.tedesoft.uno.model.Cards.Card;
+import univalle.tedesoft.uno.model.Decks.Deck;
 import univalle.tedesoft.uno.model.Enum.Color;
 import univalle.tedesoft.uno.model.Players.Player;
 
@@ -12,6 +15,12 @@ import univalle.tedesoft.uno.model.Players.Player;
  * @author Juan Pablo Escamilla
  */
 public interface IGameState {
+    /**
+     * Retorna el mazo del juego.
+     * @return el mazo con todas las cartas que están disponibles para robar/tomar.
+     */
+    Deck getDeck();
+
     /**
      * Se llama una unica vez cuando el juego ha sido configurado
      * (mazo creado, cartas repartidas, primera carta volteada) y está listo para empezar.
@@ -28,7 +37,7 @@ public interface IGameState {
      * @param player El jugador que realizo la jugada.
      * @param card La carta especifica que fue jugada y ahora está en la cima.
      */
-    boolean playCard(Player player, Card card);
+    boolean playCard(Player player, Card card) throws InvalidPlayException;
 
     /**
      * Se llama específicamente cuando un jugador es forzado a tomar cartas
@@ -105,7 +114,7 @@ public interface IGameState {
      * @param player El jugador que está robando la carta.
      * @return La Card robada, o null si el mazo y la pila de descarte están completamente vacíos.
      */
-    Card drawTurnCard(Player player);
+    Card drawTurnCard(Player player) throws EmptyDeckException;
 
     /**
      * Avanza el turno al siguiente jugador. Gestiona la transición entre el jugador actual y

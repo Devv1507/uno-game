@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import univalle.tedesoft.uno.exceptions.EmptyDeckException;
 import univalle.tedesoft.uno.model.Cards.*;
 import univalle.tedesoft.uno.model.Enum.Color;
 import univalle.tedesoft.uno.model.Enum.Value;
@@ -127,54 +128,77 @@ class DeckTest {
      * y la elimina, reduciendo el tamano del mazo.
      */
     @Test
-    void takeCard_returnsTopCardAndRemovesIt() {
+    void takeCard_returnsTopCardAndRemovesIt_whenDeckIsNotEmpty() throws EmptyDeckException { // Añadir throws
         // Asegurarse de que el mazo no esta vacio para esta prueba
-        if (deck.getNumeroCartas() == 0) {
-            fail("El mazo esta vacio, no se puede probar takeCard().");
+        if (this.deck.getNumeroCartas() == 0) {
+            // Esto no debería ocurrir con la inicialización estándar.
+            fail("El mazo esta vacio al inicio de la prueba, no se puede probar takeCard().");
         }
 
-        Card firstCardInList = deck.getCards().get(0); // La carta que se espera tomar
-        int initialSize = deck.getNumeroCartas();
+        // Tomamos una copia de la lista original para saber cuál es la primera
+        List<Card> originalCards = new ArrayList<>(this.deck.getCards());
+        Card expectedTopCard = originalCards.get(0);
+        int initialSize = this.deck.getNumeroCartas();
 
-        Card takenCard = deck.takeCard();
+        Card takenCard = this.deck.takeCard(); // Esto puede lanzar EmptyDeckException
 
         assertNotNull(takenCard, "La carta tomada no deberia ser nula.");
-        assertEquals(firstCardInList, takenCard, "La carta tomada deberia ser la que estaba al tope del mazo (primera en la lista interna).");
-        assertEquals(initialSize - 1, deck.getNumeroCartas(), "El numero de cartas en el mazo deberia disminuir en 1.");
-        if (deck.getNumeroCartas() > 0) {
-            assertNotEquals(takenCard, deck.getCards().get(0), "La nueva carta superior deberia ser diferente a la tomada.");
+        assertEquals(expectedTopCard, takenCard, "La carta tomada deberia ser la que estaba al tope del mazo (primera en la lista interna original).");
+        assertEquals(initialSize - 1, this.deck.getNumeroCartas(), "El numero de cartas en el mazo deberia disminuir en 1.");
+
+        // Verificar que la carta tomada ya no está en el mazo
+        assertFalse(this.deck.getCards().contains(takenCard), "La carta tomada no deberia estar mas en el mazo.");
+
+        if (this.deck.getNumeroCartas() > 0) {
+            // La nueva primera carta en el mazo (si aún quedan) no debería ser la que se tomó.
+            assertNotEquals(takenCard, this.deck.getCards().get(0), "La nueva carta superior deberia ser diferente a la tomada.");
         }
     }
 
     /**
-     * Prueba que Deck.takeCard() devuelve null cuando el mazo esta vacio.
+     * Prueba que Deck.takeCard() lanza EmptyDeckException cuando el mazo esta vacio.
+     * Este es el cambio principal debido a la refactorización de takeCard().
      */
     @Test
-    void takeCard_returnsNull_whenDeckIsEmpty() {
+    void takeCard_throwsEmptyDeckException_whenDeckIsEmpty() throws EmptyDeckException { // Añadir throws para el bucle
         // Vaciar el mazo
-        int currentSize = deck.getNumeroCartas();
+        int currentSize = this.deck.getNumeroCartas();
         for (int i = 0; i < currentSize; i++) {
-            deck.takeCard();
+            this.deck.takeCard(); // Tomar todas las cartas existentes
         }
 
-        assertEquals(0, deck.getNumeroCartas(), "El mazo deberia estar vacio despues de tomar todas las cartas.");
-        assertNull(deck.takeCard(), "takeCard() deberia devolver null cuando el mazo esta vacio.");
+        assertEquals(0, this.deck.getNumeroCartas(), "El mazo deberia estar vacio despues de tomar todas las cartas.");
+
+        // Verificar que se lanza la excepción esperada
+        EmptyDeckException thrownException = assertThrows(
+                EmptyDeckException.class,
+                () -> this.deck.takeCard(),
+                "Se esperaba que takeCard() lanzara EmptyDeckException cuando el mazo esta vacio."
+        );
+
+        // Opcionalmente, verificar el mensaje de la excepción si es relevante
+        assertNotNull(thrownException.getMessage());
+        assertTrue(thrownException.getMessage().contains("mazo principal está vacío"), "El mensaje de la excepcion deberia indicar que el mazo principal esta vacio.");
     }
 
     /**
      * Prueba que Deck.getNumeroCartas() refleja correctamente
-     * el numero de cartas despues de tomar algunas.
+     * el número de cartas después de tomar algunas.
      */
     @Test
-    void getNumeroCartas_reflectsTakenCards() {
-        assertEquals(EXPECTED_DECK_SIZE, deck.getNumeroCartas(), "Tamano inicial del mazo.");
+    void getNumeroCartas_reflectsTakenCards() throws EmptyDeckException { // Añadir throws
+        assertEquals(EXPECTED_DECK_SIZE, this.deck.getNumeroCartas(), "Tamaño inicial del mazo.");
 
-        deck.takeCard();
-        assertEquals(EXPECTED_DECK_SIZE - 1, deck.getNumeroCartas(), "Tamano del mazo despues de tomar 1 carta.");
+        if (EXPECTED_DECK_SIZE > 0) {
+            this.deck.takeCard();
+            assertEquals(EXPECTED_DECK_SIZE - 1, this.deck.getNumeroCartas(), "Tamaño del mazo después de tomar 1 carta.");
+        }
 
-        deck.takeCard();
-        deck.takeCard();
-        assertEquals(EXPECTED_DECK_SIZE - 3, deck.getNumeroCartas(), "Tamano del mazo despues de tomar 3 cartas.");
+        if (EXPECTED_DECK_SIZE > 2) { // Solo si hay suficientes cartas para tomar 2 más
+            this.deck.takeCard();
+            this.deck.takeCard();
+            assertEquals(EXPECTED_DECK_SIZE - 3, this.deck.getNumeroCartas(), "Tamaño del mazo después de tomar 3 cartas en total.");
+        }
     }
 
     /**
