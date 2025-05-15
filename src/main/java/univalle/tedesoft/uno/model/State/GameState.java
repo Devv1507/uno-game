@@ -21,9 +21,16 @@ import java.util.ArrayList;
  * @author Juan Pablo Escamilla
  */
 public class GameState implements IGameState {
+    /**
+     * Jugadores
+     */
     private final HumanPlayer humanPlayer;
     private final MachinePlayer machinePlayer;
-
+    /**
+     * CurrentPLayer es el jugador de turno
+     * CurrentValidColor es el color de la carta actual sobre la mesa
+     * CurrentValidValue es el valor de la carta actual sobre la mesa
+     */
     private Player currentPlayer;
     private Color currentValidColor;
     private Value currentValidValue;
@@ -32,7 +39,12 @@ public class GameState implements IGameState {
      */
     private final Deck deck;
     private final DiscardPile discardStack;
-
+    /**
+     * Estas son situaciones que ocurren dentro del juego.
+     * skipNextTurn significa que el actual jugador pierde su turno por un efecto de carta false hasta que esto sucede.
+     * gameOver Algun jugador ya no posee cartas por lo que el juego se acabo false hasta que esto se cumpla.
+     * winner jugador que ya no posee cartas.
+     */
     private boolean skipNextTurn = false;
     private boolean gameOver = false;
     private Player winner = null;
@@ -40,16 +52,20 @@ public class GameState implements IGameState {
      * Constante para definir el número de cartas que se penalizarán por no cantar "UNO" a tiempo.
      */
     public static final int PENALTY_CARDS_FOR_UNO = 2;
+    /**
+     * Constante para la mano inicial.
+     */
     private static final int INITIAL_HAND_SIZE = 5;
 
     /**
-     * Constructor de GameState
+     * Constructor de GameState, recibe los dos jugadores participantes y los inicializa por constructor.
      * @param humanPlayer La instancia del jugador humano.
      * @param machinePlayer La instancia del jugador maquina.
      */
     public GameState(HumanPlayer humanPlayer, MachinePlayer machinePlayer) {
         this.humanPlayer = humanPlayer;
         this.machinePlayer = machinePlayer;
+        //Se crea un Deck y una pila de descarte
         this.deck = new Deck();
         this.discardStack = new DiscardPile();
     }
