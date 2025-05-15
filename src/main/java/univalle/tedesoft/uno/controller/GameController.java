@@ -378,34 +378,51 @@ public class GameController {
 
     /**
      * Maneja la acción del botón para castigar a la máquina por no decir "UNO".
+     * Condiciones para castigar a la máquina:
+     * 1. La máquina tiene 1 carta.
+     * 2. La máquina es candidata a UNO (significa que jugó una carta que la dejó con 1).
+     * 3. La máquina NO ha declarado UNO en su oportunidad.
      */
     @FXML
     public void handlePunishUnoButtonAction() {
-        // Condiciones para castigar a la máquina:
-        // 1. Es turno del humano (implícito por la guarda anterior).
-        // 2. La máquina tiene 1 carta.
-        // 3. La máquina es candidata a UNO (significa que jugó una carta que la dejó con 1).
-        // 4. La máquina NO ha declarado UNO en su oportunidad.
-        if (this.canPunishMachine &&
-                this.machinePlayer.getNumeroCartas() == 1 &&
-                this.machinePlayer.isUnoCandidate() &&
-                !this.machinePlayer.hasDeclaredUnoThisTurn()
-        ) {
-            this.gameView.displayMessage("¡Atrapaste a la Máquina! No dijo UNO. Roba " + GameState.PENALTY_CARDS_FOR_UNO + " cartas.");
-            this.gameState.penalizePlayerForUno(this.machinePlayer);
-            this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas());
-            // Esto asegura que la máquina no diga UNO después de ser penalizada
-            this.cancelMachineDeclareUnoTimer();
-        } else {
+        if (!canPunishMachine) {
             this.gameView.displayMessage("No es el momento de castigar a la máquina.");
+            return;
         }
-        this.setCanPunishMachine(false);
+        try {
+            if (this.shouldPenalizeMachineForUno()) {
+                this.gameView.displayMessage("¡Atrapaste a la Máquina! Roba " + GameState.PENALTY_CARDS_FOR_UNO + " cartas.");
+                this.gameState.penalizePlayerForUno(this.machinePlayer);
+                this.gameView.updateMachineHand(this.machinePlayer.getNumeroCartas());
+
+                // Esto asegura que la máquina no diga UNO después de ser penalizada
+                this.cancelMachineDeclareUnoTimer();
+            } else {
+                this.gameView.displayMessage("No es el momento de castigar a la máquina.");
+            }
+        } finally {
+            // Al final de la función siempre desactivamos la capacidad de castigar
+            this.setCanPunishMachine(false);
+        }
     }
 
     // --- Lógica del Juego ---
 
     public Label getMachineCardsCountLabel() {
         return machineCardsCountLabel;
+    }
+
+    /**
+     * Verifica si se cumplen las condiciones para penalizar a la máquina por no decir UNO.
+     * Estas condiciones son: (1) La máquina tiene 1 carta; (2) La máquina es candidata a
+     * UNO; (3) La máquina NO ha declarado UNO en su oportunidad.
+     * @return true si la máquina debe ser penalizada, false en caso contrario
+     */
+    private boolean shouldPenalizeMachineForUno() {
+        boolean shouldPenalizeMachine = this.machinePlayer.getNumeroCartas() == 1 &&
+                this.machinePlayer.isUnoCandidate() &&
+                !this.machinePlayer.hasDeclaredUnoThisTurn();
+        return shouldPenalizeMachine;
     }
 
     /**
@@ -541,15 +558,12 @@ public class GameController {
         }
 
         if (this.machinePlayer.isUnoCandidate()) {
-            // La máquina está en situación de UNO.
-            // 1. Programar su intento de declarar UNO.
+            // La máquina está en situación de UNO, se programa su intento de declarar UNO
             this.startMachineDeclareUnoTimer();
-            // 2. Avanzar el turno INMEDIATAMENTE.
-            //    Esto da al jugador humano la oportunidad de castigar a la máquina
-            //    antes de que el temporizador de la máquina para declarar UNO expire.
+            // Toca avanzar el turno INMEDIATAMENTE.
+            // Para que el jugador humano pueda castigar, antes de que el temporizador expire
             this.processTurnAdvancement();
         } else {
-            // La máquina no quedó en situación de UNO, simplemente avanzar el turno.
             this.processTurnAdvancement();
         }
     }
