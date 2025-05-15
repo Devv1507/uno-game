@@ -5,15 +5,33 @@ import univalle.tedesoft.uno.controller.GameController;
 import univalle.tedesoft.uno.model.Players.HumanPlayer;
 
 import java.util.concurrent.TimeUnit;
+
+/**
+ * Runnable que implementa un temporizador para la ventana de oportunidad
+ * del jugador humano para declarar 'UNO'. Si el temporizador expira antes
+ * de que el jugador declare 'UNO' (presionando el boton correspondiente),
+ * se aplica una penalizacion al jugador humano. Las interacciones con
+ * la logica del juego y la UI se realizan en el hilo de JavaFX.
+ * @author David Esteban Valencia
+ * @author Santiago David Guerrero
+ * @author Juan Pablo Escamilla
+
+ */
 public class HumanUnoTimerRunnable implements Runnable {
     private final GameController gameController;
     private final long timeoutMilliseconds;
-
+/**
+ * Constructor para HumanUnoTimerRunnable.
+ * @param gameController La instancia del GameController para interactuar con el estado del juego y la interfaz de usuario.
+ * @param timeoutMilliseconds El tiempo en milisegundos que el jugador humano tiene para declarar 'UNO' antes de ser penalizado.
+ */
     public HumanUnoTimerRunnable(GameController gameController, long timeoutMilliseconds) {
         this.gameController = gameController;
         this.timeoutMilliseconds = timeoutMilliseconds;
     }
-
+    /**
+     * Ejecuta la logica del temporizador para la declaracion de 'UNO' por parte del jugador humano.
+     */
     @Override
     public void run() {
         try {

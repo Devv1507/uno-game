@@ -25,7 +25,13 @@ import univalle.tedesoft.uno.view.GameView;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-
+/**
+ * Clase encargada de controlar la pantalla principal donde se desarrolla el juego
+ * y donde se da la conexion entre los modelos y la capa de vistas.
+ * @author Juan Pablo Escamilla
+ * @author David Esteban Valencia
+ * @author Santiago Guerrero
+ */
 public class GameController {
     @FXML public Label machineCardsCountLabel;
     @FXML public HBox machineHandHBox;
