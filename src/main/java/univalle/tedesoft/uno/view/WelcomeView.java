@@ -58,6 +58,4 @@ public class WelcomeView extends Stage {
         this.setTitle("UNO! - Bienvenida");
         this.setScene(scene);
     }
-
-
 }

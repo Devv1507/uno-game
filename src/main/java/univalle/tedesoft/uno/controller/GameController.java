@@ -21,7 +21,9 @@ import univalle.tedesoft.uno.threads.HumanUnoTimerRunnable;
 import univalle.tedesoft.uno.threads.MachineDeclareUnoRunnable;
 import univalle.tedesoft.uno.threads.MachinePlayerRunnable;
 import univalle.tedesoft.uno.view.GameView;
+import univalle.tedesoft.uno.view.InstructionsView;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -338,26 +340,17 @@ public class GameController {
     }
 
     /**
-     * Maneja la acción del botón de Ayuda.
+     * Maneja el evento del botón de ayuda.
      */
     @FXML
-    public void handleAidButtonAction() {
-        if (this.gameState.isGameOver() || this.currentPlayer != this.humanPlayer || this.isChoosingColor) {
-            return;
-        }
-
-        List<Card> playableCards = this.humanPlayer.getCards().stream()
-                .filter(this.gameState::isValidPlay)
-                .toList();
-
-        if (playableCards.isEmpty()) {
-            // Si el jugador no tiene cartas jugables, debe tomar del mazo
-            this.gameView.displayMessage("No tienes jugadas válidas. Debes robar del mazo.");
-            this.gameView.highlightDeck(true);
-        } else {
-            // Si tiene cartas jugables, le damos una ayuda de cuáles puede jugar
-            this.gameView.highlightPlayableCards(playableCards);
-            this.gameView.displayMessage("Cartas resaltadas son las que puedes jugar.");
+    private void handleAidButtonAction() {
+        try {
+            // Obtener la instancia de InstructionsView
+            InstructionsView instructionsView = InstructionsView.getInstance();
+            // Mostrar la vista de instrucciones
+            instructionsView.show();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

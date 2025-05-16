@@ -226,27 +226,27 @@ public class GameView extends Stage {
                     HBox.setMargin(cardView, new Insets(0, 0, 20, 0));
                     this.gameController.machineHandHBox.getChildren().add(cardView);
                 } else {
-                    // Calcular el ángulo de rotación para cada carta
-                    double totalAngle = 30.0;
-                    double angleStep = totalAngle / (cardCount - 1);
-                    double startAngle = -totalAngle / 2;
+                // Calcular el ángulo de rotación para cada carta
+                double totalAngle = 30.0;
+                double angleStep = totalAngle / (cardCount - 1);
+                double startAngle = -totalAngle / 2;
+                
+                for (int i = 0; i < cardCount; i++) {
+                    ImageView cardView = new ImageView(backImage);
+                    cardView.setFitHeight(CARD_HEIGHT * 0.8);
+                    cardView.setPreserveRatio(true);
+                    cardView.setSmooth(true);
                     
-                    for (int i = 0; i < cardCount; i++) {
-                        ImageView cardView = new ImageView(backImage);
-                        cardView.setFitHeight(CARD_HEIGHT * 0.8);
-                        cardView.setPreserveRatio(true);
-                        cardView.setSmooth(true);
-                        
-                        // Aplicar la rotación
-                        double rotation = startAngle + (i * angleStep);
-                        cardView.setRotate(rotation);
-                        
-                        // Ajustar la posición Y para compensar la rotación
-                        double yOffset = Math.abs(rotation) * 0.5;
-                        cardView.setTranslateY(yOffset);
-                        
-                        HBox.setMargin(cardView, new Insets(0, 0, 20, 0));
-                        this.gameController.machineHandHBox.getChildren().add(cardView);
+                    // Aplicar la rotación
+                    double rotation = startAngle + (i * angleStep);
+                    cardView.setRotate(rotation);
+                    
+                    // Ajustar la posición Y para compensar la rotación
+                    double yOffset = Math.abs(rotation) * 0.5;
+                    cardView.setTranslateY(yOffset);
+                    
+                    HBox.setMargin(cardView, new Insets(0, 0, 20, 0));
+                    this.gameController.machineHandHBox.getChildren().add(cardView);
                     }
                 }
             }
