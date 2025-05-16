@@ -438,6 +438,10 @@ public class GameState implements IGameState {
         return this.discardStack.SuperiorCard();
     }
 
+    /**
+     * Retorna el player asociado a winner.
+     * @return winner, player con 0 cartas.
+     */
     @Override
     public Player getWinner() {
         return this.winner;
