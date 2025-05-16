@@ -652,11 +652,10 @@ public class GameView extends Stage {
     /**
      * Actualiza la visibilidad y el estado de habilitación del botón para castigar a la máquina.
      */
-    public void updatePunishUnoButtonVisuals(boolean shouldShowButton, boolean isCurrentPlayerHuman, boolean isGameOver, boolean isChoosingColor) {
+    public void updatePunishUnoButtonVisuals(boolean shouldShowButton, boolean isGameOver, boolean isChoosingColor) {
         Platform.runLater(() -> {
             if (this.gameController.punishUnoButton != null) {
                 boolean makeButtonVisibleAndEnabled = shouldShowButton &&
-                        isCurrentPlayerHuman &&
                         !isGameOver &&
                         !isChoosingColor;
                 this.gameController.punishUnoButton.setVisible(makeButtonVisibleAndEnabled);
