@@ -9,7 +9,7 @@ import java.io.IOException;
 public class Main extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        WelcomeView welcomeView = WelcomeView.getInstance();
+         WelcomeView welcomeView = WelcomeView.getInstance();
         welcomeView.show();
     }
 
