@@ -37,6 +37,13 @@ public class GameState implements IGameState {
     private boolean gameOver = false;
     private Player winner = null;
     /**
+     * Registro de la cantidad de robos pendientes para el jugador humano.
+     * Esta propiedad se utiliza en situaciones en donde la máquina juega una carta especial que
+     * debería quitarle el turno al jugador (WILD, +2, +4) pero se agrega un delay con el proposito de
+     * permitir la ventana de castigo.
+     */
+    private int pendingDrawsForHuman = 0;
+    /**
      * Constante para definir el número de cartas que se penalizarán por no cantar "UNO" a tiempo.
      */
     public static final int PENALTY_CARDS_FOR_UNO = 2;
@@ -164,6 +171,9 @@ public class GameState implements IGameState {
         // Resetear el estado UNO del jugador antes de evaluar la nueva situación
         player.resetUnoStatus();
 
+        // Evaluar si es candidato a UNO (si tiene 1 carta)
+        player.setUnoCandidate(player.getNumeroCartas() == 1);
+
         if (card instanceof ActionCard) {
             this.applyCardEffect(card, player);
         }
@@ -178,9 +188,7 @@ public class GameState implements IGameState {
         if (player.getNumeroCartas() == 0) {
             this.gameOver = true;
             this.winner = player;
-            return true;
-        } else if (player.getNumeroCartas() == 1) {
-            player.setUnoCandidate(true); // candidato para declarar UNO
+            return true; // juego terminado
         }
         return false;
     }
@@ -220,23 +228,25 @@ public class GameState implements IGameState {
      * @see #playCard
      */
     private void applyCardEffect(Card card, Player playerWhoPlayed) {
-        Player opponent;
-        if (playerWhoPlayed == this.humanPlayer) {
-            opponent = this.machinePlayer;
-        } else {
-            opponent = this.humanPlayer;
-        }
+        Player opponent = this.getOpponent(playerWhoPlayed);
         if (card instanceof DrawTwoCard) {
-            this.forceDraw(opponent, 2);
-            this.skipNextTurn = true; // El oponente pierde el turno
+            if (playerWhoPlayed == this.machinePlayer && playerWhoPlayed.isUnoCandidate()) {
+                this.pendingDrawsForHuman = 2; // Prepara el robo, no lo ejecuta
+            } else {
+                this.forceDraw(opponent, 2); // Aplica inmediatamente si no es máquina en UNO
+            }
+            this.skipNextTurn = true;
         } else if (card instanceof WildDrawFourCard) {
-            this.forceDraw(opponent, 4);
-            this.skipNextTurn = true; // El oponente pierde el turno
+            if (playerWhoPlayed == this.machinePlayer && playerWhoPlayed.isUnoCandidate()) {
+                this.pendingDrawsForHuman = 4; // Prepara el robo
+            } else {
+                this.forceDraw(opponent, 4);
+            }
+            this.skipNextTurn = true;
             this.onMustChooseColor(playerWhoPlayed);
         } else if (card instanceof SkipCard) {
-            this.skipNextTurn = true; // El oponente pierde el turno
+            this.skipNextTurn = true;
         } else if (card instanceof WildCard) {
-            // La elección de color se maneja fuera, notificamos la necesidad
             this.onMustChooseColor(playerWhoPlayed);
         }
     }
@@ -465,5 +475,18 @@ public class GameState implements IGameState {
         player.addCard(drawnCard);
         player.resetUnoStatus(); // Al robar, ya no es candidato inmediato a UNO por la jugada anterior
         return drawnCard;
+    }
+
+    /**
+     * Aplica cualquier robo de cartas pendiente para el jugador humano.
+     * Es llamado después de la ventana de oportunidad de castigo.
+     */
+    @Override
+    public void applyPendingDrawsToHuman() {
+        if (this.pendingDrawsForHuman > 0) {
+            // Asumimos que el oponente de la máquina es el humano.
+            this.forceDraw(this.humanPlayer, this.pendingDrawsForHuman);
+            this.pendingDrawsForHuman = 0; // Resetear los robos pendientes
+        }
     }
 }
