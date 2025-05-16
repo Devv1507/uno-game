@@ -275,17 +275,6 @@ public class GameState implements IGameState {
         }
     }
 
-    /**
-     * Determina quien es el siguiente jugador en el orden actual.
-     * @return la instancia que representa el siguiente jugador.
-     */
-    private Player determineNextPlayer() {
-        if (this.currentPlayer == this.humanPlayer) {
-            return this.machinePlayer;
-        } else {
-            return this.humanPlayer;
-        }
-    }
 
     /**
      * Fuerza a un jugador a tomar cartas ya sea debido a un efecto (+2, +4)
