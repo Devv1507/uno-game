@@ -394,8 +394,7 @@ public class GameController {
                 this.gameView.displayMessage("No es el momento de castigar a la máquina.");
             }
         } finally {
-            // Al final de la función siempre desactivamos la capacidad de castigar
-            this.setCanPunishMachine(false);
+            this.proceedWithGameAfterMachineUnoWindow(); // continuar el juego y evaluar
         }
     }
 
@@ -543,8 +542,6 @@ public class GameController {
         }
 
         // Actualizar la vista de la pila de descarte.
-        // Si la máquina jugó un comodín, gameState.onMustChooseColor ya habrá sido llamado
-        // dentro de gameState.playCard(), y el gameState.currentValidColor estará actualizado.
         this.gameView.updateDiscardPile(this.gameState.getTopDiscardCard(), this.gameState.getCurrentValidColor());
 
         // Si la máquina jugó un comodín, mostrar mensaje de cambio de color.
@@ -554,10 +551,8 @@ public class GameController {
 
         if (this.machinePlayer.isUnoCandidate()) {
             // La máquina está en situación de UNO, se programa su intento de declarar UNO
+            this.setCanPunishMachine(true);
             this.startMachineDeclareUnoTimer();
-            // Toca avanzar el turno INMEDIATAMENTE.
-            // Para que el jugador humano pueda castigar, antes de que el temporizador expire
-            this.processTurnAdvancement();
         } else {
             this.processTurnAdvancement();
         }
@@ -714,10 +709,16 @@ public class GameController {
      * Habilita el botón de 'Pasar' solo si es turno humano y no está obligado a tomar cartas.
      */
     private void updateInteractionBasedOnTurn() {
-        boolean canInteractBase = (this.currentPlayer == this.humanPlayer &&
+        boolean isHumanTurnAndGameCanContinue = (this.currentPlayer == this.humanPlayer &&
                 !this.gameState.isGameOver() &&
                 !this.isChoosingColor);
-        this.gameView.enablePlayerInteraction(canInteractBase);
+        if (this.canPunishMachine) {
+            // Si el humano tiene la oportunidad de castigar a la máquina,
+            // se deshabilita el juego normal de cartas y el robo del mazo.
+            this.gameView.enablePlayerInteraction(false);
+        } else {
+            this.gameView.enablePlayerInteraction(isHumanTurnAndGameCanContinue);
+        }
     }
 
     /**
@@ -885,14 +886,27 @@ public class GameController {
      * @param canPunish booleano que cambia según el flujo del juego y ciertas condiciones específicas.
      */
     public void setCanPunishMachine(boolean canPunish) {
-        if (this.canPunishMachine != canPunish) { // Solo actualizar si el valor realmente cambia
-            this.canPunishMachine = canPunish;
+        this.canPunishMachine = canPunish;
+        Platform.runLater(() -> { // Asegurar que las actualizaciones de UI estén en el hilo de JavaFX
             this.gameView.updatePunishUnoButtonVisuals(
                     this.canPunishMachine,
-                    (this.currentPlayer == this.humanPlayer),
-                    this.gameState.isGameOver(),
+                    (this.gameState != null && this.gameState.isGameOver()),
                     this.isChoosingColor
-            ); // Actualizar la UI cuando este estado específico cambia
-        }
+            );
+            this.updateInteractionBasedOnTurn(); // actualizar las interacciones del jugador
+        });
+    }
+
+    /**
+     * Procede con el juego después de que la ventana de oportunidad para castigar
+     * a la máquina (o para que la máquina declare UNO) haya concluido.
+     * Aplica efectos de carta pendientes y avanza el turno.
+     */
+    public void proceedWithGameAfterMachineUnoWindow() {
+        this.setCanPunishMachine(false);
+        // Aplicar cualquier efecto de robo pendiente que la máquina haya causado
+        this.gameState.applyPendingDrawsToHuman();
+        this.updateViewAfterMachinePlay(); // actualizar la vista
+        this.processTurnAdvancement();
     }
 }
