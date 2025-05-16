@@ -140,4 +140,11 @@ public interface IGameState {
      * Aplica cualquier penalización o efecto de robo pendiente al jugador humano en el juego.
      */
     void applyPendingDrawsToHuman();
+
+    /**
+     * Devuelve el nombre en español de un color específico.
+     * @param color El color a traducir.
+     * @return El nombre del color en español.
+     */
+    String getSpanishColorName(Color color);
 }
