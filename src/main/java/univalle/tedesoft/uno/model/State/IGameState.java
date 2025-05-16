@@ -135,4 +135,9 @@ public interface IGameState {
      * @param player El jugador que ha declarado "UNO".
      */
     void playerDeclaresUno(Player player);
+
+    /**
+     * Aplica cualquier penalización o efecto de robo pendiente al jugador humano en el juego.
+     */
+    void applyPendingDrawsToHuman();
 }

@@ -50,19 +50,14 @@ public class MachineDeclareUnoRunnable implements Runnable {
                 }
 
                 MachinePlayer machinePlayer = gameController.getMachinePlayer(); // Asumiendo getter
-                boolean machineSuccessfullyDeclaredUno = false;
 
                 // Verificar si la máquina aún debe declarar UNO (no fue atrapada y sigue con 1 carta)
                 if (machinePlayer.isUnoCandidate() && !machinePlayer.hasDeclaredUnoThisTurn()) {
                     gameController.getGameState().playerDeclaresUno(machinePlayer);
                     gameController.getGameView().displayMessage("¡Máquina dice UNO!"); // Asumiendo getter
-                    machineSuccessfullyDeclaredUno = true;
                 }
-
-                // Si la máquina efectivamente declaró UNO, ya no se le puede castigar
-                if (machineSuccessfullyDeclaredUno) {
-                    gameController.setCanPunishMachine(false);
-                }
+                // Siempre se procede a cerrar la ventana de oportunidad de UNO/castigo,
+                this.gameController.proceedWithGameAfterMachineUnoWindow();
             });
 
         } catch (InterruptedException e) {
