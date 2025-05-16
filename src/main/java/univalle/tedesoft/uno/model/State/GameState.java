@@ -237,11 +237,7 @@ public class GameState implements IGameState {
      */
     private void applyCardEffect(Card card, Player playerWhoPlayed) {
         Player opponent;
-        if (playerWhoPlayed == this.humanPlayer) {
-            opponent = this.machinePlayer;
-        } else {
-            opponent = this.humanPlayer;
-        }
+        opponent= this.getOpponent(playerWhoPlayed);
         if (card instanceof DrawTwoCard) {
             this.forceDraw(opponent, 2);
             this.skipNextTurn = true; // El oponente pierde el turno
