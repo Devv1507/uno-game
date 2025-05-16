@@ -144,12 +144,11 @@ public class GameController {
                 this.machinePlayer.getNumeroCartas(),
                 this.currentPlayer.getName()
         );
-        this.updateInteractionBasedOnTurn();
+        if (this.humanPlayer.getName() != null && !this.humanPlayer.getName().isEmpty() && this.currentPlayer == this.humanPlayer) {
+            this.gameView.displayMessage("¡Tu turno, " + this.humanPlayer.getName() + "!");
+        }
 
-        // Usar el nombre almacenado en playerName si existe
-        String displayName = this.playerName != null && !this.playerName.isEmpty() ?
-            this.playerName : this.humanPlayer.getName();
-        this.gameView.displayMessage("¡Tu turno, " + displayName + "!");
+        this.updateInteractionBasedOnTurn();
         this.gameView.enableRestartButton(true);
 
         // Asegurar que los estados de UNO estén limpios para la nueva partida
