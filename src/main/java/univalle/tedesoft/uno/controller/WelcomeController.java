@@ -8,6 +8,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import univalle.tedesoft.uno.view.GameView;
 import univalle.tedesoft.uno.view.WelcomeView;
+import univalle.tedesoft.uno.view.InstructionsView;
 
 import java.io.IOException;
 
@@ -94,7 +95,13 @@ public class WelcomeController {
      * Maneja el evento del botón de instrucciones.
      */
     private void handleInstructions() {
-        // TODO: Implementar la lógica para mostrar las instrucciones
-        System.out.println("Mostrar instrucciones");
+        try {
+            // Obtener la instancia de InstructionsView
+            InstructionsView instructionsView = InstructionsView.getInstance();
+            // Mostrar la vista de instrucciones
+            instructionsView.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
