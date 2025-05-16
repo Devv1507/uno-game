@@ -16,8 +16,6 @@ public abstract class Card {
     public Color color;
     /** Valor de la carta (numero, accion o comodin) */
     public Value value;
-    /** Indica si la carta ya fue utilizada en el juego */
-    public Boolean isUsed = false;
     /**
      * Constructor de la clase Card.
      *
