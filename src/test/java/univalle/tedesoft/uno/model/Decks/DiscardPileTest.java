@@ -87,15 +87,13 @@ class DiscardPileTest {
     }
 
     /**
-     * Prueba que {@link DiscardPile#SuperiorCard()} lanza una excepcion
-     * (EmptyStackException) cuando la pila de descarte esta vacia.
+     * Prueba que {@link DiscardPile#SuperiorCard()} retorna null
+     * cuando la pila de descarte está vacía.
      */
     @Test
-    void SuperiorCard_throwsException_whenPileIsEmpty() {
-        assertTrue(discardPile.isEmpty(), "La pila de descarte deberia estar vacia.");
-        assertThrows(java.util.EmptyStackException.class, () -> {
-            discardPile.SuperiorCard();
-        }, "SuperiorCard deberia lanzar una excepcion si la pila esta vacia.");
+    void SuperiorCard_returnsNull_whenPileIsEmpty() {
+        assertTrue(discardPile.isEmpty(), "La pila de descarte debería estar vacía.");
+        assertNull(discardPile.SuperiorCard(), "SuperiorCard debería retornar null si la pila está vacía.");
     }
 
     /**
