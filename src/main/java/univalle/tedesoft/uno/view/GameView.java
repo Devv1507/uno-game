@@ -301,7 +301,7 @@ public class GameView extends Stage {
             // Si es el jugador humano, usar el nombre que ingresó o "Humano" por defecto
             displayName = (this.playerName != null && !this.playerName.isEmpty()) ? this.playerName : "Jugador";
         }
-        Platform.runLater(() -> this.gameController.turnLabel.setText("Turno de: " + displayName));
+        Platform.runLater(() -> this.gameController.turnLabel.setText("Turno de " + displayName));
     }
 
     // --- Métodos de Control de la UI ---
