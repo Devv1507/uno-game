@@ -35,6 +35,7 @@ import java.util.Random;
  * @author Santiago Guerrero
  */
 public class GameController {
+    @FXML public Label humanCardsCountLabel;
     @FXML public Label machineCardsCountLabel;
     @FXML public HBox machineHandHBox;
     @FXML public ImageView deckImageView;
@@ -392,10 +393,6 @@ public class GameController {
 
     // --- Lógica del Juego ---
 
-    public Label getMachineCardsCountLabel() {
-        return machineCardsCountLabel;
-    }
-
     /**
      * Verifica si se cumplen las condiciones para penalizar a la máquina por no decir UNO.
      * Estas condiciones son: (1) La máquina tiene 1 carta; (2) La máquina es candidata a
@@ -433,7 +430,6 @@ public class GameController {
         this.gameView.clearPlayerHandHighlights();
         this.gameView.highlightDeck(false);
         this.gameView.updateTurnIndicator(this.currentPlayer.getName());
-        this.gameView.displayMessage("Turno de " + this.currentPlayer.getName());
 
         if (this.currentPlayer == this.machinePlayer) {
             // Turno normal de la máquina

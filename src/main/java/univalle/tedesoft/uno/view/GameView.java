@@ -107,12 +107,12 @@ public class GameView extends Stage {
     private void addHoverEffectToButton(Button button) {
         if (button != null) {
             String originalStyle = button.getStyle();
-            
+
             button.setOnMouseEntered(e -> {
                 button.setStyle(originalStyle +
                         "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
             });
-            
+
             button.setOnMouseExited(e -> {
                 button.setStyle(originalStyle);
             });
@@ -182,22 +182,25 @@ public class GameView extends Stage {
     public void updatePlayerHand(List<Card> hand, GameController ctrl) {
         Platform.runLater(() -> {
             this.gameController.playerHandHBox.getChildren().clear();
-            
+
             // Configurar el HBox para las cartas solapadas como en la imagen
             this.gameController.playerHandHBox.setSpacing(-20); // Solapamiento visual de cartas
             this.gameController.playerHandHBox.setAlignment(Pos.CENTER);
-            
+
             for (Card card : hand) {
                 ImageView cardView = createCardImageView(card);
-                
+
                 // Asignar el handler del controlador al evento de clic
                 cardView.setOnMouseClicked(ctrl::handlePlayCardClick);
                 cardView.setUserData(card);
-                
+
                 // Agregar margen para el efecto de elevación
                 HBox.setMargin(cardView, new Insets(0, 0, 20, 0));
-                
+
                 this.gameController.playerHandHBox.getChildren().add(cardView);
+            }
+            if (this.gameController.humanCardsCountLabel != null) {
+                this.gameController.humanCardsCountLabel.setText("Mis Cartas: " + hand.size());
             }
         });
     }
@@ -212,7 +215,7 @@ public class GameView extends Stage {
             this.gameController.machineHandHBox.getChildren().clear();
             this.gameController.machineHandHBox.setSpacing(-20);
             this.gameController.machineHandHBox.setAlignment(Pos.CENTER);
-            
+
             Image backImage = getCardImageByName(CARD_BACK_IMAGE_NAME);
 
             if (backImage != null) {
@@ -229,21 +232,21 @@ public class GameView extends Stage {
                 double totalAngle = 30.0;
                 double angleStep = totalAngle / (cardCount - 1);
                 double startAngle = -totalAngle / 2;
-                
+
                 for (int i = 0; i < cardCount; i++) {
                     ImageView cardView = new ImageView(backImage);
                     cardView.setFitHeight(CARD_HEIGHT * 0.8);
                     cardView.setPreserveRatio(true);
                     cardView.setSmooth(true);
-                    
+
                     // Aplicar la rotación
                     double rotation = startAngle + (i * angleStep);
                     cardView.setRotate(rotation);
-                    
+
                     // Ajustar la posición Y para compensar la rotación
                     double yOffset = Math.abs(rotation) * 0.5;
                     cardView.setTranslateY(yOffset);
-                    
+
                     HBox.setMargin(cardView, new Insets(0, 0, 20, 0));
                     this.gameController.machineHandHBox.getChildren().add(cardView);
                     }
@@ -384,12 +387,12 @@ public class GameView extends Stage {
 
             // Agregar la nueva etiqueta al principio del contenedor
             this.gameController.messageContainer.getChildren().add(0, newMessage);
-            
+
             // Limitar el número de mensajes visibles
             if (this.gameController.messageContainer.getChildren().size() > MAX_MESSAGES) {
                 this.gameController.messageContainer.getChildren().remove(MAX_MESSAGES);
             }
-            
+
             // Aplicar efectos a todos los mensajes
             for (int i = 0; i < this.gameController.messageContainer.getChildren().size(); i++) {
                 Node node = this.gameController.messageContainer.getChildren().get(i);
@@ -548,6 +551,7 @@ public class GameView extends Stage {
             this.gameController.machineHandHBox.getChildren().clear();
             this.gameController.messageContainer.getChildren().clear(); // Limpiar mensajes
             this.gameController.machineCardsCountLabel.setText("Cartas Máquina: ?");
+            this.gameController.humanCardsCountLabel.setText("Mis Cartas: ?");
 
             // Restablecer imágenes por defecto
             this.initializeUI();
