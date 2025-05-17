@@ -4,7 +4,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import univalle.tedesoft.uno.Main;
-import univalle.tedesoft.uno.controller.InstructionsController;
 
 import java.io.IOException;
 
@@ -17,8 +16,6 @@ import java.io.IOException;
  * @author Santiago Guerrero
  */
 public class InstructionsView extends Stage {
-    private final InstructionsController controller;
-
     /**
      * Clase interna para implementar el patrón Singleton.
      */
@@ -45,14 +42,6 @@ public class InstructionsView extends Stage {
     private InstructionsView() throws IOException {
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("instructions-view.fxml"));
         Scene scene = new Scene(loader.load());
-        this.controller = loader.getController();
-
-        if (this.controller == null) {
-            throw new IOException("No se pudo obtener el InstructionsController desde el FXML");
-        }
-
-        // Establecer la referencia a esta vista en el controlador
-        this.controller.setInstructionsView(this);
 
         this.setTitle("UNO! - Instrucciones");
         this.setScene(scene);
