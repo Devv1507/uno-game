@@ -506,9 +506,9 @@ public class GameState implements IGameState {
             case DRAW_TWO:
                 return "+2";
             case WILD:
-                return "COMODÍN DE COLOR";
+                return "COMODIN DE COLOR";
             case WILD_DRAW_FOUR:
-                return "COMODÍN +4";
+                return "COMODIN +4";
             default:
                 return value.name().replace("_", " "); // Fallback
         }
@@ -518,7 +518,7 @@ public class GameState implements IGameState {
      * Genera una representación en texto legible y en español de una carta específica,
      * combinando su valor y su color (si aplica).
      * Formato: "VALOR COLOR" para cartas normales, "VALOR" para comodines.
-     * Ejemplos: "CINCO ROJO", "SALTO VERDE", "COMODÍN DE COLOR".
+     * Ejemplos: "CINCO ROJO", "SALTO VERDE", "COMODIN DE COLOR".
      * @param card La carta de la cual generar la descripción.
      * @return Una cadena que describe la carta en español.
      */
@@ -536,7 +536,7 @@ public class GameState implements IGameState {
         }
 
         if (card.getColor() == Color.WILD) {
-            // Para comodines, el valor ya describe la carta (ej. "COMODÍN DE COLOR")
+            // Para comodines, el valor ya describe la carta (ej. "COMODIN DE COLOR")
             return translatedValue;
         } else {
             // Para cartas con color, se combina "VALOR COLOR"
