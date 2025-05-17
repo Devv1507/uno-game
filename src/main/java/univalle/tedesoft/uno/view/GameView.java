@@ -20,6 +20,11 @@ import univalle.tedesoft.uno.controller.GameController;
 import univalle.tedesoft.uno.model.Cards.Card;
 import univalle.tedesoft.uno.model.Enum.Color;
 import univalle.tedesoft.uno.model.Enum.Value;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -453,29 +458,74 @@ public class GameView extends Stage {
      * Muestra el diálogo para que el jugador elija un color después de jugar un comodín.
      * @return Un Optional<String> con el nombre del color elegido (e.g. "RED"), o Optional.empty() si el diálogo fue cancelado.
      */
-    public Optional<Color> promptForColorChoice() {
-        // Usamos un mapa para relacionar cada color con su traducción
-        Map<String, Color> colorChoicesMap = new LinkedHashMap<>();
-        colorChoicesMap.put("ROJO", Color.RED);
-        colorChoicesMap.put("AMARILLO", Color.YELLOW);
-        colorChoicesMap.put("VERDE", Color.GREEN);
-        colorChoicesMap.put("AZUL", Color.BLUE);
-
-        List<String> choiceNamesInSpanish = new ArrayList<>(colorChoicesMap.keySet());
-
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(choiceNamesInSpanish.get(0), choiceNamesInSpanish);
+    public Optional<String> promptForColorChoice() {
+        Dialog<Color> dialog = new Dialog<>();
         dialog.setTitle("Elegir Color");
-        dialog.setHeaderText("Has jugado un comodín.");
-        dialog.setContentText("Elige el próximo color:");
+        dialog.setHeaderText("Has jugado un comodín. Elige el próximo color:");
 
-        Optional<String> resultSpanishName = dialog.showAndWait();
+        // Configurar los tipos de botones del diálogo (OK y Cancelar)
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        // Mapear el nombre en español de vuelta al enum Color
-        if (resultSpanishName.isPresent()) {
-            return Optional.ofNullable(colorChoicesMap.get(resultSpanishName.get()));
-        } else {
-            return Optional.empty();
-        }
+        // Crear el grupo para los RadioButtons (asegura que solo uno pueda ser seleccionado)
+        ToggleGroup colorGroup = new ToggleGroup();
+
+        // Crear los RadioButtons para cada color
+        RadioButton redButton = new RadioButton(" ");
+        Label redLabel = new Label("Rojo");
+        redLabel.setStyle("-fx-background-color: #fbbcbc; -fx-text-fill: black; -fx-padding: 4 8; -fx-background-radius: 8;");
+        HBox redBox = new HBox(10, redLabel);
+        redButton.setGraphic(redBox);
+        redButton.setUserData(Color.RED); // Almacenar el Enum Color
+        redButton.setToggleGroup(colorGroup);
+        //redButton.setSelected(true); // Seleccionar Rojo por defecto
+
+        RadioButton yellowButton = new RadioButton(" ");
+        Label yellowLabel = new Label("Amarillo");
+        yellowLabel.setStyle("-fx-background-color: #fff3b0; -fx-text-fill: black; -fx-padding: 4 8; -fx-background-radius: 8;");
+        HBox yellowBox = new HBox(10, yellowLabel);
+        yellowButton.setGraphic(yellowBox);
+        yellowButton.setUserData(Color.YELLOW);
+        yellowButton.setToggleGroup(colorGroup);
+
+        RadioButton greenButton = new RadioButton(" ");
+        Label greenLabel = new Label("Verde");
+        greenLabel.setStyle("-fx-background-color: #b2fab4; -fx-text-fill: black; -fx-padding: 4 8; -fx-background-radius: 8;");
+        HBox greenBox = new HBox(10, greenLabel);
+        greenButton.setGraphic(greenBox);
+        greenButton.setUserData(Color.GREEN);
+        greenButton.setToggleGroup(colorGroup);
+
+        RadioButton blueButton = new RadioButton(" ");
+        Label blueLabel = new Label("Azul");
+        blueLabel.setStyle("-fx-background-color: #a0c4ff; -fx-text-fill: black; -fx-padding: 4 8; -fx-background-radius: 8;");
+        HBox blueBox = new HBox(10, blueLabel);
+        blueButton.setGraphic(blueBox);
+        blueButton.setUserData(Color.BLUE);
+        blueButton.setToggleGroup(colorGroup);
+
+        // Organizar los RadioButtons verticalmente
+        VBox vbox = new VBox(10); // 10 es el espaciado
+        vbox.getChildren().addAll(redButton, yellowButton, greenButton, blueButton);
+        vbox.setPadding(new Insets(20, 40, 20, 40)); // Padding para estética
+
+        vbox.setAlignment(Pos.CENTER);
+
+        dialog.getDialogPane().setContent(vbox);
+        dialog.getDialogPane().setPrefWidth(250);
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                if (colorGroup.getSelectedToggle() != null) {
+                    return (Color) colorGroup.getSelectedToggle().getUserData();
+                }
+            }
+            return null; // Si se cancela o no se selecciona nada (aunque tenemos uno por defecto)
+        });
+
+        // Mostrar el diálogo y esperar la respuesta
+        //return dialog.showAndWait();
+        Optional<Color> result = dialog.showAndWait();
+        return result.map(Color::toString);
+
     }
 
     /**
