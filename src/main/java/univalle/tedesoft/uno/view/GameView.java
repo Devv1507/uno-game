@@ -1,12 +1,18 @@
 package univalle.tedesoft.uno.view;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tooltip;
 import javafx.scene.effect.DropShadow;
@@ -14,29 +20,19 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
-import javafx.stage.Stage;
-import univalle.tedesoft.uno.Main;
-import univalle.tedesoft.uno.controller.GameController;
-import univalle.tedesoft.uno.model.Cards.Card;
-import univalle.tedesoft.uno.model.Enum.Color;
-import univalle.tedesoft.uno.model.Enum.Value;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.layout.VBox;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javafx.animation.FadeTransition;
-import javafx.animation.TranslateTransition;
+import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+
+import univalle.tedesoft.uno.Main;
+import univalle.tedesoft.uno.controller.GameController;
+import univalle.tedesoft.uno.model.Cards.Card;
+import univalle.tedesoft.uno.model.Enum.Color;
+import univalle.tedesoft.uno.model.Enum.Value;
 
 /**
  * Esta clase representa la vista principal del juego UNO.
@@ -55,11 +51,9 @@ public class GameView extends Stage {
     private static final String CARD_IMAGE_PATH_PREFIX = "/univalle/tedesoft/uno/images/";
     private static final String CARD_IMAGE_EXTENSION = ".png";
     private static final String BACK_CARD_IMAGE_NAME = "deck_of_cards";
-    private static final String CARD_BACK_IMAGE_NAME = "card_back"; // Nueva constante para el reverso de las cartas
-    private static final String EMPTY_IMAGE_NAME = "card_uno"; // Placeholder
+    private static final String CARD_BACK_IMAGE_NAME = "card_uno"; // Nueva constante para el reverso de las cartas
     private String playerName;
     private static final int MAX_MESSAGES = 3; // Número máximo de mensajes visibles
-    private static final double MESSAGE_FADE_DURATION = 1000; // Duración de la transición en ms
 
     /**
      * Clase interna para implementar el patrón Singleton.
@@ -113,12 +107,12 @@ public class GameView extends Stage {
     private void addHoverEffectToButton(Button button) {
         if (button != null) {
             String originalStyle = button.getStyle();
-            
+
             button.setOnMouseEntered(e -> {
-                button.setStyle(originalStyle + 
-                    "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
+                button.setStyle(originalStyle +
+                        "-fx-scale-x: 1.05; -fx-scale-y: 1.05;");
             });
-            
+
             button.setOnMouseExited(e -> {
                 button.setStyle(originalStyle);
             });
@@ -142,7 +136,7 @@ public class GameView extends Stage {
             }
 
             // Configurar imagen inicial (vacía) de la pila de descarte
-            Image emptyImage = getCardImageByName(EMPTY_IMAGE_NAME);
+            Image emptyImage = getCardImageByName(CARD_BACK_IMAGE_NAME);
             if (emptyImage != null) {
                 this.gameController.discardPileImageView.setImage(emptyImage);
                 this.gameController.discardPileImageView.setFitHeight(CARD_HEIGHT);
@@ -188,22 +182,25 @@ public class GameView extends Stage {
     public void updatePlayerHand(List<Card> hand, GameController ctrl) {
         Platform.runLater(() -> {
             this.gameController.playerHandHBox.getChildren().clear();
-            
+
             // Configurar el HBox para las cartas solapadas como en la imagen
             this.gameController.playerHandHBox.setSpacing(-20); // Solapamiento visual de cartas
             this.gameController.playerHandHBox.setAlignment(Pos.CENTER);
-            
+
             for (Card card : hand) {
                 ImageView cardView = createCardImageView(card);
-                
+
                 // Asignar el handler del controlador al evento de clic
                 cardView.setOnMouseClicked(ctrl::handlePlayCardClick);
                 cardView.setUserData(card);
-                
+
                 // Agregar margen para el efecto de elevación
                 HBox.setMargin(cardView, new Insets(0, 0, 20, 0));
-                
+
                 this.gameController.playerHandHBox.getChildren().add(cardView);
+            }
+            if (this.gameController.humanCardsCountLabel != null) {
+                this.gameController.humanCardsCountLabel.setText("Mis Cartas: " + hand.size());
             }
         });
     }
@@ -218,7 +215,7 @@ public class GameView extends Stage {
             this.gameController.machineHandHBox.getChildren().clear();
             this.gameController.machineHandHBox.setSpacing(-20);
             this.gameController.machineHandHBox.setAlignment(Pos.CENTER);
-            
+
             Image backImage = getCardImageByName(CARD_BACK_IMAGE_NAME);
 
             if (backImage != null) {
@@ -235,21 +232,21 @@ public class GameView extends Stage {
                 double totalAngle = 30.0;
                 double angleStep = totalAngle / (cardCount - 1);
                 double startAngle = -totalAngle / 2;
-                
+
                 for (int i = 0; i < cardCount; i++) {
                     ImageView cardView = new ImageView(backImage);
                     cardView.setFitHeight(CARD_HEIGHT * 0.8);
                     cardView.setPreserveRatio(true);
                     cardView.setSmooth(true);
-                    
+
                     // Aplicar la rotación
                     double rotation = startAngle + (i * angleStep);
                     cardView.setRotate(rotation);
-                    
+
                     // Ajustar la posición Y para compensar la rotación
                     double yOffset = Math.abs(rotation) * 0.5;
                     cardView.setTranslateY(yOffset);
-                    
+
                     HBox.setMargin(cardView, new Insets(0, 0, 20, 0));
                     this.gameController.machineHandHBox.getChildren().add(cardView);
                     }
@@ -270,14 +267,14 @@ public class GameView extends Stage {
             if (topCard != null) {
                 cardImage = getCardImageForCard(topCard);
             } else {
-                cardImage = getCardImageByName(EMPTY_IMAGE_NAME); // Imagen vacía si no hay carta
+                cardImage = getCardImageByName(CARD_BACK_IMAGE_NAME); // Imagen vacía si no hay carta
             }
 
             if (cardImage != null) {
                 this.gameController.discardPileImageView.setImage(cardImage);
             } else {
                 // Fallback si la imagen no se carga
-                this.gameController.discardPileImageView.setImage(getCardImageByName(EMPTY_IMAGE_NAME));
+                this.gameController.discardPileImageView.setImage(getCardImageByName(CARD_BACK_IMAGE_NAME));
             }
 
             // Aplicar o quitar el efecto de color basado en `effectiveColor`
@@ -304,9 +301,10 @@ public class GameView extends Stage {
         if (playerName != null && playerName.toLowerCase().contains("mach")) {
             displayName = "Máquina";
         } else {
-            displayName = "Jugador";
+            // Si es el jugador humano, usar el nombre que ingresó o "Humano" por defecto
+            displayName = (this.playerName != null && !this.playerName.isEmpty()) ? this.playerName : "Jugador";
         }
-        Platform.runLater(() -> this.gameController.turnLabel.setText("Turno de: " + displayName));
+        Platform.runLater(() -> this.gameController.turnLabel.setText("Turno de " + displayName));
     }
 
     // --- Métodos de Control de la UI ---
@@ -383,18 +381,18 @@ public class GameView extends Stage {
             // Crear nueva etiqueta para el mensaje
             Label newMessage = new Label(message);
             newMessage.setStyle("-fx-font-size: 20px; " +
-                              "-fx-font-weight: bold; " +
-                              "-fx-text-fill: #2c3e50; " +
-                              "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);");
-            
+                    "-fx-font-weight: bold; " +
+                    "-fx-text-fill: #2c3e50; " +
+                    "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);");
+
             // Agregar la nueva etiqueta al principio del contenedor
             this.gameController.messageContainer.getChildren().add(0, newMessage);
-            
+
             // Limitar el número de mensajes visibles
             if (this.gameController.messageContainer.getChildren().size() > MAX_MESSAGES) {
                 this.gameController.messageContainer.getChildren().remove(MAX_MESSAGES);
             }
-            
+
             // Aplicar efectos a todos los mensajes
             for (int i = 0; i < this.gameController.messageContainer.getChildren().size(); i++) {
                 Node node = this.gameController.messageContainer.getChildren().get(i);
@@ -402,18 +400,18 @@ public class GameView extends Stage {
                     // El mensaje más reciente (i=0) se mantiene grande y oscuro
                     if (i == 0) {
                         label.setStyle("-fx-font-size: 20px; " +
-                                     "-fx-font-weight: bold; " +
-                                     "-fx-text-fill: #2c3e50; " +
-                                     "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);");
+                                "-fx-font-weight: bold; " +
+                                "-fx-text-fill: #2c3e50; " +
+                                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);");
                     } else {
                         // Los mensajes anteriores se hacen más pequeños y claros
                         double fontSize = 18 - (i * 3); // Reduce el tamaño gradualmente
                         double opacity = 1.0 - (i * 0.3); // Reduce la opacidad gradualmente
                         label.setStyle("-fx-font-size: " + fontSize + "px; " +
-                                     "-fx-font-weight: bold; " +
-                                     "-fx-text-fill: #2c3e50; " +
-                                     "-fx-opacity: " + opacity + "; " +
-                                     "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);");
+                                "-fx-font-weight: bold; " +
+                                "-fx-text-fill: #2c3e50; " +
+                                "-fx-opacity: " + opacity + "; " +
+                                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);");
                     }
                 }
             }
@@ -452,10 +450,11 @@ public class GameView extends Stage {
     // --- Métodos para Feedback Visual ---
 
     /**
-     * Muestra el diálogo para que el jugador elija un color después de jugar un comodín.
-     * @return Un Optional<String> con el nombre del color elegido (e.g. "RED"), o Optional.empty() si el diálogo fue cancelado.
+     * Muestra el diálogo personalizado para que el jugador elija un color después de jugar un comodín.
+     * Esta implementación utiliza un Dialog con RadioButtons estilizados.
+     * @return Un Optional<Color> con el color elegido, o Optional.empty() si el diálogo fue cancelado.
      */
-    public Optional<String> promptForColorChoice() {
+    public Optional<Color> promptForColorChoice() {
         Dialog<Color> dialog = new Dialog<>();
         dialog.setTitle("Elegir Color");
         dialog.setHeaderText("Has jugado un comodín. Elige el próximo color:");
@@ -467,62 +466,70 @@ public class GameView extends Stage {
         ToggleGroup colorGroup = new ToggleGroup();
 
         // Crear los RadioButtons para cada color
+        String defaultOptions = "-fx-padding: 5 10; -fx-background-radius: 8; -fx-font-weight: bold;";
+        // --- Opción ROJO ---
         RadioButton redButton = new RadioButton(" ");
         Label redLabel = new Label("Rojo");
-        redLabel.setStyle("-fx-background-color: #fbbcbc; -fx-text-fill: black; -fx-padding: 4 8; -fx-background-radius: 8;");
-        HBox redBox = new HBox(10, redLabel);
+        redLabel.setStyle("-fx-background-color: #F44336; -fx-text-fill: white;" + defaultOptions);
+        HBox redBox = new HBox(5, redLabel); // Espacio entre el radio no visible y la etiqueta
+        redBox.setAlignment(Pos.CENTER_LEFT);
         redButton.setGraphic(redBox);
         redButton.setUserData(Color.RED); // Almacenar el Enum Color
         redButton.setToggleGroup(colorGroup);
-        //redButton.setSelected(true); // Seleccionar Rojo por defecto
+        redButton.setSelected(true);
 
+        // --- Opción AMARILLO ---
         RadioButton yellowButton = new RadioButton(" ");
         Label yellowLabel = new Label("Amarillo");
-        yellowLabel.setStyle("-fx-background-color: #fff3b0; -fx-text-fill: black; -fx-padding: 4 8; -fx-background-radius: 8;");
-        HBox yellowBox = new HBox(10, yellowLabel);
+        yellowLabel.setStyle("-fx-background-color: #FFEB3B; -fx-text-fill: #333333;"+ defaultOptions);
+        HBox yellowBox = new HBox(5, yellowLabel);
+        yellowBox.setAlignment(Pos.CENTER_LEFT);
         yellowButton.setGraphic(yellowBox);
         yellowButton.setUserData(Color.YELLOW);
         yellowButton.setToggleGroup(colorGroup);
 
+        // --- Opción VERDE ---
         RadioButton greenButton = new RadioButton(" ");
         Label greenLabel = new Label("Verde");
-        greenLabel.setStyle("-fx-background-color: #b2fab4; -fx-text-fill: black; -fx-padding: 4 8; -fx-background-radius: 8;");
-        HBox greenBox = new HBox(10, greenLabel);
+        greenLabel.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;" + defaultOptions);
+        HBox greenBox = new HBox(5, greenLabel);
+        greenBox.setAlignment(Pos.CENTER_LEFT);
         greenButton.setGraphic(greenBox);
         greenButton.setUserData(Color.GREEN);
         greenButton.setToggleGroup(colorGroup);
 
+        // --- Opción AZUL ---
         RadioButton blueButton = new RadioButton(" ");
         Label blueLabel = new Label("Azul");
-        blueLabel.setStyle("-fx-background-color: #a0c4ff; -fx-text-fill: black; -fx-padding: 4 8; -fx-background-radius: 8;");
-        HBox blueBox = new HBox(10, blueLabel);
+        blueLabel.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white;" + defaultOptions);
+        HBox blueBox = new HBox(5, blueLabel);
+        blueBox.setAlignment(Pos.CENTER_LEFT);
         blueButton.setGraphic(blueBox);
         blueButton.setUserData(Color.BLUE);
         blueButton.setToggleGroup(colorGroup);
 
         // Organizar los RadioButtons verticalmente
-        VBox vbox = new VBox(10); // 10 es el espaciado
+        VBox vbox = new VBox(15); // Espaciado entre opciones de color
         vbox.getChildren().addAll(redButton, yellowButton, greenButton, blueButton);
-        vbox.setPadding(new Insets(20, 40, 20, 40)); // Padding para estética
-
-        vbox.setAlignment(Pos.CENTER);
+        vbox.setPadding(new Insets(20, 40, 20, 40));
+        vbox.setAlignment(Pos.CENTER_LEFT); // Alinear RadioButtons a la izquierda
 
         dialog.getDialogPane().setContent(vbox);
-        dialog.getDialogPane().setPrefWidth(250);
+        dialog.getDialogPane().setPrefWidth(300); // Ancho preferido para el panel del diálogo
+        dialog.getDialogPane().setStyle("-fx-background-color: #F8F8F8;"); // Color de fondo del panel
+
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == ButtonType.OK) {
                 if (colorGroup.getSelectedToggle() != null) {
                     return (Color) colorGroup.getSelectedToggle().getUserData();
                 }
             }
-            return null; // Si se cancela o no se selecciona nada (aunque tenemos uno por defecto)
+            return null; // Si se cancela o no se selecciona nada
         });
 
         // Mostrar el diálogo y esperar la respuesta
-        //return dialog.showAndWait();
         Optional<Color> result = dialog.showAndWait();
-        return result.map(Color::toString);
-
+        return result;
     }
 
     /**
@@ -598,6 +605,7 @@ public class GameView extends Stage {
             this.gameController.machineHandHBox.getChildren().clear();
             this.gameController.messageContainer.getChildren().clear(); // Limpiar mensajes
             this.gameController.machineCardsCountLabel.setText("Cartas Máquina: ?");
+            this.gameController.humanCardsCountLabel.setText("Mis Cartas: ?");
 
             // Restablecer imágenes por defecto
             this.initializeUI();
@@ -628,9 +636,12 @@ public class GameView extends Stage {
         imageView.setSmooth(true);
         imageView.setUserData(card);
 
-        // Agregar tooltip con la descripción de la carta
-        Tooltip tooltip = new Tooltip(getCardDescription(card));
-        Tooltip.install(imageView, tooltip);
+        // Agregar tooltip con la descripción de la carta obtenida del GameState
+        if (this.gameController != null && this.gameController.getGameState() != null) {
+            Tooltip tooltip = new Tooltip(this.gameController.getGameState().getCardDescription(card));
+            Tooltip.install(imageView, tooltip);
+        }
+
 
         // Crear transiciones para el efecto de movimiento
         TranslateTransition moveUp = new TranslateTransition(Duration.millis(100), imageView);
@@ -643,13 +654,12 @@ public class GameView extends Stage {
         imageView.setOnMouseEntered(e -> {
             moveUp.play();
             imageView.setEffect(new DropShadow(10, javafx.scene.paint.Color.BLACK));
-            imageView.setRotate(0);
         });
 
         imageView.setOnMouseExited(e -> {
+            // Solo ejecutar moveDown si la carta no está siendo "levantada" por la rotación del abanico
             moveDown.play();
             imageView.setEffect(null);
-            imageView.setRotate(0);
         });
 
         return imageView;
@@ -676,8 +686,9 @@ public class GameView extends Stage {
             InputStream stream = Main.class.getResourceAsStream(resourcePath);
             if (stream == null) {
                 // si no se encuentra el recurso, se define una imagen placeholder o null
-                if (!baseName.equals(EMPTY_IMAGE_NAME)) {
-                    return getCardImageByName(EMPTY_IMAGE_NAME);
+                if (!baseName.equals(CARD_BACK_IMAGE_NAME)) {
+                    System.err.println("No se pudo encontrar la imagen: " + resourcePath + ". Usando placeholder.");
+                    return getCardImageByName(CARD_BACK_IMAGE_NAME);
                 }
                 return null;
             }
@@ -686,8 +697,8 @@ public class GameView extends Stage {
         } catch (Exception e) {
             System.err.println("Error al cargar la imagen: " + resourcePath);
             // Devolver una imagen placeholder o null
-            if (!baseName.equals(EMPTY_IMAGE_NAME)) {
-                return getCardImageByName(EMPTY_IMAGE_NAME);
+            if (!baseName.equals(CARD_BACK_IMAGE_NAME)) {
+                return getCardImageByName(CARD_BACK_IMAGE_NAME);
             }
             return null;
         }
@@ -715,7 +726,7 @@ public class GameView extends Stage {
      */
     private String getCardImageFilename(Card card) {
         if (card == null) {
-            return EMPTY_IMAGE_NAME;
+            return CARD_BACK_IMAGE_NAME;
         }
 
         Value value = card.getValue();
@@ -737,7 +748,7 @@ public class GameView extends Stage {
             case WILD_DRAW_FOUR -> "4_wild_draw";
             default -> {
                 System.err.println("Advertencia: Valor de carta desconocido para imagen: " + value);
-                yield EMPTY_IMAGE_NAME;
+                yield CARD_BACK_IMAGE_NAME;
             }
         };
     }
@@ -792,42 +803,6 @@ public class GameView extends Stage {
         }
         System.err.println("Advertencia: El evento de clic no provino de un ImageView con una Card.");
         return null;
-    }
-
-    /**
-     * Genera una descripción textual simple de una carta (Color + Valor).
-     * @param card La carta.
-     * @return Descripción textual.
-     */
-    private String getCardDescription(Card card) {
-        if (card == null) {
-            return "Ninguna";
-        }
-        String colorPart;
-        if (card.getColor() != Color.WILD) {
-            colorPart = card.getColor().name() + " ";
-        } else {
-            colorPart = "";
-        }
-        String valuePart = card.getValue().name().replace("_", " ");
-        return colorPart + valuePart;
-    }
-
-    /**
-     * Establece el nombre del jugador humano y actualiza la interfaz.
-     * @param playerName El nombre del jugador
-     */
-    public void setPlayerName(String playerName) {
-        this.playerName = playerName;
-        Platform.runLater(() -> this.gameController.playerNameLabel.setText("Jugador: " + playerName));
-    }
-
-    /**
-     * Obtiene el nombre del jugador humano.
-     * @return El nombre del jugador
-     */
-    public String getPlayerName() {
-        return this.playerName;
     }
 
     /**

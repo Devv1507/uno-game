@@ -3,18 +3,35 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.effect.DropShadow?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.ProgressIndicator?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" style="-fx-background-color: linear-gradient(to bottom right, #1a2a6c, #b21f1f, #fdbb2d);" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="univalle.tedesoft.uno.controller.GameController">
     <top>
         <VBox alignment="CENTER" prefHeight="200.0" spacing="15.0" style="-fx-background-color: rgba(255,255,255,0.95); -fx-background-radius: 20; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0, 0, 5);" BorderPane.alignment="CENTER">
-            <Label fx:id="playerNameLabel" style="-fx-font-size: 20px;                         -fx-font-weight: bold;                         -fx-text-fill: #2c3e50;                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);" text="Jugador: " />
-            <Label fx:id="machineCardsCountLabel" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);" text="Cartas Máquina: 5" />
+            <!-- HBox para los labels de información superior -->
+            <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="850.0" spacing="10.0"> <!-- Espaciado reducido ya que Region lo manejará -->
+                <children>
+                    <Label fx:id="turnLabel" alignment="CENTER_LEFT" prefWidth="260.0" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1); -fx-padding: 5;" text="Turno de Jugador" />
+
+                    <Region HBox.hgrow="ALWAYS" /> <!-- Espaciador flexible -->
+
+                    <Label fx:id="machineCardsCountLabel" alignment="CENTER" prefWidth="200.0" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);" text="Cartas Máquina: ?" />
+
+                    <Region HBox.hgrow="ALWAYS" /> <!-- Espaciador flexible -->
+
+                    <Label fx:id="playerNameLabel" alignment="CENTER_RIGHT" prefWidth="260.0" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);" text="Jugador: " />
+                </children>
+                <VBox.margin>
+                    <Insets left="15.0" right="15.0" /> <!-- Margen para el HBox dentro del VBox -->
+                </VBox.margin>
+            </HBox>
+
             <HBox fx:id="machineHandHBox" alignment="CENTER" prefHeight="120.0" spacing="8.0">
             </HBox>
             <padding>
@@ -22,6 +39,7 @@
             </padding>
         </VBox>
     </top>
+    <!-- El resto del archivo FXML permanece igual -->
     <center>
         <HBox alignment="CENTER" prefHeight="200.0" spacing="100.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 30; -fx-padding: 20;" BorderPane.alignment="CENTER">
             <ImageView fx:id="deckImageView" fitHeight="130.0" onMouseClicked="#handleDeckClick" pickOnBounds="true" preserveRatio="true">
@@ -41,13 +59,23 @@
             <VBox fx:id="messageContainer" alignment="CENTER" spacing="2" style="-fx-padding: 5; -fx-max-height: 80;">
                 <Label fx:id="messageLabel" style="-fx-font-size: 20px;                             -fx-font-weight: bold;                             -fx-text-fill: #2c3e50;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);" text="Mensajes del juego aquí" />
             </VBox>
-            <Label fx:id="turnLabel" style="-fx-font-size: 20px;                         -fx-font-weight: bold;                         -fx-text-fill: #2c3e50;                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 3, 0, 0, 1);                        -fx-padding: 5;" text="Turno de: Humano" />
             <HBox fx:id="playerHandHBox" alignment="CENTER" prefHeight="100.0" spacing="8.0">
             </HBox>
-            <HBox alignment="CENTER" spacing="40.0">
-                <Button fx:id="punishUnoButton" mnemonicParsing="false" onAction="#handlePunishUnoButtonAction" style="-fx-background-color: linear-gradient(to bottom, #e74c3c, #c0392b);                             -fx-text-fill: white;                             -fx-font-weight: bold;                             -fx-font-size: 18px;                             -fx-background-radius: 15;                             -fx-padding: 15 30;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);                            -fx-cursor: hand;" text="CANTA!" />
-                <Button fx:id="unoButton" mnemonicParsing="false" onAction="#handleUnoButtonAction" style="-fx-background-color: linear-gradient(to bottom, #f1c40f, #f39c12);                             -fx-text-fill: #2c3e50;                             -fx-font-weight: bold;                             -fx-font-size: 18px;                             -fx-background-radius: 15;                             -fx-padding: 15 30;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);                            -fx-cursor: hand;" text="UNO!" />
-                <ProgressIndicator fx:id="unoTimerIndicator" visible="false" />
+            <HBox alignment="CENTER" prefWidth="Infinity" spacing="20.0">
+                <Label fx:id="humanCardsCountLabel" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);" text="Mis Cartas: ?">
+                    <HBox.margin>
+                        <Insets left="10.0" />
+                    </HBox.margin>
+                </Label>
+
+                <Region prefWidth="20.0" HBox.hgrow="ALWAYS" /> <!-- Espaciador flexible que empuja los botones al centro -->
+                <HBox alignment="CENTER" spacing="20.0">
+                    <Button fx:id="punishUnoButton" mnemonicParsing="false" onAction="#handlePunishUnoButtonAction" style="-fx-background-color: linear-gradient(to bottom, #e74c3c, #c0392b);                             -fx-text-fill: white;                             -fx-font-weight: bold;                             -fx-font-size: 18px;                             -fx-background-radius: 15;                             -fx-padding: 15 30;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);                            -fx-cursor: hand;" text="CANTA!" />
+                    <Button fx:id="unoButton" mnemonicParsing="false" onAction="#handleUnoButtonAction" style="-fx-background-color: linear-gradient(to bottom, #f1c40f, #f39c12);                             -fx-text-fill: #2c3e50;                             -fx-font-weight: bold;                             -fx-font-size: 18px;                             -fx-background-radius: 15;                             -fx-padding: 15 30;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);                            -fx-cursor: hand;" text="UNO!" />
+                    <ProgressIndicator fx:id="unoTimerIndicator" visible="false" />
+                </HBox>
+                <Region prefWidth="80.0" HBox.hgrow="ALWAYS" /> <!-- Otro espaciador flexible  -->
+
                 <padding>
                     <Insets bottom="20.0" top="10.0" />
                 </padding>
@@ -55,7 +83,7 @@
         </VBox>
     </bottom>
     <left>
-        <VBox alignment="TOP_CENTER" prefWidth="130.0" spacing="30.0" BorderPane.alignment="CENTER">
+        <VBox alignment="CENTER" prefWidth="130.0" spacing="30.0" BorderPane.alignment="CENTER">
             <Button fx:id="restartButton" mnemonicParsing="false" onAction="#handleRestartButtonAction" style="-fx-background-color: linear-gradient(to bottom, #3498db, #2980b9); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-background-radius: 15; -fx-padding: 10 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2); -fx-cursor: hand;" text="Reiniciar" />
             <padding>
                 <Insets left="20.0" right="10.0" top="30.0" />
@@ -63,7 +91,7 @@
         </VBox>
     </left>
     <right>
-        <VBox alignment="TOP_CENTER" prefWidth="130.0" spacing="30.0" BorderPane.alignment="CENTER">
+        <VBox alignment="CENTER" prefWidth="130.0" spacing="30.0" BorderPane.alignment="CENTER">
             <padding>
                 <Insets bottom="30.0" left="20.0" right="20.0" top="30.0" />
             </padding>

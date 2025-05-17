@@ -35,6 +35,7 @@ import java.util.Random;
  * @author Santiago Guerrero
  */
 public class GameController {
+    @FXML public Label humanCardsCountLabel;
     @FXML public Label machineCardsCountLabel;
     @FXML public HBox machineHandHBox;
     @FXML public ImageView deckImageView;
@@ -146,12 +147,11 @@ public class GameController {
                 this.machinePlayer.getNumeroCartas(),
                 this.currentPlayer.getName()
         );
-        this.updateInteractionBasedOnTurn();
+        if (this.humanPlayer.getName() != null && !this.humanPlayer.getName().isEmpty() && this.currentPlayer == this.humanPlayer) {
+            this.gameView.displayMessage("¡Tu turno, " + this.humanPlayer.getName() + "!");
+        }
 
-        // Usar el nombre almacenado en playerName si existe
-        String displayName = this.playerName != null && !this.playerName.isEmpty() ?
-            this.playerName : this.humanPlayer.getName();
-        this.gameView.displayMessage("¡Tu turno, " + displayName + "!");
+        this.updateInteractionBasedOnTurn();
         this.gameView.enableRestartButton(true);
 
         // Asegurar que los estados de UNO estén limpios para la nueva partida
@@ -393,10 +393,6 @@ public class GameController {
 
     // --- Lógica del Juego ---
 
-    public Label getMachineCardsCountLabel() {
-        return machineCardsCountLabel;
-    }
-
     /**
      * Verifica si se cumplen las condiciones para penalizar a la máquina por no decir UNO.
      * Estas condiciones son: (1) La máquina tiene 1 carta; (2) La máquina es candidata a
@@ -434,7 +430,6 @@ public class GameController {
         this.gameView.clearPlayerHandHighlights();
         this.gameView.highlightDeck(false);
         this.gameView.updateTurnIndicator(this.currentPlayer.getName());
-        this.gameView.displayMessage("Turno de " + this.currentPlayer.getName());
 
         if (this.currentPlayer == this.machinePlayer) {
             // Turno normal de la máquina
@@ -470,19 +465,20 @@ public class GameController {
         this.gameView.enablePlayerInteraction(false);
 
         // Pedir a la vista que muestre el diálogo de elección
-        Optional<String> result = this.gameView.promptForColorChoice();
+        Optional<Color> result = this.gameView.promptForColorChoice();
 
         this.isChoosingColor = false;
         this.gameView.enablePlayerInteraction(true);
         this.updateInteractionBasedOnTurn(); // Actualizar botones ahora que el diálogo cerró
         result.ifPresentOrElse(
-                colorName -> {
-                    Color chosenColor = Color.valueOf(colorName);
+                targetColor -> {
                     // Notificar al modelo
-                    this.gameState.onColorChosen(chosenColor);
+                    this.gameState.onColorChosen(targetColor);
                     // Actualizar la vista para reflejar el color elegido en el borde de la pila de descarte
-                    this.gameView.updateDiscardPile(this.gameState.getTopDiscardCard(), chosenColor);
-                    this.gameView.displayMessage("Color cambiado a " + chosenColor.name());
+                    this.gameView.updateDiscardPile(this.gameState.getTopDiscardCard(), targetColor);
+                    // Obtener el nombre del color en español del GameState
+                    String spanishColorName = this.gameState.getSpanishColorName(targetColor);
+                    this.gameView.displayMessage("Color cambiado a " + spanishColorName);
                     // El turno NO debe avanzar aquí si el jugador humano tiene la chance de declarar UNO
                     if (!this.humanPlayer.isUnoCandidate() || this.humanPlayer.hasDeclaredUnoThisTurn()) {
                         this.processTurnAdvancement();
@@ -539,7 +535,8 @@ public class GameController {
 
         // Si la máquina jugó un comodín, mostrar mensaje de cambio de color.
         if (playedCard.getColor() == Color.WILD) {
-            this.gameView.displayMessage("Máquina cambió el color a " + this.gameState.getCurrentValidColor().name());
+            String validColorName = this.gameState.getSpanishColorName(this.gameState.getCurrentValidColor());
+            this.gameView.displayMessage("Máquina cambió el color a " + validColorName);
         }
 
         if (this.machinePlayer.isUnoCandidate()) {

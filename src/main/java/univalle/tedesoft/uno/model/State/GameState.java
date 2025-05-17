@@ -179,7 +179,7 @@ public class GameState implements IGameState {
     public boolean playCard(Player player, Card card) throws InvalidPlayException {
         if (!this.isValidPlay(card)) {
             String message = "Jugada inválida: La carta '" + getCardDescription(card) +
-                    "' no se puede jugar sobre '" + getCardDescription(this.getTopDiscardCard());
+                    "' no se puede jugar sobre '" + getCardDescription(this.getTopDiscardCard()) + "'.";
             throw new InvalidPlayException(message, card, this.getTopDiscardCard());
         }
         player.removeCardOfCards(card);
@@ -447,22 +447,101 @@ public class GameState implements IGameState {
     }
 
     /**
-     * Genera una representación en texto legible de una carta específica,
-     * combinando su color (si no es un comodín) y su valor.
+     * Traduce el enumerado Color a su representación en español.
+     * @param color El color a traducir.
+     * @return El nombre del color en español.
+     */
+    private String translateColorToSpanish(Color color) {
+        if (color == null) {
+            return "";
+        }
+        switch (color) {
+            case RED:
+                return "ROJO";
+            case YELLOW:
+                return "AMARILLO";
+            case GREEN:
+                return "VERDE";
+            case BLUE:
+                return "AZUL";
+            case WILD:
+                return ""; // Los comodines se describen por su valor
+            default:
+                return color.name(); // Fallback por si se añaden nuevos colores no traducidos
+        }
+    }
+
+    /**
+     * Traduce el enumerado Value a su representación en español.
+     * @param value El valor a traducir.
+     * @return El nombre del valor en español.
+     */
+    private String translateValueToSpanish(Value value) {
+        if (value == null) {
+            return "";
+        }
+        switch (value) {
+            case ZERO:
+                return "CERO";
+            case ONE:
+                return "UNO";
+            case TWO:
+                return "DOS";
+            case THREE:
+                return "TRES";
+            case FOUR:
+                return "CUATRO";
+            case FIVE:
+                return "CINCO";
+            case SIX:
+                return "SEIS";
+            case SEVEN:
+                return "SIETE";
+            case EIGHT:
+                return "OCHO";
+            case NINE:
+                return "NUEVE";
+            case SKIP:
+                return "SALTO";
+            case DRAW_TWO:
+                return "+2";
+            case WILD:
+                return "COMODIN DE COLOR";
+            case WILD_DRAW_FOUR:
+                return "COMODIN +4";
+            default:
+                return value.name().replace("_", " "); // Fallback
+        }
+    }
+
+    /**
+     * Genera una representación en texto legible y en español de una carta específica,
+     * combinando su valor y su color (si aplica).
+     * Formato: "VALOR COLOR" para cartas normales, "VALOR" para comodines.
+     * Ejemplos: "CINCO ROJO", "SALTO VERDE", "COMODIN DE COLOR".
      * @param card La carta de la cual generar la descripción.
-     * @return Una cadena que describe la carta.
+     * @return Una cadena que describe la carta en español.
      */
     @Override
     public String getCardDescription(Card card) {
-        String colorPart;
-        if (card.getColor() == Color.WILD) {
-            colorPart = "";
-        } else {
-            colorPart = card.getColor().name() + " ";
+        if (card == null) {
+            return "Ninguna";
         }
-        String valuePart = card.getValue().name().replace("_", " ");
-        String cardDescription = colorPart + valuePart;
-        return cardDescription;
+
+        String translatedValue = this.translateValueToSpanish(card.getValue());
+        String translatedColor = "";
+
+        if (card.getColor() != Color.WILD) {
+            translatedColor = this.getSpanishColorName(card.getColor());
+        }
+
+        if (card.getColor() == Color.WILD) {
+            // Para comodines, el valor ya describe la carta (ej. "COMODIN DE COLOR")
+            return translatedValue;
+        } else {
+            // Para cartas con color, se combina "VALOR COLOR"
+            return translatedValue + " " + translatedColor;
+        }
     }
 
     /**
@@ -498,4 +577,15 @@ public class GameState implements IGameState {
             this.pendingDrawsForHuman = 0; // Resetear los robos pendientes
         }
     }
+
+    /**
+     * Devuelve el nombre en español de un color específico.
+     * @param color El color a traducir.
+     * @return El nombre del color en español.
+     */
+    @Override
+    public String getSpanishColorName(Color color) {
+        return this.translateColorToSpanish(color);
+    }
+
 }
