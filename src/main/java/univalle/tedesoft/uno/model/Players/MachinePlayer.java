@@ -14,8 +14,13 @@ import java.util.Random;
  * @author Juan Pablo Escamilla
  */
 public class MachinePlayer extends Player {
+    /** Generador de números aleatorios para la toma de decisiones de la máquina. */
     private final Random random;
 
+    /**
+     * Constructor para la clase MachinePlayer.
+     * Inicializa el nombre del jugador a "Machine" y crea una instancia de {@link Random}.
+     */
     public MachinePlayer() {
         this.name = "Machine";
         this.random = new Random();

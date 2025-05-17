@@ -11,7 +11,9 @@ import univalle.tedesoft.uno.controller.GameController;
  *  @author Santiago David Guerrero
  */
 public class MachinePlayerRunnable implements Runnable {
+    /** Controlador del juego para interactuar con la lógica y la UI. */
     private final GameController gameController;
+    /** Tiempo de espera en milisegundos que simula el "pensamiento" de la máquina. */
     private final long thinkDelayMs;
 
     /**

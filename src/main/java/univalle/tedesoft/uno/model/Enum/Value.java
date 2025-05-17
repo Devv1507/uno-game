@@ -8,9 +8,32 @@ package univalle.tedesoft.uno.model.Enum;
  * @author Juan Pablo Escamilla
  */
 public enum Value {
-    ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE,
+    /** Valor numérico Cero. */
+    ZERO,
+    /** Valor numérico Uno. */
+    ONE,
+    /** Valor numérico Dos. */
+    TWO,
+    /** Valor numérico Tres. */
+    THREE,
+    /** Valor numérico Cuatro. */
+    FOUR,
+    /** Valor numérico Cinco. */
+    FIVE,
+    /** Valor numérico Seis. */
+    SIX,
+    /** Valor numérico Siete. */
+    SEVEN,
+    /** Valor numérico Ocho. */
+    EIGHT,
+    /** Valor numérico Nueve. */
+    NINE,
+    /** Acción de Saltarse el turno del siguiente jugador. */
     SKIP,
+    /** Acción de obligar al siguiente jugador a tomar dos cartas. */
     DRAW_TWO,
+    /** Acción de Comodín, permite cambiar el color. */
     WILD,
+    /** Acción de Comodín, permite cambiar el color y obliga al siguiente jugador a tomar cuatro cartas. */
     WILD_DRAW_FOUR
 }

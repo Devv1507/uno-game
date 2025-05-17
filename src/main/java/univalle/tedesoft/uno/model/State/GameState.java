@@ -21,32 +21,27 @@ import java.util.ArrayList;
  * @author Juan Pablo Escamilla
  */
 public class GameState implements IGameState {
-    /**
-     * Jugadores
-     */
+    /** El jugador */
     private final HumanPlayer humanPlayer;
+    /** Jugador máquina oponente. */
     private final MachinePlayer machinePlayer;
-    /**
-     * CurrentPLayer es el jugador de turno
-     * CurrentValidColor es el color de la carta actual sobre la mesa
-     * CurrentValidValue es el valor de la carta actual sobre la mesa
-     */
+    /** El jugador actual del turno */
     private Player currentPlayer;
+    /** El color actualmente válido que se debe igualar para jugar una carta (a menos que sea un comodín). */
     private Color currentValidColor;
+    /** El valor actualmente válido que se debe igualar para jugar una carta (a menos que el color coincida o sea un comodín).
+     * Puede ser null si la última carta fue un comodín y solo se estableció un color.
+     */
     private Value currentValidValue;
-    /**
-     * Referencias al mazo de cartas y la pila de cartas descartadas
-     */
+    /** Mazo de cartas */
     private final Deck deck;
+    /** La pila donde se colocan las cartas jugadas. */
     private final DiscardPile discardStack;
-    /**
-     * Estas son situaciones que ocurren dentro del juego.
-     * skipNextTurn significa que el actual jugador pierde su turno por un efecto de carta false hasta que esto sucede.
-     * gameOver Algun jugador ya no posee cartas por lo que el juego se acabo false hasta que esto se cumpla.
-     * winner jugador que ya no posee cartas.
-     */
+    /** Bandera para indicar que el actual jugador pierde su turno por un efecto de carta false hasta que esto sucede. */
     private boolean skipNextTurn = false;
+    /** Indica si el juego ha terminado (un jugador se quedó sin cartas). */
     private boolean gameOver = false;
+    /** El jugador que ganó la partida (se quedó sin cartas). Es null si el juego no ha terminado o no hay ganador. */
     private Player winner = null;
     /**
      * Registro de la cantidad de robos pendientes para el jugador humano.
@@ -55,13 +50,9 @@ public class GameState implements IGameState {
      * permitir la ventana de castigo.
      */
     private int pendingDrawsForHuman = 0;
-    /**
-     * Constante para definir el número de cartas que se penalizarán por no cantar "UNO" a tiempo.
-     */
+    /** Constante para definir el número de cartas que se penalizarán por no cantar "UNO" a tiempo. */
     public static final int PENALTY_CARDS_FOR_UNO = 2;
-    /**
-     * Constante para la mano inicial.
-     */
+    /** Constante para la mano inicial. */
     private static final int INITIAL_HAND_SIZE = 5;
 
     /**
@@ -275,10 +266,7 @@ public class GameState implements IGameState {
      */
     @Override
     public void onMustChooseColor(Player playerWhoPlayed) {
-        if (playerWhoPlayed == this.humanPlayer) {
-            // El controlador debería haber sido notificado para pedirle al usuario humano
-            // (por ahora vamos a dejarlo vacío y que el flujo ya esté controlado desde el Controller después)
-        } else if (playerWhoPlayed == this.machinePlayer) {
+        if (playerWhoPlayed == this.machinePlayer) {
             // La máquina elige un color automáticamente
             Color chosenColor = this.machinePlayer.chooseColor();
             this.onColorChosen(chosenColor);

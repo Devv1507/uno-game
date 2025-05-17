@@ -44,21 +44,29 @@ import univalle.tedesoft.uno.model.Enum.Value;
  * @author Santiago David Guerrero
  */
 public class GameView extends Stage {
-    // Referencia a los controladores
+    /** Controlador principal del juego, maneja la lógica y la interacción con el modelo. */
     private final GameController gameController;
     // Constantes de UI
+    /** Altura estándar para las imágenes de las cartas en la UI. */
     private static final double CARD_HEIGHT = 100.0;
+    /** Prefijo de la ruta donde se encuentran las imágenes de las cartas. */
     private static final String CARD_IMAGE_PATH_PREFIX = "/univalle/tedesoft/uno/images/";
+    /** Extensión de archivo para las imágenes de las cartas. */
     private static final String CARD_IMAGE_EXTENSION = ".png";
+    /** Nombre base del archivo de imagen para el reverso del mazo de robo. */
     private static final String BACK_CARD_IMAGE_NAME = "deck_of_cards";
-    private static final String CARD_BACK_IMAGE_NAME = "card_uno"; // Nueva constante para el reverso de las cartas
+    /** Nombre base del archivo de imagen para el reverso genérico de una carta. */
+    private static final String CARD_BACK_IMAGE_NAME = "card_uno";
+    /** Nombre del jugador humano, utilizado para personalizar mensajes en la UI. */
     private String playerName;
-    private static final int MAX_MESSAGES = 3; // Número máximo de mensajes visibles
+    /** Número máximo de mensajes que se mostrarán simultáneamente en el contenedor de mensajes. */
+    private static final int MAX_MESSAGES = 3;
 
     /**
      * Clase interna para implementar el patrón Singleton.
      */
     private static class GameViewHolder {
+        /** Instancia única de GameView. */
         private static GameView INSTANCE;
     }
 
@@ -96,6 +104,9 @@ public class GameView extends Stage {
         this.setScene(scene);
     }
 
+    /**
+     * Agrega efectos visuales de hover (resaltado al pasar el mouse) a los botones principales del juego.
+     */
     private void addHoverEffects() {
         // Agregar efectos hover a los botones específicos
         addHoverEffectToButton(this.gameController.unoButton);
@@ -104,6 +115,12 @@ public class GameView extends Stage {
         addHoverEffectToButton(this.gameController.punishUnoButton);
     }
 
+    /**
+     * Aplica un efecto de "hover" a un botón específico.
+     * Cuando el mouse entra en el área del botón, este se agranda ligeramente.
+     * Cuando el mouse sale, el botón vuelve a su tamaño original.
+     * @param button El botón al cual se le aplicará el efecto.
+     */
     private void addHoverEffectToButton(Button button) {
         if (button != null) {
             String originalStyle = button.getStyle();
@@ -164,8 +181,19 @@ public class GameView extends Stage {
 
     /**
      * Muestra el estado inicial completo del juego en la UI.
+     * @param playerHand La lista de cartas iniciales del jugador humano.
+     * @param topDiscardCard La carta inicial en la pila de descarte.
+     * @param effectiveColor El color efectivo inicial del juego.
+     * @param machineCardCount El número inicial de cartas del jugador máquina.
+     * @param initialPlayerName El nombre del jugador que inicia el turno.
      */
-    public void displayInitialState(List<Card> playerHand, Card topDiscardCard, Color effectiveColor, int machineCardCount, String initialPlayerName) {
+    public void displayInitialState(
+            List<Card> playerHand,
+            Card topDiscardCard,
+            Color effectiveColor,
+            int machineCardCount,
+            String initialPlayerName
+    ) {
         Platform.runLater(() -> {
             this.updatePlayerHand(playerHand, this.gameController); // Renderiza mano inicial
             this.updateDiscardPile(topDiscardCard, effectiveColor); // Renderiza descarte inicial
@@ -533,39 +561,6 @@ public class GameView extends Stage {
     }
 
     /**
-     * Resalta visualmente las cartas jugables en la mano del jugador y atenúa las no jugables.
-     * @param playableCards La lista de cartas que son válidas para jugar.
-     */
-    public void highlightPlayableCards(List<Card> playableCards) {
-        Platform.runLater(() -> {
-            this.clearPlayerHandHighlights(); // Limpia efectos anteriores
-
-            DropShadow playableGlow = new DropShadow();
-            playableGlow.setColor(javafx.scene.paint.Color.LIGHTGREEN);
-            playableGlow.setWidth(20);
-            playableGlow.setHeight(20);
-            playableGlow.setSpread(0.6);
-
-            for (Node node : this.gameController.playerHandHBox.getChildren()) {
-                if (node instanceof ImageView) {
-                    ImageView imageView = (ImageView) node;
-                    Object cardData = imageView.getUserData();
-                    if (cardData instanceof Card) {
-                        Card card = (Card) cardData;
-                        if (playableCards.contains(card)) {
-                            imageView.setEffect(playableGlow); // Aplica brillo a jugables
-                            imageView.setOpacity(1.0);       // Opacidad normal
-                        } else {
-                            imageView.setEffect(null);       // Sin brillo
-                            imageView.setOpacity(0.6);       // Atenuar no jugables
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    /**
      * Elimina cualquier efecto de resaltado de las cartas en la mano del jugador.
      */
     public void clearPlayerHandHighlights() {
@@ -706,6 +701,9 @@ public class GameView extends Stage {
 
     /**
      * Actualiza la visibilidad y el estado de habilitación del botón para castigar a la máquina.
+     * @param shouldShowButton Indica si el botón debería mostrarse basado en la lógica del juego (ej. máquina en UNO sin declarar).
+     * @param isGameOver Indica si el juego ha terminado.
+     * @param isChoosingColor Indica si el jugador humano está actualmente eligiendo un color.
      */
     public void updatePunishUnoButtonVisuals(boolean shouldShowButton, boolean isGameOver, boolean isChoosingColor) {
         Platform.runLater(() -> {

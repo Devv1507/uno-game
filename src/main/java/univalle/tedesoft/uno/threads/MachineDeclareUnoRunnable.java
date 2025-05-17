@@ -15,7 +15,9 @@ import univalle.tedesoft.uno.model.Players.MachinePlayer;
  */
 
 public class MachineDeclareUnoRunnable implements Runnable {
+    /** Controlador del juego para interactuar con la lógica y la UI. */
     private final GameController gameController;
+    /** Tiempo de espera en milisegundos antes de que la máquina intente declarar UNO. */
     private final long delayMs;
 
     /**

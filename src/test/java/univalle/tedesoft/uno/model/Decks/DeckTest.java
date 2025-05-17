@@ -7,14 +7,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import univalle.tedesoft.uno.exceptions.EmptyDeckException;
 import univalle.tedesoft.uno.model.Cards.*;
 import univalle.tedesoft.uno.model.Enum.Color;
-import univalle.tedesoft.uno.model.Enum.Value;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.stream.Collectors;
 
 /**
  * Pruebas unitarias para la clase Deck.
@@ -25,12 +20,14 @@ import java.util.stream.Collectors;
  * @author Juan Pablo Escamilla
  */
 class DeckTest {
+    /** Mazo de cartas utilizado en las pruebas. */
     private Deck deck;
     // Segun la implementacion actual de Deck.intializeDeck():
     // 4 colores * (10 NumberCards (0-9) + 2 DrawTwo + 1 Skip) = 4 * 13 = 52
     // 4 Wild Cards
     // 4 WildDrawFour Cards
     // Total = 52 + 4 + 4 = 60 cartas
+    /** Número esperado de cartas en un mazo recién inicializado. */
     private static final int EXPECTED_DECK_SIZE = 60;
 
     /**
@@ -126,6 +123,7 @@ class DeckTest {
     /**
      * Prueba que Deck.takeCard() devuelve la carta superior del mazo
      * y la elimina, reduciendo el tamano del mazo.
+     * @throws EmptyDeckException si el mazo está vacío al intentar tomar una carta.
      */
     @Test
     void takeCard_returnsTopCardAndRemovesIt_whenDeckIsNotEmpty() throws EmptyDeckException { // Añadir throws
@@ -157,7 +155,7 @@ class DeckTest {
 
     /**
      * Prueba que Deck.takeCard() lanza EmptyDeckException cuando el mazo esta vacio.
-     * Este es el cambio principal debido a la refactorización de takeCard().
+     * @throws EmptyDeckException si el mazo está vacío al intentar tomar una carta (esto es parte de la configuración de la prueba para vaciarlo).
      */
     @Test
     void takeCard_throwsEmptyDeckException_whenDeckIsEmpty() throws EmptyDeckException { // Añadir throws para el bucle
@@ -184,6 +182,7 @@ class DeckTest {
     /**
      * Prueba que Deck.getNumeroCartas() refleja correctamente
      * el número de cartas después de tomar algunas.
+     * @throws EmptyDeckException si el mazo se vacía inesperadamente durante la prueba.
      */
     @Test
     void getNumeroCartas_reflectsTakenCards() throws EmptyDeckException { // Añadir throws

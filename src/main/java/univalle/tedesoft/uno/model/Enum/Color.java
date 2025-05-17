@@ -9,5 +9,14 @@ package univalle.tedesoft.uno.model.Enum;
  */
 public enum Color {
     // Enum para los colores de carta
-    RED, YELLOW, GREEN, BLUE, WILD
+    /** Color Rojo. */
+    RED,
+    /** Color Amarillo. */
+    YELLOW,
+    /** Color Verde. */
+    GREEN,
+    /** Color Azul. */
+    BLUE,
+    /** Color especial para comodines, indica que el color puede ser elegido. */
+    WILD
 }

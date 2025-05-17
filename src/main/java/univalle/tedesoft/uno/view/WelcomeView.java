@@ -18,12 +18,14 @@ import java.io.IOException;
  * @author Santiago Guerrero
  */
 public class WelcomeView extends Stage {
+    /** Controlador asociado a esta vista de bienvenida, maneja la lógica de la UI. */
     private final WelcomeController controller;
 
     /**
      * Clase interna para implementar el patrón Singleton.
      */
     private static class WelcomeViewHolder {
+        /** Instancia única de WelcomeView. */
         private static WelcomeView INSTANCE;
     }
 

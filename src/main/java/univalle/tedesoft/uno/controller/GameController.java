@@ -24,7 +24,6 @@ import univalle.tedesoft.uno.view.GameView;
 import univalle.tedesoft.uno.view.InstructionsView;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 /**
@@ -35,50 +34,80 @@ import java.util.Random;
  * @author Santiago Guerrero
  */
 public class GameController {
+    /** Label para mostrar el contador de cartas del jugador humano. */
     @FXML public Label humanCardsCountLabel;
+    /** Label para mostrar el contador de cartas del jugador máquina. */
     @FXML public Label machineCardsCountLabel;
+    /** Contenedor HBox para mostrar las cartas (boca abajo) de la mano de la máquina. */
     @FXML public HBox machineHandHBox;
+    /** ImageView para mostrar la imagen del mazo de robo. */
     @FXML public ImageView deckImageView;
+    /** ImageView para mostrar la carta superior de la pila de descarte. */
     @FXML public ImageView discardPileImageView;
-    @FXML public Label messageLabel;
+    /** Label para mostrar mensajes relevantes del juego al usuario. */
+    @FXML public Label messageLabel; // Aunque los mensajes se muestran en messageContainer, este label puede ser el principal.
+    /** Label para indicar de quién es el turno actual. */
     @FXML public Label turnLabel;
+    /** Contenedor HBox para mostrar las cartas de la mano del jugador humano. */
     @FXML public HBox playerHandHBox;
+    /** Botón que el jugador humano presiona para declarar "¡UNO!". */
     @FXML public Button unoButton;
+    /** Indicador de progreso para el temporizador de la oportunidad de declarar "¡UNO!". */
     @FXML public ProgressIndicator unoTimerIndicator;
+    /** Botón para reiniciar la partida actual. */
     @FXML public Button restartButton;
+    /** Botón para mostrar la ventana de ayuda/instrucciones. */
     @FXML public Button aidButton;
+    /** Label para mostrar el nombre del jugador humano. */
     @FXML public Label playerNameLabel;
+    /** Botón que el jugador humano puede usar para penalizar a la máquina si no declara "¡UNO!". */
     @FXML public Button punishUnoButton;
+    /** Contenedor VBox para mostrar una lista de mensajes del juego. */
     @FXML public VBox messageContainer;
 
     // --- Model ---
+    /** Referencia al estado actual del juego, encapsulando la lógica y datos del juego. */
     private IGameState gameState;
+    /** Referencia al objeto jugador humano. */
     private HumanPlayer humanPlayer;
+    /** Referencia al objeto jugador máquina. */
     private MachinePlayer machinePlayer;
 
     // --- Variables ---
+    /** Nombre del jugador humano, ingresado en la pantalla de bienvenida. */
     private String playerName;
-    /**
-     * Representa al jugador cuyo turno está activo en el juego.
-     * Se actualiza dinámicamente durante el juego a medida que los jugadores se turnan.
-     */
+    /** Jugador cuyo turno está activo en el juego. */
     private Player currentPlayer;
-    private boolean isChoosingColor = false; // --- Banderas para controlar lógica de decisión ---
+    /** Bandera que indica si el jugador humano está actualmente en proceso de elegir un color (tras jugar un comodín). */
+    private boolean isChoosingColor = false;
+    /** Bandera que indica si el jugador humano tiene la oportunidad de penalizar a la máquina por no decir "UNO". */
     private boolean canPunishMachine = false;
 
     // --- View ---
+    /** Referencia a la vista principal del juego (GameView) para interactuar con la UI. */
     private GameView gameView;
 
     // --- Threads ---
+    /** Hilo para manejar el turno del jugador máquina de forma asíncrona. */
     private Thread machineTurnThread;
+    /** Hilo para el temporizador que limita el tiempo del jugador humano para declarar "¡UNO!". */
     private Thread humanUnoTimerThread;
+    /** Hilo para el temporizador que simula el tiempo de reacción de la máquina para declarar "¡UNO!". */
     private Thread machineDeclareUnoThread;
 
     // --- Constantes para controlar las ventanas de tiempo para declarar UNO ---
+    /** Tiempo mínimo (en milisegundos) que el jugador humano tiene para declarar UNO o castigar a la máquina. */
     private static final int CATCH_MIN_DELAY_MS = 2000; // 2 segundos
+    /** Tiempo máximo (en milisegundos) que el jugador humano tiene para declarar UNO o castigar a la máquina. */
     private static final int CATCH_MAX_DELAY_MS = 4000; // 4 segundos
+    /** Retraso (en milisegundos) que simula el "pensamiento" de la máquina antes de realizar su jugada. */
     private static final long MACHINE_TURN_THINK_DELAY_MS = 1500;
 
+    /**
+     * Inicializacion de JavaFX después de cargar el FXML.
+     * Configura el estado inicial del controlador, como la creación de instancias de jugadores.
+     * Si ya existe un nombre de jugador almacenado, lo aplica.
+     */
     @FXML
     public void initialize() {
         // Inicializar el HumanPlayer con un nombre vacío
