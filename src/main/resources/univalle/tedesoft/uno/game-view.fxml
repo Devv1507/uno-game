@@ -61,12 +61,21 @@
             </VBox>
             <HBox fx:id="playerHandHBox" alignment="CENTER" prefHeight="100.0" spacing="8.0">
             </HBox>
-            <HBox alignment="CENTER" spacing="20.0"> <!-- Espaciado ajustado para acomodar el nuevo label -->
-                <Label fx:id="humanCardsCountLabel" alignment="CENTER_LEFT" prefWidth="180" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);" text="Mis Cartas: ?" />
-                <Region prefWidth="100.0" HBox.hgrow="NEVER" /> <!-- Pequeño espaciador si es necesario -->
-                <Button fx:id="punishUnoButton" mnemonicParsing="false" onAction="#handlePunishUnoButtonAction" style="-fx-background-color: linear-gradient(to bottom, #e74c3c, #c0392b);                             -fx-text-fill: white;                             -fx-font-weight: bold;                             -fx-font-size: 18px;                             -fx-background-radius: 15;                             -fx-padding: 15 30;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);                            -fx-cursor: hand;" text="CANTA!" />
-                <Button fx:id="unoButton" mnemonicParsing="false" onAction="#handleUnoButtonAction" style="-fx-background-color: linear-gradient(to bottom, #f1c40f, #f39c12);                             -fx-text-fill: #2c3e50;                             -fx-font-weight: bold;                             -fx-font-size: 18px;                             -fx-background-radius: 15;                             -fx-padding: 15 30;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);                            -fx-cursor: hand;" text="UNO!" />
-                <ProgressIndicator fx:id="unoTimerIndicator" visible="false" />
+            <HBox alignment="CENTER" prefWidth="Infinity" spacing="20.0">
+                <Label fx:id="humanCardsCountLabel" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);" text="Mis Cartas: ?">
+                    <HBox.margin>
+                        <Insets left="10.0" />
+                    </HBox.margin>
+                </Label>
+
+                <Region prefWidth="20.0" HBox.hgrow="ALWAYS" /> <!-- Espaciador flexible que empuja los botones al centro -->
+                <HBox alignment="CENTER" spacing="20.0">
+                    <Button fx:id="punishUnoButton" mnemonicParsing="false" onAction="#handlePunishUnoButtonAction" style="-fx-background-color: linear-gradient(to bottom, #e74c3c, #c0392b);                             -fx-text-fill: white;                             -fx-font-weight: bold;                             -fx-font-size: 18px;                             -fx-background-radius: 15;                             -fx-padding: 15 30;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);                            -fx-cursor: hand;" text="CANTA!" />
+                    <Button fx:id="unoButton" mnemonicParsing="false" onAction="#handleUnoButtonAction" style="-fx-background-color: linear-gradient(to bottom, #f1c40f, #f39c12);                             -fx-text-fill: #2c3e50;                             -fx-font-weight: bold;                             -fx-font-size: 18px;                             -fx-background-radius: 15;                             -fx-padding: 15 30;                             -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);                            -fx-cursor: hand;" text="UNO!" />
+                    <ProgressIndicator fx:id="unoTimerIndicator" visible="false" />
+                </HBox>
+                <Region prefWidth="80.0" HBox.hgrow="ALWAYS" /> <!-- Otro espaciador flexible  -->
+
                 <padding>
                     <Insets bottom="20.0" top="10.0" />
                 </padding>
