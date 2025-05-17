@@ -18,8 +18,11 @@ import java.util.List;
  */
 import static org.junit.jupiter.api.Assertions.*;
 class PlayerTest {
+    /** Jugador utilizado en las pruebas. */
     private Player player;
+    /** Primera carta de ejemplo para las pruebas. */
     private Card card1;
+    /** Segunda carta de ejemplo para las pruebas. */
     private Card card2;
 
     /**

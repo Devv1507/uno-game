@@ -128,6 +128,7 @@ class DeckTest {
     /**
      * Prueba que Deck.takeCard() devuelve la carta superior del mazo
      * y la elimina, reduciendo el tamano del mazo.
+     * @throws EmptyDeckException si el mazo está vacío al intentar tomar una carta.
      */
     @Test
     void takeCard_returnsTopCardAndRemovesIt_whenDeckIsNotEmpty() throws EmptyDeckException { // Añadir throws
@@ -159,7 +160,7 @@ class DeckTest {
 
     /**
      * Prueba que Deck.takeCard() lanza EmptyDeckException cuando el mazo esta vacio.
-     * Este es el cambio principal debido a la refactorización de takeCard().
+     * @throws EmptyDeckException si el mazo está vacío al intentar tomar una carta (esto es parte de la configuración de la prueba para vaciarlo).
      */
     @Test
     void takeCard_throwsEmptyDeckException_whenDeckIsEmpty() throws EmptyDeckException { // Añadir throws para el bucle
@@ -186,6 +187,7 @@ class DeckTest {
     /**
      * Prueba que Deck.getNumeroCartas() refleja correctamente
      * el número de cartas después de tomar algunas.
+     * @throws EmptyDeckException si el mazo se vacía inesperadamente durante la prueba.
      */
     @Test
     void getNumeroCartas_reflectsTakenCards() throws EmptyDeckException { // Añadir throws

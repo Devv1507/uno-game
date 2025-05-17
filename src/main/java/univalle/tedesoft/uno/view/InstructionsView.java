@@ -20,6 +20,7 @@ public class InstructionsView extends Stage {
      * Clase interna para implementar el patrón Singleton.
      */
     private static class InstructionsViewHolder {
+        /** Instancia única de InstructionsView. */
         private static InstructionsView INSTANCE;
     }
 

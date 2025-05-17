@@ -36,6 +36,8 @@ public interface IGameState {
      * Se llama cuando un jugador ha jugado exitosamente una carta.
      * @param player El jugador que realizo la jugada.
      * @param card La carta especifica que fue jugada y ahora está en la cima.
+     * @return true si la jugada terminó el juego (el jugador se quedó sin cartas), false en caso contrario.
+     * @throws InvalidPlayException si la jugada no es válida según las reglas del juego.
      */
     boolean playCard(Player player, Card card) throws InvalidPlayException;
 
@@ -62,6 +64,8 @@ public interface IGameState {
 
     /**
      * Determina si la carta dada se puede jugar de acuerdo con las reglas del UNO.
+     * @param card La carta que se intenta jugar.
+     * @return true si la jugada es válida, false en caso contrario.
      */
     boolean isValidPlay(Card card);
 
@@ -113,6 +117,7 @@ public interface IGameState {
      * Maneja la acción de un jugador que roba una carta del mazo durante su turno.
      * @param player El jugador que está robando la carta.
      * @return La Card robada, o null si el mazo y la pila de descarte están completamente vacíos.
+     * @throws EmptyDeckException si el mazo principal está vacío y no se pueden reciclar cartas.
      */
     Card drawTurnCard(Player player) throws EmptyDeckException;
 

@@ -16,15 +16,11 @@ public class Player {
 
     /** Lista de cartas que tiene el jugador en su mano */
     public List<Card> cards = new ArrayList<>();
-
+    /** Nombre del jugador. */
     public String name;
-    /**
-     * Indicador para un jugador que tiene la ventana de oportunidad para declarar "UNO".
-     */
+    /** Indicador para un jugador que tiene la ventana de oportunidad para declarar "UNO". */
     private boolean isUnoCandidate = false;
-    /**
-     * Indicar para un jugador que efectivamente declaró "UNO" durante su ventana de oportunidad.
-     */
+    /** Indicar para un jugador que efectivamente declaró "UNO" durante su ventana de oportunidad. */
     private boolean hasDeclaredUnoThisTurn = false;
 
     /**

@@ -66,6 +66,7 @@ public class GameView extends Stage {
      * Clase interna para implementar el patrón Singleton.
      */
     private static class GameViewHolder {
+        /** Instancia única de GameView. */
         private static GameView INSTANCE;
     }
 
@@ -180,8 +181,19 @@ public class GameView extends Stage {
 
     /**
      * Muestra el estado inicial completo del juego en la UI.
+     * @param playerHand La lista de cartas iniciales del jugador humano.
+     * @param topDiscardCard La carta inicial en la pila de descarte.
+     * @param effectiveColor El color efectivo inicial del juego.
+     * @param machineCardCount El número inicial de cartas del jugador máquina.
+     * @param initialPlayerName El nombre del jugador que inicia el turno.
      */
-    public void displayInitialState(List<Card> playerHand, Card topDiscardCard, Color effectiveColor, int machineCardCount, String initialPlayerName) {
+    public void displayInitialState(
+            List<Card> playerHand,
+            Card topDiscardCard,
+            Color effectiveColor,
+            int machineCardCount,
+            String initialPlayerName
+    ) {
         Platform.runLater(() -> {
             this.updatePlayerHand(playerHand, this.gameController); // Renderiza mano inicial
             this.updateDiscardPile(topDiscardCard, effectiveColor); // Renderiza descarte inicial
@@ -549,39 +561,6 @@ public class GameView extends Stage {
     }
 
     /**
-     * Resalta visualmente las cartas jugables en la mano del jugador y atenúa las no jugables.
-     * @param playableCards La lista de cartas que son válidas para jugar.
-     */
-    public void highlightPlayableCards(List<Card> playableCards) {
-        Platform.runLater(() -> {
-            this.clearPlayerHandHighlights(); // Limpia efectos anteriores
-
-            DropShadow playableGlow = new DropShadow();
-            playableGlow.setColor(javafx.scene.paint.Color.LIGHTGREEN);
-            playableGlow.setWidth(20);
-            playableGlow.setHeight(20);
-            playableGlow.setSpread(0.6);
-
-            for (Node node : this.gameController.playerHandHBox.getChildren()) {
-                if (node instanceof ImageView) {
-                    ImageView imageView = (ImageView) node;
-                    Object cardData = imageView.getUserData();
-                    if (cardData instanceof Card) {
-                        Card card = (Card) cardData;
-                        if (playableCards.contains(card)) {
-                            imageView.setEffect(playableGlow); // Aplica brillo a jugables
-                            imageView.setOpacity(1.0);       // Opacidad normal
-                        } else {
-                            imageView.setEffect(null);       // Sin brillo
-                            imageView.setOpacity(0.6);       // Atenuar no jugables
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    /**
      * Elimina cualquier efecto de resaltado de las cartas en la mano del jugador.
      */
     public void clearPlayerHandHighlights() {
@@ -722,6 +701,9 @@ public class GameView extends Stage {
 
     /**
      * Actualiza la visibilidad y el estado de habilitación del botón para castigar a la máquina.
+     * @param shouldShowButton Indica si el botón debería mostrarse basado en la lógica del juego (ej. máquina en UNO sin declarar).
+     * @param isGameOver Indica si el juego ha terminado.
+     * @param isChoosingColor Indica si el jugador humano está actualmente eligiendo un color.
      */
     public void updatePunishUnoButtonVisuals(boolean shouldShowButton, boolean isGameOver, boolean isChoosingColor) {
         Platform.runLater(() -> {

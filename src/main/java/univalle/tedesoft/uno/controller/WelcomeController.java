@@ -21,15 +21,25 @@ import java.io.IOException;
  */
 
 public class WelcomeController {
+    /** Botón para confirmar el nombre ingresado y proceder al juego. */
     @FXML private Button enterNameButton;
+    /** Botón para cerrar la aplicación. */
     @FXML private Button exitButton;
+    /** Botón para mostrar la ventana de instrucciones del juego. */
     @FXML private Button instructionsButton;
+    /** Campo de texto donde el usuario ingresa su nombre o nick. */
     @FXML private TextField nameTextField;
+    /** ImageView para mostrar el logo del juego UNO. */
     @FXML private ImageView unoLogoImage;
+    /** Label descriptivo para el campo de ingreso de nombre (ej. "Usuario"). */
     @FXML private Label userLabel;
 
+    /** Referencia a la vista de bienvenida (WelcomeView) que este controlador maneja. */
     private WelcomeView welcomeView;
 
+    /**
+     * Inicialización de JavaFX.
+     */
     @FXML
     public void initialize() {
         // Inicialmente deshabilitar el botón de ingresar
