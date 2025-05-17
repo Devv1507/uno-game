@@ -7,14 +7,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import univalle.tedesoft.uno.exceptions.EmptyDeckException;
 import univalle.tedesoft.uno.model.Cards.*;
 import univalle.tedesoft.uno.model.Enum.Color;
-import univalle.tedesoft.uno.model.Enum.Value;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.stream.Collectors;
 
 /**
  * Pruebas unitarias para la clase Deck.

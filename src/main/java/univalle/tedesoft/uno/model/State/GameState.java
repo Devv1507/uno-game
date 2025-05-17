@@ -266,10 +266,7 @@ public class GameState implements IGameState {
      */
     @Override
     public void onMustChooseColor(Player playerWhoPlayed) {
-        if (playerWhoPlayed == this.humanPlayer) {
-            // El controlador debería haber sido notificado para pedirle al usuario humano
-            // (por ahora vamos a dejarlo vacío y que el flujo ya esté controlado desde el Controller después)
-        } else if (playerWhoPlayed == this.machinePlayer) {
+        if (playerWhoPlayed == this.machinePlayer) {
             // La máquina elige un color automáticamente
             Color chosenColor = this.machinePlayer.chooseColor();
             this.onColorChosen(chosenColor);
