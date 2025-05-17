@@ -29,10 +29,6 @@ public class WelcomeController {
     @FXML private Button instructionsButton;
     /** Campo de texto donde el usuario ingresa su nombre o nick. */
     @FXML private TextField nameTextField;
-    /** ImageView para mostrar el logo del juego UNO. */
-    @FXML private ImageView unoLogoImage;
-    /** Label descriptivo para el campo de ingreso de nombre (ej. "Usuario"). */
-    @FXML private Label userLabel;
 
     /** Referencia a la vista de bienvenida (WelcomeView) que este controlador maneja. */
     private WelcomeView welcomeView;
