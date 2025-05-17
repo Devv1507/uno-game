@@ -6,6 +6,10 @@ import univalle.tedesoft.uno.view.WelcomeView;
 
 import java.io.IOException;
 
+/**
+ * Clase principal de la aplicación del juego UNO.
+ * Se encarga de iniciar la aplicación JavaFX y mostrar la vista de bienvenida.
+ */
 public class Main extends Application {
     @Override
     public void start(Stage stage) throws IOException {

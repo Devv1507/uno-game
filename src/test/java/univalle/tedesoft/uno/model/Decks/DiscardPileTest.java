@@ -20,10 +20,15 @@ import java.util.Stack;
  * obtener la carta superior y reciclar el mazo.
  */
 class DiscardPileTest {
+    /** Pila de descarte utilizada para las pruebas. */
     private DiscardPile discardPile;
+    /** Carta de ejemplo: Número 5 Rojo. */
     private Card cardRed5;
+    /** Carta de ejemplo: Número 3 Azul. */
     private Card cardBlue3;
+    /** Carta de ejemplo: Salto Verde. */
     private Card cardGreenSkip;
+    /** Carta de ejemplo: Comodín. */
     private Card cardWild;
 
     /**

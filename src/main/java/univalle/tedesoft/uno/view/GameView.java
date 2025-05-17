@@ -44,16 +44,23 @@ import univalle.tedesoft.uno.model.Enum.Value;
  * @author Santiago David Guerrero
  */
 public class GameView extends Stage {
-    // Referencia a los controladores
+    /** Controlador principal del juego, maneja la lógica y la interacción con el modelo. */
     private final GameController gameController;
     // Constantes de UI
+    /** Altura estándar para las imágenes de las cartas en la UI. */
     private static final double CARD_HEIGHT = 100.0;
+    /** Prefijo de la ruta donde se encuentran las imágenes de las cartas. */
     private static final String CARD_IMAGE_PATH_PREFIX = "/univalle/tedesoft/uno/images/";
+    /** Extensión de archivo para las imágenes de las cartas. */
     private static final String CARD_IMAGE_EXTENSION = ".png";
+    /** Nombre base del archivo de imagen para el reverso del mazo de robo. */
     private static final String BACK_CARD_IMAGE_NAME = "deck_of_cards";
-    private static final String CARD_BACK_IMAGE_NAME = "card_uno"; // Nueva constante para el reverso de las cartas
+    /** Nombre base del archivo de imagen para el reverso genérico de una carta. */
+    private static final String CARD_BACK_IMAGE_NAME = "card_uno";
+    /** Nombre del jugador humano, utilizado para personalizar mensajes en la UI. */
     private String playerName;
-    private static final int MAX_MESSAGES = 3; // Número máximo de mensajes visibles
+    /** Número máximo de mensajes que se mostrarán simultáneamente en el contenedor de mensajes. */
+    private static final int MAX_MESSAGES = 3;
 
     /**
      * Clase interna para implementar el patrón Singleton.
@@ -96,6 +103,9 @@ public class GameView extends Stage {
         this.setScene(scene);
     }
 
+    /**
+     * Agrega efectos visuales de hover (resaltado al pasar el mouse) a los botones principales del juego.
+     */
     private void addHoverEffects() {
         // Agregar efectos hover a los botones específicos
         addHoverEffectToButton(this.gameController.unoButton);
@@ -104,6 +114,12 @@ public class GameView extends Stage {
         addHoverEffectToButton(this.gameController.punishUnoButton);
     }
 
+    /**
+     * Aplica un efecto de "hover" a un botón específico.
+     * Cuando el mouse entra en el área del botón, este se agranda ligeramente.
+     * Cuando el mouse sale, el botón vuelve a su tamaño original.
+     * @param button El botón al cual se le aplicará el efecto.
+     */
     private void addHoverEffectToButton(Button button) {
         if (button != null) {
             String originalStyle = button.getStyle();

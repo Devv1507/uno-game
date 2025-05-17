@@ -25,12 +25,14 @@ import java.util.stream.Collectors;
  * @author Juan Pablo Escamilla
  */
 class DeckTest {
+    /** Mazo de cartas utilizado en las pruebas. */
     private Deck deck;
     // Segun la implementacion actual de Deck.intializeDeck():
     // 4 colores * (10 NumberCards (0-9) + 2 DrawTwo + 1 Skip) = 4 * 13 = 52
     // 4 Wild Cards
     // 4 WildDrawFour Cards
     // Total = 52 + 4 + 4 = 60 cartas
+    /** Número esperado de cartas en un mazo recién inicializado. */
     private static final int EXPECTED_DECK_SIZE = 60;
 
     /**
